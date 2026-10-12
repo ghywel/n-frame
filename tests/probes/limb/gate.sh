@@ -13,7 +13,7 @@ set -u
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TESTS="$(cd "$HERE/../.." && pwd)"
 SH="$TESTS/../shaders"
-NP="${NP_SCRATCH:-$(cd "$TESTS/../../.." && pwd)/np-scratch}"
+NP="${NP_SCRATCH:-$HOME/Developer/np-scratch}"
 G="$NP/limb/gate"; mkdir -p "$G"
 RUNS="${1:-3}"
 export FFMPEG="${FFMPEG:-$HOME/np-build/ffmpeg/ffmpeg}"

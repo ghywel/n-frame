@@ -13,7 +13,7 @@ import os
 import pathlib
 
 # the survey JSON lives with the data: $NP_SCRATCH/cases, NP_SCRATCH defaulting to np-scratch beside the repository checkout
-HERE = pathlib.Path(os.environ.get("NP_SCRATCH", str(pathlib.Path(__file__).resolve().parents[5] / "np-scratch"))) / "cases"
+HERE = pathlib.Path(os.environ.get("NP_SCRATCH", os.path.expanduser("~/Developer/np-scratch"))) / "cases"
 cands = json.loads((HERE / "candidates.json").read_text(encoding="utf-8"))
 by_name = {c["name"]: c for c in cands}
 

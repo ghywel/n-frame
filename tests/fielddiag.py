@@ -16,8 +16,7 @@ window rule can be A/B'd on one instrument with everything else held.
 import math, os, pathlib, re, subprocess, sys
 
 TESTS = pathlib.Path(__file__).resolve().parent
-REPO = TESTS.parent.parent                      # .../nframe
-SRC = REPO / "scripts/shaders/quaddirectional-interpolation.glsl"
+SRC = TESTS.parent / "shaders/quaddirectional-interpolation.glsl"   # the repository root holds shaders/ and tests/
 GEN = TESTS / "gen_metal.py"
 # The demo's CLI comes from QUADDEMO, always: the app's source is not in this tree
 # (the tracked copy went on 2026-09-12), so there is no default that could be right,
@@ -28,10 +27,10 @@ if "QUADDEMO" not in os.environ:
 QUAD = pathlib.Path(os.environ["QUADDEMO"])
 # Working root: big scratch never goes on the system disk (the raws are
 # 130-330 MB apiece). Override with FIELDDIAG_OUT; otherwise $NP_SCRATCH/fielddiag,
-# NP_SCRATCH defaulting to np-scratch beside the repository checkout.
+# NP_SCRATCH defaulting to ~/Developer/np-scratch.
 W = pathlib.Path(os.environ.get(
     "FIELDDIAG_OUT",
-    str(pathlib.Path(os.environ.get("NP_SCRATCH", str(REPO.parent / "np-scratch"))) / "fielddiag")))
+    str(pathlib.Path(os.environ.get("NP_SCRATCH", os.path.expanduser("~/Developer/np-scratch"))) / "fielddiag")))
 G = W / "graphs"
 G.mkdir(parents=True, exist_ok=True)
 # Homebrew's bin first (glslc and spirv-cross for gen_metal.py --compile, ffmpeg when FFMPEG is unset);

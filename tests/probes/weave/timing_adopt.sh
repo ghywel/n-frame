@@ -12,7 +12,7 @@ set -u
 V="${1:?the variant}"; ROUNDS="${2:-3}"
 FF="${FFMPEG:-$HOME/np-build/ffmpeg/ffmpeg}"
 SC="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
-G="${NP_SCRATCH:-$(cd "$SC/../.." && pwd)/np-scratch}/weave/timing"; mkdir -p "$G"   # np-scratch beside the checkout
+G="${NP_SCRATCH:-$HOME/Developer/np-scratch}/weave/timing"; mkdir -p "$G"
 . "$SC/tests/scenes.sh"
 if [ ! -s "$G/src.mkv" ]; then
   S="$(scene O5_osc_textured 24)"; S="${S//:d=1,/:d=3,}"

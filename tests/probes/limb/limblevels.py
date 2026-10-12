@@ -22,7 +22,7 @@ HERE = pathlib.Path(__file__).resolve().parent
 TESTS = HERE.parent.parent
 SC = TESTS.parent
 FF = os.environ.get("FFMPEG", str(pathlib.Path(os.environ.get("FFDIR", str(pathlib.Path.home() / "np-build/ffmpeg"))) / "ffmpeg"))
-NP = pathlib.Path(os.environ.get("NP_SCRATCH", str(SC.parent.parent / "np-scratch")))
+NP = pathlib.Path(os.environ.get("NP_SCRATCH", os.path.expanduser("~/Developer/np-scratch")))
 G = NP / "limb" / "levels"
 G.mkdir(parents=True, exist_ok=True)
 W, H, FS = 1280, 720, 80.0

@@ -21,7 +21,7 @@
 set -u
 FFDIR="${FFDIR:-$HOME/np-build/ffmpeg}"   # the project ffmpeg build (BUILDANDUSAGE.md); mingw64/bin for its DLLs
 export PATH="/c/msys64/mingw64/bin:$FFDIR:$PATH" FFMPEG="$FFDIR/ffmpeg.exe"
-NP="${NP_SCRATCH:-/e/nframe-project/np-scratch}"; G="$NP/shear"; cd "$G"
+NP="${NP_SCRATCH:-$HOME/Developer/np-scratch}"; G="$NP/shear"; cd "$G"
 echo "########## MATCHED TENSOR start $(date +%T)"
 K=0.48   # 1/s; 2K/24 = 0.04 per frame
 TEX='128+110*sin(ld(0)/6.366)*sin(ld(1)/6.366)'

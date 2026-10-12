@@ -32,7 +32,7 @@ if sys.platform == "darwin" and os.environ.get("MVK_DETERMINISTIC", "1") != "0":
     os.environ.setdefault("MVK_CONFIG_USE_METAL_ARGUMENT_BUFFERS", "0")
     os.environ.setdefault("MVK_CONFIG_MAX_ACTIVE_METAL_COMMAND_BUFFERS_PER_QUEUE", "1")
 # weavesweep.py's sources: $NP_SCRATCH/weave/sweep, NP_SCRATCH defaulting to np-scratch beside the repository checkout
-NP = pathlib.Path(os.environ.get("NP_SCRATCH", str(pathlib.Path(__file__).resolve().parents[5] / "np-scratch")))
+NP = pathlib.Path(os.environ.get("NP_SCRATCH", os.path.expanduser("~/Developer/np-scratch")))
 SRC = str(NP / "weave/sweep")
 assert re.search(r"//!PARAM read_view\n(?://!.*\n)+4\n", TAP.read_text()), "the tap's read_view default is not 4"
 (work / "_tap.glsl").write_text(TAP.read_text())

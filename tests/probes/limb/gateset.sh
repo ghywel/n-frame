@@ -18,7 +18,7 @@
 set -u
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TESTS="$(cd "$HERE/../.." && pwd)"
-NP="${NP_SCRATCH:-$(cd "$TESTS/../../.." && pwd)/np-scratch}"
+NP="${NP_SCRATCH:-$HOME/Developer/np-scratch}"
 G="$NP/limb/gate${TAG:+-$TAG}"; mkdir -p "$G"
 RUNS="${2:-3}"; CONTROL="${CONTROL:-vp}"
 export FFMPEG="${FFMPEG:-$HOME/np-build/ffmpeg/ffmpeg}"

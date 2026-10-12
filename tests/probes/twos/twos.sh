@@ -29,7 +29,7 @@ TESTS="$(cd "$HERE/../.." && pwd)"
 . "$TESTS/scenes.sh"
 FFMPEG="${FFMPEG:-${FFDIR:-$HOME/np-build/ffmpeg}/ffmpeg}"
 PY="${PY:-$HOME/np-build/venv/bin/python3}"
-NP_SCRATCH="${NP_SCRATCH:-$(cd "$TESTS/../../.." && pwd)/np-scratch}"
+NP_SCRATCH="${NP_SCRATCH:-$HOME/Developer/np-scratch}"
 OUTROOT="${OUTROOT:-$NP_SCRATCH/twos}"; mkdir -p "$OUTROOT"
 SHADERS="${SHADERS:-$TESTS/../shaders/bidirectional-interpolation-variational-propagated.glsl $TESTS/../shaders/quaddirectional-interpolation-propagated.glsl}"
 CASES=("$@"); [ ${#CASES[@]} -gt 0 ] || CASES=(L1_trans_8px O5_osc_textured A5_accel_tex_a067 R3_rot_tex)

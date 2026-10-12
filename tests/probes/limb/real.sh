@@ -7,7 +7,7 @@
 set -u
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TESTS="$(cd "$HERE/../.." && pwd)"
-NP="${NP_SCRATCH:-$(cd "$TESTS/../../.." && pwd)/np-scratch}"
+NP="${NP_SCRATCH:-$HOME/Developer/np-scratch}"
 V="$NP/limb/variants"; G="$NP/limb/real"; mkdir -p "$G"
 export FFMPEG="${FFMPEG:-$HOME/np-build/ffmpeg/ffmpeg}" FFPROBE="${FFPROBE:-$HOME/np-build/ffmpeg/ffprobe}"
 PY="${PY:-$HOME/np-build/venv/bin/python3}"

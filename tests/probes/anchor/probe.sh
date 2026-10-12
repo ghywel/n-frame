@@ -13,7 +13,7 @@ TAG="${1:?usage: probe.sh <tag>}"
 FFDIR="${FFDIR:-$HOME/np-build/ffmpeg}"   # the project ffmpeg build (BUILDANDUSAGE.md); mingw64/bin for its DLLs
 export PATH="/c/msys64/mingw64/bin:$FFDIR:$PATH" FFMPEG="$FFDIR/ffmpeg.exe"
 SC="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
-NP="${NP_SCRATCH:-/e/nframe-project/np-scratch}"; G="$NP/anchor"
+NP="${NP_SCRATCH:-$HOME/Developer/np-scratch}"; G="$NP/anchor"
 . "$SC/tests/scenes.sh"
 SRC="$(scene O5_osc_textured 24)"; SRC="${SRC//:d=1,/:d=4,}"
 cd "$G"

@@ -30,9 +30,9 @@ import numpy as np
 
 # run from a shell with the project's ffmpeg build and mingw64/bin on PATH, as every tool in tests/ does
 # data, renders, logs live here: $NP_SCRATCH, default np-scratch beside the repository checkout
-NP = pathlib.Path(os.environ.get("NP_SCRATCH", str(pathlib.Path(__file__).resolve().parents[5] / "np-scratch")))
+NP = pathlib.Path(os.environ.get("NP_SCRATCH", os.path.expanduser("~/Developer/np-scratch")))
 G = NP / "weird"
-SC = pathlib.Path(__file__).resolve().parents[3]                                  # scripts/
+SC = pathlib.Path(__file__).resolve().parents[3]                                  # the repository root
 W, H, FPS = 1280, 720, 24.0
 CX, CY = 640.0, 360.0
 FRAMES = 48

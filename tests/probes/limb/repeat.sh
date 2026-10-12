@@ -6,7 +6,7 @@
 set -uo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CASE="${1:-K1_limb_sweep_wall}"; N="${2:-5}"
-NP_SCRATCH="${NP_SCRATCH:-$(cd "$HERE/../../../../.." && pwd)/np-scratch}"
+NP_SCRATCH="${NP_SCRATCH:-$HOME/Developer/np-scratch}"
 BASE="$NP_SCRATCH/limb/rep"
 rm -rf "$BASE/$CASE"
 for i in $(seq 1 "$N"); do

@@ -31,7 +31,7 @@ SRC="${1:?usage: dig.sh <source> <start-seconds> <duration-seconds> [label] [sha
 START="${2:?start seconds}"; DUR="${3:?duration seconds}"
 LABEL="${4:-$(basename "${SRC%.*}" | tr -c 'A-Za-z0-9._-' '_' | cut -c1-40)}"
 SHADER="${5:-$TESTS/../shaders/bidirectional-interpolation-variational-propagated.glsl}"
-NP_SCRATCH="${NP_SCRATCH:-$(cd "$TESTS/../../.." && pwd)/np-scratch}"
+NP_SCRATCH="${NP_SCRATCH:-$HOME/Developer/np-scratch}"
 OUT="$NP_SCRATCH/dig/$LABEL"; mkdir -p "$OUT"
 TOP="${TOP:-6}"                                          # candidates taken from the prospector's shortlist
 PAD="${PAD:-40}"                                          # frames of context either side of a candidate (the bench needs 72)

@@ -21,7 +21,7 @@
 set -u
 FFDIR="${FFDIR:-$HOME/np-build/ffmpeg}"   # the project ffmpeg build (BUILDANDUSAGE.md); mingw64/bin for its DLLs
 export PATH="/c/msys64/mingw64/bin:$FFDIR:$PATH" FFMPEG="$FFDIR/ffmpeg.exe"
-SC="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"; NP="${NP_SCRATCH:-/e/nframe-project/np-scratch}"; G="$NP/jerk"; M="$SC/tests/probes/snap"
+SC="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"; NP="${NP_SCRATCH:-$HOME/Developer/np-scratch}"; G="$NP/jerk"; M="$SC/tests/probes/snap"
 mkdir -p "$G"; cd "$G"
 . "$SC/tests/scenes.sh"
 echo "########## JERK SWEEP start $(date +%T)"

@@ -28,7 +28,7 @@ SRC="${1:?usage: watch.sh <source> <start-seconds> <minutes> [shader] [label]}"
 START="${2:?start seconds}"; MIN="${3:?minutes}"
 SHADER="${4:-$HERE/../shaders/bidirectional-interpolation-variational-propagated.glsl}"
 LABEL="${5:-$(basename "$SHADER" .glsl | sed 's/bidirectional-interpolation-//; s/interpolation-//')}"
-OUT="${HOTDROPS:-$(cd "$HERE/../../.." && pwd)/hot-drops}"
+OUT="${HOTDROPS:-$HOME/Developer/np-scratch/hot-drops}"
 case "$(uname -s)" in
   MINGW*|MSYS*|CYGWIN*) VENC="${VENC:-h264_mf}" ;;
   Darwin)               VENC="${VENC:-h264_videotoolbox}" ;;

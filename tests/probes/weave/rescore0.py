@@ -19,7 +19,7 @@ BW, BH, X0, Y0 = 320, 202, 40.0, 259.0
 SP = [float(s) for s in (sys.argv[1] if len(sys.argv) > 1 else "5,11,13,19").split(",")]
 TX = (sys.argv[2] if len(sys.argv) > 2 else "weave,noise").split(",")
 # weavesweep.py's sources: $NP_SCRATCH/weave/sweep, NP_SCRATCH defaulting to np-scratch beside the repository checkout
-NP = pathlib.Path(os.environ.get("NP_SCRATCH", str(pathlib.Path(__file__).resolve().parents[5] / "np-scratch")))
+NP = pathlib.Path(os.environ.get("NP_SCRATCH", os.path.expanduser("~/Developer/np-scratch")))
 D = str(NP / "weave/sweep")
 ALIASES = [(28, 0), (-28, 0), (14, 14), (14, -14), (-14, 14), (-14, -14), (0, 28), (0, -28)]
 

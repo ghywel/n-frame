@@ -4,7 +4,7 @@
 # REPAIRS.md lead L1 (2026-10-04): the control before a generator change, and the check after it.
 set -u
 OUT=${1:?outdir}; mkdir -p "$OUT"
-S="$(cd "$(dirname "$0")/../../.." && pwd)"          # scripts/
+S="$(cd "$(dirname "$0")/../../.." && pwd)"          # the repository root
 PY=${PY:-$HOME/np-build/venv/bin/python3}
 cd "$S"
 strip() { awk 'p{print} /^\/\/ =====/{c++} c==2 && !p{p=1}' "$1"; }

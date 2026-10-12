@@ -10,7 +10,7 @@ smoke.sh passes. Both are supplied here; the control run is what proves them rig
 """
 import os, re, shlex, subprocess, sys, pathlib, shutil
 
-S = pathlib.Path(__file__).resolve().parents[3]          # scripts/
+S = pathlib.Path(__file__).resolve().parents[3]          # the repository root
 SH = S / "shaders"
 PY = os.environ.get("PY", os.path.expanduser("~/np-build/venv/bin/python3"))
 

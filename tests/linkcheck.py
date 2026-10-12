@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Check every relative link in this directory's documents, as the public copy sees them.
 
-    ./linkcheck.py [root]          (default: the directory above tests/, i.e. scripts/)
+    ./linkcheck.py [root]          (default: the directory above tests/, the repository root)
 
-The public copy of this project is the CONTENTS of scripts/, so a link is good only if it resolves to a file or
-directory inside that root. A link that climbs out of it (`../ROADMAP.md` from the top level) works in the
+The public copy of this project is this repository (the old tree's scripts/ flattened), so a link is good only
+if it resolves to a file or directory inside that root. A link that climbs out of it (`../ROADMAP.md` from the top level) works in the
 development repository and is broken in the copy; a check run from the repository cannot see that, which is how
 three such links went unnoticed until 2026-10-01. Also checks `#anchors` against the target document's headings,
 using GitHub's slug rule (lower case, punctuation dropped, spaces to hyphens).

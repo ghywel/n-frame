@@ -15,7 +15,7 @@
 # Everything is in ROOT, a docker volume, so the container is disposable. The patches come from the repo checkout
 # the script lives in, never from a copy.
 set -euo pipefail
-HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"           # scripts/
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"           # the repository root
 ROOT="${ROOT:-/work}"
 PREFIX="$ROOT/libplacebo-install"
 STAGE="${1:-all}"

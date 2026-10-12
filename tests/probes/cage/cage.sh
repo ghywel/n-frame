@@ -15,7 +15,7 @@ TESTS="$(cd "$HERE/../.." && pwd)"
 . "$TESTS/scenes.sh"
 FFMPEG="${FFMPEG:-${FFDIR:-$HOME/np-build/ffmpeg}/ffmpeg}"
 PY="${PY:-$HOME/np-build/venv/bin/python3}"
-NP_SCRATCH="${NP_SCRATCH:-$(cd "$TESTS/../../.." && pwd)/np-scratch}"
+NP_SCRATCH="${NP_SCRATCH:-$HOME/Developer/np-scratch}"
 OUTROOT="${OUTROOT:-$NP_SCRATCH/cage}"
 CASES=("$@"); [ ${#CASES[@]} -gt 0 ] || CASES=(C1_cage_drift C2_cage_drift_occluded C3_bars_spin_drift)
 SHADERS="${SHADERS:-$TESTS/../shaders/bidirectional-interpolation-variational-propagated.glsl $TESTS/../shaders/bidirectional-interpolation-variational-propagated-global.glsl}"
