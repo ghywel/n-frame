@@ -448,10 +448,8 @@ the research record, the scientific record and the instruments.
   and the repairs to the tracker that came out of asking.
 - [REPAIRS.md](REPAIRS.md) — dated repairs to the shaders and tools: what was found, how it was fixed and checked,
   and the open leads each round left.
-- [LEXICON.md](LEXICON.md) — a lexicon for writing programs as mathematics: four arithmetics, the margin fold, spin
-  digits, every program as a matrix, and the machine's own arithmetic, each checked against the shader.
-- The mathematics-prize work that grew out of the lexicon (Rule 30, Collatz: PRIZE-PROBLEMS.md,
-  RULE30-PRIZE.md, PERIOD-TWO.md) lives in [ghywel/placego](https://github.com/ghywel/placego).
+- The mathematics-prize work (Rule 30, Collatz: LEXICON.md, PRIZE-PROBLEMS.md, RULE30-PRIZE.md, PERIOD-TWO.md) lives
+  in [ghywel/placego](https://github.com/ghywel/placego).
 
 **Animation**
 - [shaders/animation/ANIMATION.md](shaders/animation/ANIMATION.md) — experimental shaders for hand-drawn
