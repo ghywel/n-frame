@@ -1,0 +1,437 @@
+# Handover: how to get up to speed and take a piece of this work
+
+*For a person, or for an AI assistant given this file. If you are an
+assistant: read this file and the documents it names in the order given,
+confirm the toolchain with the checklist at the end, then stop and wait for
+the human's command. Do not start an experiment you were not asked for.*
+
+> **Dated: written 2026-09-04, last updated 2026-09-06, with corrections on 2026-10-01.** The reading order and the
+> machinery below are kept current where a reader following them would otherwise go wrong; section 5, "the front
+> line", is history. Since 2026-09-06 the ladder has 42 cases, the regression gate runs on a deterministic Linux
+> host (`tests/TESTING.md`, "The Linux witness on the Arc"), macOS runs need the MoltenVK switches in
+> `tests/mvk-env.sh`, and shader changes ship behind generator switches (`SHADERS.md`). For the current front line,
+> read the newest dated entries of `NFRAME-LIMITS.md` section 9 and `ENERGY-TRANSFER.md`; for the working rules,
+> `WORKFLOW-SAVED-MEMORY.md`; for every document, the map at the end of `WHAT-WE-BUILT.md`.
+
+This project is CPU- and GPU-bound, not idea-bound. The open leads at the end
+of this file are real, measurable, and independent of one another; anyone
+with a GPU that runs Vulkan, an afternoon, and the discipline described here
+can take one and bring back a number. That is the point of this document.
+Written 2026-09-04; run `git log --since=2026-09-04` to see what moved after.
+
+*What you do not receive, on purpose: the owner's memory files and scratch
+directories. They are one person's working notes and one assistant
+instance's accumulated context, and they are not part of this handover.
+Whether you are a person or an assistant, you build your own from the
+documents named below and from the runs you make: your own notes, your own
+scratch, your own record of what you confirmed. Do not ask for the owner's,
+do not copy them if you find them on a shared machine (a directory of
+handoff notes and memory mirrors exists outside this repository for the
+owner's own sessions), and do not import another assistant's memory as
+your own. The repository is the shared record; everything that matters is
+in it, and if something you need is not, that is a gap to report, not a
+reason to reach for someone else's notes.*
+
+*The one exception is published: the working RULES from that memory, edited for reading, are in
+`WORKFLOW-SAVED-MEMORY.md` (2026-10-01), and those are meant to be read and adopted. The notes and context stay
+private.*
+
+## 1. What this is, in one paragraph
+
+A patch to libplacebo (the GPU rendering library ffmpeg's `libplacebo`
+filter is built on) that lets a user-supplied GLSL shader see a whole window
+of source frames at once, and a family of shaders built on it that estimate,
+for every point on the screen and in real time, not only where things are
+moving but how their motion is changing: velocity, acceleration, and jerk.
+The interpolated picture (24 -> 60 frames per second) is the harness that
+made the estimate testable against exact ground truth; the field of
+measurements is the product. Everything is measured before it is claimed,
+and the failures stay on the record next to the successes.
+
+## 2. Read these, in this order
+
+1. `WHAT-WE-BUILT.md` -- the plain-language register: what exists, what it
+   cannot do, what is new. Twenty minutes. Read it even if you are an expert.
+2. `README.md` -- the patch (`PL_HOOK_FRAME_MIX`), documented for upstream
+   review, and the map of this directory.
+3. `SHADERS.md` -- every shader, what it is for, its numbers, its lineage.
+4. `tests/TESTING.md` and `tests/TOOLS.md` -- the ground-truth ladder, the
+   real-footage method and its traps, and every instrument.
+5. `NFRAME-LIMITS.md` -- the record of the field's limits; the newest dated
+   entries in section 9 are the front line, with `ENERGY-TRANSFER.md` after it.
+6. `PLAN.md` -- the working plan of 2026-08-31 to 09-03, now history.
+   (The repository's development copy also has a `ROADMAP.md` above this
+   directory; it is not part of this directory.)
+7. `TRIDIRECTIONAL.md`, `QUADDIRECTIONAL.md`, `QUINTDIRECTIONAL.md`, `SEXTDIRECTIONAL.md` -- the
+   three-, four-, five- and six-frame experiments, hypotheses stated before the
+   results. `THREEDIMENSIONAL.md` is the design record for depth from
+   motion. `METALPORT.md` is the native port.
+8. `METHODOLOGY.md` -- how the work was actually done, including the division
+   of labour between the human and the assistant. `PRIOR-ART.md` -- where
+   this sits in the scientific record.
+9. `BUILDANDUSAGE.md` -- building the patched ffmpeg on Linux, Windows and
+   macOS. Do this before anything below.
+
+## 3. The method, which is not optional
+
+These rules are why the numbers in this repository can be trusted. Results
+produced without them are not comparable to the record and will be redone.
+
+- **Ground truth first.** Synthetic scenes whose motion is a formula
+  (`tests/scenes.sh`) give the exact answer at every point and instant. Real
+  footage is measured by decimate-and-reconstruct (`tests/realbench.sh`),
+  where the deleted frames are the exact answer. Nothing is judged by eye
+  alone; the eye is used to find what to measure.
+- **Predict before you run.** Write down what should happen and what would
+  count as failure. The experiment documents (`TRIDIRECTIONAL.md` onward)
+  show the form: a numbered pre-registration, then the results against it.
+- **Instrument before science.** If a number surprises you, suspect the
+  measurement before the thing measured. Half the corrections in the record
+  were the instrument (a wrong truth instant, a misaligned frame pairing, a
+  hook silently skipped). The bench scripts now fail loudly when the hook is
+  skipped; `PL_FRAME_MIX_STRICT=1` in the environment paints such frames
+  magenta.
+- **Per-texel and pooled, always both.** Every calibration in the record
+  pooled over the object for a week and hid a quarter-pixel per-texel bias
+  (`NFRAME-LIMITS.md` section 9). Report the spread next to the median.
+- **Failures stay on the record.** A refuted idea is written up with its
+  numbers and its mechanism, dated, in the document it belongs to. Do not
+  delete; append and mark.
+- **A shipped shader is never edited for an experiment.** Copy it to scratch,
+  or better, edit a copy of the two-frame base and regenerate the family
+  (section 4). Compare against the shipped file *in the same run*.
+- **Generated files are regenerated, never hand-edited.** Every three-, four-
+  and five-frame shader and the demonstration file are produced by the
+  generators in `tests/` from a two-frame base; the header of each file says
+  the exact command.
+- **Time everything you propose to ship, interleaved.** Run the old and the
+  new alternately after a warm-up; a first measurement of "+15%" this week
+  was ordering and thermal, and vanished interleaved. A change that costs
+  render time ships as its own variant file or behind a switch (see
+  `SUBPEL_REFINE` / `SUBPEL_SELFREF` / `ZERO_SEED` in the bases), never as an
+  overwrite of the fast tier.
+- **The gate for a base change** is all three: the 32-case ladder (mean up,
+  no loss beyond about a decibel), the real-footage segments (PSNR and SSIM
+  not down), and interleaved time. Then every regenerated file is smoked.
+  *(2026-10-01: the ladder is 42 cases, run on a host that repeats itself; an
+  in-place change may lose no case by more than 0.10 dB, else it ships as a
+  variant; real footage is 40 film extracts. The current form is the
+  `regression-gate` rule in `WORKFLOW-SAVED-MEMORY.md`.)*
+- **No personal data, no absolute paths, no binaries in the repository.**
+  Filter strings must not contain drive-letter paths (`tests/smoke.sh`
+  explains why). Scratch work lives outside the tree or is not staged.
+
+## 4. The machinery
+
+**The patch.** `frame-mix-hook.patch` adds the `PL_HOOK_FRAME_MIX` stage: a
+`.hook`-format shader declares how many frames it wants (1-8) and receives
+them with their timestamps. `frame-mix-nn-threshold.patch` lets the hook fire
+at equal input and output rates (the field is measured at N:N, e.g.
+`fps=24` from a 24 fps source) and sizes the frame queue for five-frame
+windows. When the queue cannot fill a window the hook is skipped and the
+patch says so at error level.
+
+**The shaders** (`shaders/`). Five two-frame bases: stock, `-seeded`,
+`-propagated`, `-animation`, `-variational`. The generators build the rest:
+
+    cd tests
+    ./gen_tridirectional.py  tridirectional-interpolation-propagated.glsl  bidirectional-interpolation-propagated.glsl
+    ./gen_quaddirectional.py quaddirectional-interpolation-propagated.glsl bidirectional-interpolation-propagated.glsl
+    ./gen_quintdirectional.py quintdirectional-interpolation-propagated.glsl bidirectional-interpolation-propagated.glsl
+    ./gen_sextdirectional.py  sextdirectional-interpolation-propagated.glsl  bidirectional-interpolation-propagated.glsl
+    ./add_human_reading.py --default 1 ../shaders/human-reading-quad.glsl   # the painted demonstration
+    ./add_human_reading.py ../shaders/bidirectional-interpolation.glsl      # a base's own tail (paths, not bare names)
+
+Bare names resolve in `shaders/`; paths work too. Each generated file turns
+the field-only switches on (`SUBPEL_REFINE`, `SUBPEL_SELFREF`; `ZERO_SEED` is
+already on in the seeded, propagated, animation and recommended bases) and appends
+the human-reading tail: a `read_view` shader parameter, 0 = the picture,
+1/2/3 = velocity/acceleration/jerk painted for a person, 4/5/6 = the same
+fields raw for a machine, 7 = the pooled reading raw, 8 = the per-cell mode
+memory raw, 9 = divergence, curl and shear raw.
+
+**The ladder.** `tests/scenes.sh` defines every case as an ffmpeg `lavfi`
+expression; `tests/scenecheck.sh` proves each case's rendered frames match
+its formula. `tests/bench.sh <case> <shader> <label>` renders 24 -> 60 and
+scores the synthesised frames against the 60 fps truth; `tests/analyze.py
+--variants` tabulates everything under `$OUTROOT`:
+
+    export FFMPEG=/path/to/patched/ffmpeg FFPROBE=/path/to/ffprobe OUTROOT=/some/scratch/dir
+    cd tests
+    ./bench.sh L1_trans_8px ../shaders/quaddirectional-interpolation-propagated.glsl quadprop
+    ./analyze.py --variants
+
+Real footage: `./realbench.sh <video> <label> <shader> <seconds...>` then
+`./realanalyze.py`. Read `TESTING.md`'s "Real-footage traps" first; the
+passthrough check must pass or nothing else means anything.
+
+**A field render** (the measurement itself), at N:N: set a diagnostic mode
+and its full scale in a copy of the shader, render raw 16-bit, decode. Modes:
+2 acceleration, 5 jerk, 7 velocity, 8/9 the four-frame cubic's acceleration/
+jerk from the same anchor. The field is encoded as `0.5 + x * 0.5 / FS` in R
+and G, px per source interval (squared, cubed):
+
+    sed -E -e 's/const int TRI_DIAG = 0;/const int TRI_DIAG = 2;/' \
+           -e 's/const float ACCEL_DIAG_FS +?= 2\.0;/const float ACCEL_DIAG_FS = 2.0;/' shader.glsl > c.glsl
+    grep -q 'TRI_DIAG = 2;' c.glsl || echo "PATCH FAILED"      # always assert a sed on a shader constant
+    ffmpeg -init_hw_device vulkan=vk -filter_hw_device vk -f lavfi -i "$(source tests/scenes.sh; scene A5_accel_tex_a067 24)" \
+           -vf "format=rgb48le,libplacebo=fps=24:frame_mixer=custom_n:custom_shader_path=c.glsl,format=rgb48le" -f rawvideo seq.raw
+    OUT_FPS=24 SRC_FPS=24 tests/accelcheck.py A5_accel_tex_a067 seq.raw 10 2.0
+
+*(Corrected 2026-10-01: the conversion to `rgb48le` is made inside the graph, and libplacebo is fed RGB. Setting
+`-pix_fmt rgb48le` on the output instead passes the field through an 8-bit limited-range frame, and on Linux even a
+YUV input comes back limited-range; `tests/fieldcheck.py` refuses such a frame. On macOS, `. tests/mvk-env.sh`
+first.)*
+
+`tests/rotcheck.py` scores rotation against a vector truth, `fieldexport.py`
+writes a field with its units and an audit for handover to other software
+(the jerk-null floor in the record was read with a scratch script over
+`accelcheck.py`'s decode; a per-texel standard deviation over the object's
+interior, median over frames). The painted view is the same render
+with the `read_view` default changed in the parameter block at the end of
+the file (the bare number after `//!MAXIMUM 6`), output to images.
+
+**New scenes** need no new code: `_rect` and `_blobt` in `scenes.sh` take
+their position and angle as expressions in `T`, so a textured box moving on
+the diagonal or a disc at a fixed angle is one line, and `scenecheck.sh`
+proves it.
+
+## 5. The front line, as of 2026-09-04
+
+Section 9 of `NFRAME-LIMITS.md` carries the measurements behind each of
+these. Pick one; state your prediction; measure the shipped shader the same
+way in the same run.
+
+1. **Textured diagonal cases for the ladder.** Every textured case moves
+   along x, which hid a blind spot for a week: on the diagonal the coarse
+   level's point-sampled Moire locks periodic texture to a lattice copy.
+   Add an X-series (a periodic and an aperiodic box on the diagonal at a
+   fractional and an integer coarse-texel speed, and one at 30 degrees),
+   check them with `scenecheck.sh`, run the family through them, and put
+   the table in `TESTING.md`. Cheap, and it makes the harness see what the
+   disc showed.
+2. **The zero seed shipped, as `ZERO_SEED`, with its aperture gate.** A
+   fourth seed at zero in the 1/8 passes, gated by Moire evidence, a cost
+   margin, a boundary discount and a structure-tensor aperture test (the
+   register's oldest open lead, now built): +0.23 dB ladder mean, footage
+   unchanged, +3.9% time, off in the two-frame bases and on in every
+   generated field shader. Six passes and their gates are in section 9.
+   What remains is items 3 and 4, and the disc's rim beyond the 1/8
+   level's 16 px reach.
+3. **The fractional-shift period lock.** A matching window smaller than the
+   texture period cannot tell copies apart at a fractional shift of that
+   level, and no scoring after the integer search can undo its choice. The
+   condition is stated; the remedy (a larger or multi-scale window, or a
+   period estimate) is not built.
+4. **The oblique-texture residual.** After the self-referenced fit the
+   per-texel velocity noise is 0.13 px on axis-aligned texture and 0.20 at
+   0.36 rad. A sweep over texture angle at fixed translation would map it;
+   the per-axis fit on a diagonal valley is the first suspect.
+5. **The quint's estimator choice per texel.** The quartic's acceleration
+   carries 34% more noise than the cubic's by construction and pays for it
+   where the truncation correction is not needed; modes 8/9 give the cubic
+   from the same anchor. A per-texel choice rule is unbuilt.
+6. **A trust channel for machine readers.** Modes 4-6 hand a machine the
+   raw field; the check verdicts that the shader already computes are not
+   yet exported alongside it.
+7. **More hardware, more footage.** Five consumer GPUs, 720p and 1080p, a
+   handful of clips. Any new platform's ladder and field calibrations are
+   worth having; `tests/smoke.sh` first, then the ladder, then a table in
+   `README.md`'s hardware section.
+8. **Ports.** The Metal port exists (`METALPORT.md`, `tests/gen_metal.py`)
+   and is the only native port the owner intends to make; the ladder and
+   the field calibrations are the acceptance numbers for any other.
+9. **The engine's cost, and what is left of it.** The obvious move --
+   converting the hot passes to `//!COMPUTE` with shared-memory tiles --
+   was measured and refuted: correct within 0.05 dB and slower (+13% on
+   the two-frame base, +9% on the quad), and a 4.5x cut in texture taps
+   was bit-identical and no faster. The engine's time is dispatch count,
+   not taps. Pass fusion followed from that and shipped on 2026-09-04:
+   each A->B pass carries its B->A twin, one dispatch instead of two,
+   -4 to -8.5% across the family (`SHADERS.md`, "What fusion buys").
+   What is left is the search arithmetic -- about 21 ms per frame on the
+   quad, six pairs of it -- and that is an algorithm question. Two traps
+   are asserted in the tooling because both cost an evening: a bound name
+   that nothing saves or declares disables the whole hook at run time
+   with no compile error, and a storage image cannot stand in for a
+   texture the pipeline re-saves across a Jacobi iteration.
+10. **A scale-aware generator: the resolution half exists.** Every rule
+   in the tracker is in pixels and frames; a 4K, 72 fps render of the
+   rotating disc showed the consequences (`NFRAME-LIMITS.md` section 9,
+   `WHAT-WE-BUILT.md`). `tests/scale_shader.py` scales a two-frame picture
+   shader's pyramid to a larger frame, and
+   `bidirectional-interpolation-variational-4k.glsl` is its product,
+   measured (SHADERS.md, "the 4K shader"). The tool takes the field
+   shaders too, and the 4K disc through the scaled quad gets its velocity
+   map back (NFRAME-LIMITS.md section 9). Not done: a ladder at 4K for a
+   field shader before one ships, and the frame-RATE half -- a stride
+   through the frames for the field at high rates, so the motion of
+   interest is sampled six to ten times per cycle; the disc's acceleration
+   at 72 fps is what that half is for.
+11. **The second witness.** The GPU is the test base; a software Vulkan
+   implementation (Mesa lavapipe) is the cross-check that every ladder
+   number is arithmetic and not a driver: the 2026-08-31 ladders agreed to
+   0.05 dB. Today's shipped changes have not yet had that check; re-apply
+   the current hook patch there, rebuild, run the propagated line's ladder,
+   and record the agreement.
+
+12. **The geometry ladder, and the two biases it found.** `tests/manifolds.py`
+   scenes with exact per-pixel truth, read through the exact path
+   (`tests/fieldcheck.py`), published as named cases with numbers over
+   several frames, like the synthetic ladder. Two of its findings come with
+   a mechanism and a gate: SILHOUETTE CAPTURE (a coarse window locks onto an
+   outline that moves slower than its texture: 0.80 within 8 px of a static
+   rim, exact beyond 64) -- a match that down-weights texels whose luma
+   changes between the frames, gated by the aperture scene reading 1.00 to
+   the rim; and the SMALL-FLOW FLOOR (flows under a pixel read three
+   quarters), gated by the zoom. NFRAME-LIMITS.md section 9, the retraction.
+   The third bias, the ladder torus's 1.7 px interior, is now explained
+   (NFRAME-LIMITS.md, "The phase-locked consensus"; `tests/loop.sh`): on
+   texture whose periods the coarse levels cannot hold against the shift,
+   the tracker reads aliases, and the mean of a loop never converges while
+   the mode of it shades the torus.
+13. **The frame-rate half of the scale-aware generator (half done,
+   2026-09-05).** For a measurement pipeline it is a decimation stage in
+   front of the hook (`fps=24` on a 72-fps disc restores the acceleration
+   map band for band; `tests/discaccel.py` is the gate; NFRAME-LIMITS.md
+   "Lead B"). The 4K disc that motivated it is confounded by its own
+   texture (the dated note in section 9). What remains is the real-time
+   form: a stride inside the eight-frame window (a three-frame shader at
+   stride 3, a four-frame at stride 2), a generator change to the
+   slot-to-frame mapping and the final pass's roles, gated by the same
+   table from a 72-fps source. Item 10 has the resolution half.
+14. **An external benchmark (half done, 2026-09-05).** The Middlebury
+   "other" set is scored (`tests/middlebury.py`; NFRAME-LIMITS.md "Lead
+   C"): the four-frame field reads 0.67 px average endpoint error on
+   RubberWhale and 0.85 on Hydrangea, 4 px on the Urban pair whose
+   motions pass the reach. Particle image velocimetry sets remain: the
+   Cai et al. 2019 set is on Google Drive (a browser download), the
+   Synthetic Particle Image Dataset on Zenodo is one 16.7 GB file (CC-BY);
+   both score with the same reader once their flows are .flo.
+15. **A soak.** Hours of footage through the machine modes with
+   `accelprospect.sh`'s ranking, human eyes only on the worst segments: cuts,
+   flashes, fades, rolling shutter and fast pans, which the ladder cannot
+   find.
+16. **An affine match at the fine level, and the velocity gradient tensor
+   (the tensor in hand, 2026-09-05).** read_view 9 emits divergence, curl
+   and shear per frame from central differences of the raw field
+   (`tests/tensorcheck.py` gates it on the zoom and the disc: curl within
+   5% over the inner 70% of the disc, divergence 30-80% because the
+   small-flow floor is differentiated). NFRAME-LIMITS.md "Lead E". The
+   affine block match remains: shear where the field is a blur of two
+   motions, and the floor itself. A fortnight. (The torus's direction
+   error is since known to be the alias problem, item 12, not shear.)
+17. **Film a known motion.** A dropped ball against a scale bar reads g; a
+   turntable reads rpm. The calibration script (scale bar, fps, px/frame^2
+   to m/s^2) is an afternoon; the footage needs the owner's camera.
+18. **The cel-animation idea, from the beginning of the project (in hand,
+   2026-09-05).** `motion-edges-dual.glsl` draws the current and next
+   outlines of whatever moved on cel-animated content; the idea is to warp
+   the moved content between its outlines directly, and, on a non-panning
+   shot, to keep a static-background model across the window and fill what
+   a character uncovers from it instead of inventing it -- the ghosting
+   fix. Done as far as the metrics reach: `shaders/animation/` (the
+   line-art shader is the version to carry; ANIMATION.md has the table on
+   `tests/cel_scenes.py`, exact in-betweens); what is left is there too.
+   The plate and the line art were separated on the owner's question: the
+   plate is neutral alone and repairs the backdrop the line art alone
+   smears; the walking figure's remaining defects are the line art's, at
+   the redrawn legs. Anime4K's line shaders are surveyed and credited in
+   ANI-PRIOR-ART.md (a difference-of-Gaussians ink detector, a thinning).
+19. **The reading's memory as a mode, not a mean (in hand, 2026-09-05).**
+   Shipped as a switch in the reading tail (`tests/add_human_reading.py`,
+   READ_MEMORY 0 = the exponential mean, default; 1 = a per-cell online
+   mode, three candidates in a storage image), with read_view 7 and 8
+   exporting the pooled reading and the per-cell mode raw. On the torus
+   loop the mode reads 1.7 px where the mean reads 8.6 and quiets a noisy
+   static backdrop 8x, but its 33-frame horizon misses transient movers on
+   live action, so the mean stays the default. NFRAME-LIMITS.md, "Lead G".
+   The adaptive horizon is in as a dial (MODE_MISS / MODE_FAST, off by
+   default): 2 misses and x0.5 paints the walker again at 2.4-3.8 px on
+   the loop. Whether the grainier per-cell painting is the reading to
+   look at is the owner's eye; the loop and the live clip are the two
+   gates either way.
+20. **Depth from motion parallax (the owner's question, 2026-09-05).** For
+   a translating camera the image motion of a static point is inversely
+   proportional to its depth, so the field's residual after a global fit
+   of the camera's own motion (a homography or an affine model of the
+   dominant plane) is a relative depth map, and the divergence the reading
+   already emits (read_view 9) is looming: time to contact is 2 over the
+   divergence for a surface approached head-on. Rotation carries no depth
+   and must be fitted out first. Gate: a synthetic camera translating over
+   a depth map with exact per-pixel depth (a `manifolds.py` scene), scored
+   as depth ordering and as time to contact. A week for the synthetic
+   gate and the global fit; real footage after.
+21. **The foresight seed (shipped 2026-09-06).** The owner's wife restated
+   the five-frame window independently and her question exposed the last
+   asymmetry: the coarse search's seeds looked only backwards. A generated
+   pair now also descends from the NEXT pair's flow (`tests/foresight.py`,
+   on by default in the quad and quint generators, `FORESIGHT=0` for the
+   old form). Never worse on the ladder, up to a decibel where motion
+   changes inside the window, a few hundredths on footage (a tenth with
+   its prior at 0.5, which ships at 0: it costs 2.3 dB on flat fills), about
+   a percent of time. What it is not:
+   a field result (at N:N the machine reads the window's LAST pair, which
+   has no future -- an instrument fact corrected in TOOLS.md that day), and
+   the fully symmetric form (the base pair seeded too) buys nothing. The
+   prior toward the future flow was found to break sub-texel ties at a
+   moving edge (the 16-px box's leading edge a fraction of a pixel along);
+   a half-texel deadband repairs it and keeps the prior's tenth on live
+   action for a few tenths on the rotating texture: a trade, shipped as
+   the knob pair SEED_FUT_LAMBDA 0.5 / FUT_PRIOR_DEADBAND 0.5, default off,
+   the owner's call. Open: the temporal prior has the same form and may
+   carry the same sub-texel bias somewhere; a deadband on it is one run.
+   NFRAME-LIMITS.md, "The foresight seed" and the subsection after it.
+22. **The variational build on periodic structure below the coarse Nyquist
+   (found 2026-09-06 by the owner's eyes).** The recommended picture
+   shader collapses to 19 dB, below frame duplication, on bars of period
+   24 px panning along their own period (`V1_bars_sine24_v6`), its whole
+   field on the alias, and so does every two-frame file, while the
+   four-frame quad reads 50. The ladder now carries five such cases
+   (`tests/TESTING.md`, the period-24 series).
+   DECIDED by the owner the same evening: the recommendation IS the
+   cascade on the propagated base (quality over performance; immunity
+   over half a decibel), its 4K scaling the 4K recommendation (gated on
+   the real film), and the zero seed is ON by default in the picture
+   bases (the Fourier-edge loss is a laboratory case; the switch stays).
+   NFRAME-LIMITS.md, "The owner's two decisions".
+   NFRAME-LIMITS.md, "The owner's eyes on three renders".
+## 6. Bringing a result back
+
+One experiment per commit. The message states the prediction, the numbers
+against the shipped shader from the same run, the three gates if a base
+changed, and the mechanism if one was found; a refuted idea is a valid
+result and gets the same treatment in the document it belongs to. Regenerate
+every generated file after a base change and smoke each one (`bench.sh` on
+one translation case and one acceleration case is enough to catch a broken
+bind). Tables in the documents are dated; when your change moves published
+numbers, add a dated note next to the table rather than editing it silently.
+
+## 7. Traps that cost hours
+
+- ffmpeg's `-frames:v`, `lavfi` durations (`d=`) and the first output frame:
+  at N:N the first frame's window is short and the hook is skipped there by
+  design; drop frame 0 from any field measurement.
+- The human-reading demonstration file paints the field, so it cannot be
+  PSNR-scored; that is expected, not a failure.
+- On Windows/MSYS2 the patched ffmpeg exits silently when its DLL directory
+  is not on `PATH`; a shell whose `PATH` starts with the MSYS (not mingw64)
+  binaries loses exported variables such as `OUTROOT`. `tests/smoke.sh` has
+  the rest.
+- A `sed` on a shader constant must be asserted with a `grep` afterwards;
+  column-aligned constants defeat exact-match patterns and the render then
+  silently runs at the default.
+- Never compare a per-texel number with a pooled one; never compare a
+  spin-up scene's number with a constant-rate scene's; never time A-then-B.
+
+## 8. First hour
+
+1. Build per `BUILDANDUSAGE.md`; run `tests/smoke.sh` with `FFMPEG` and
+   `FFPROBE` set. Every tool must report pass.
+2. Run one ladder case with the shipped propagated quad and confirm the
+   number in `SHADERS.md` (L1 and A5 are quick).
+3. Render one field at N:N and decode it with `accelcheck.py`; confirm the
+   calibration figure in `QUADDIRECTIONAL.md`.
+4. Switch `read_view` to 1 on a copy and look at the painted velocity on
+   `R3_rot_tex`; a clean hue wheel means the pipeline is yours.
+5. Stop. Report what you confirmed, and wait for the command.
