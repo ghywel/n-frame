@@ -99,6 +99,11 @@ never upgrades a status: nothing here is a measurement, and nothing here changes
   and costing the period-24 family 2.5 to 6.7, high; first guess: the point-sampled Moire is the lock at one coarse
   texel and the match at one and a half. -> written into NFRAME-LIMITS as a trade along the period; the gate form goes
   to the lane on paper. Outcome: open (the mechanism is a reading, not yet a measurement).
+- 2026-10-22 00:06, Claude: none felt; the tick's `git add -A` swept the periodic lane's in-progress files (two D1 scenes,
+  a regions row, c3_oracle.py) into a pushed commit before the lane had reported. One writer per file set is my own
+  rule, and the coordinator commits only reviewed deliverables. Caught on reading the commit's file list; the files
+  checked sound after the fact (scenes parse, both D1 scenes bit-identical under scenecheck). Outcome: missed. Fix:
+  stage by name on every tick while a lane is writing.
 
 ## The set-aside pulls
 

@@ -261,3 +261,40 @@ its prediction is C3 22.7 -> 25-27 and nothing else moving. No [M] beyond the tw
 
 **Gut.** Satisfying on the map, suspicious on C3: the variational iterations erased the weave's quarter-level truth
 once and may erase this one. What settles it: `flowtap.py` on C3 after proposal 5's pick, before its ladder run.
+
+## Addendum (2026-10-22, 00:xx): the three builds the coordinator asked for
+
+- **Proposal 1 ran (the coordinator):** High and Standard on C1 / C2 / C3 34.88 / 31.78 / 23.2 against the three-switch
+  file's 34.6 / 31.6 / 22.7; Low equals the recommendation to the hundredth. The map held [M, theirs].
+- **(A) D1 built** as two LADDER2 scenes in `tests/scenes.sh` (`D1_print_behind_window_ramp`, `D1h_print_behind_window_v12`,
+  dated comments, appended to LADDER2_CASES) with `tests/regions.sh` rows `crop=332:332:474:194` (the still window plus
+  16 px, derivation in the file). `scenecheck.sh`: both **exact, bit-identical** [M]. The window renders 0 outside, 17
+  gaps and 238 bars inside, as intended [M].
+  **Predictions, region column (hold / linear / recommendation), written before any GPU run.** D1h: hold 7.5 +- 1.5
+  (a 2.4-4.8 px shift of 12-px bars on 20-40 percent of the window's pixels); linear 9 +- 1.5; the recommendation
+  8-16 with the field split into TWO DOMAINS (primary): the window's top edge votes "down" and its bottom edge "up"
+  for A->B, since at each edge only the alias that maps a bar texel INWARD matches (outside is black, 16, and a gap is
+  17, so gap texels vote for neither), and B->A votes the other way at each edge; the tear sits between them. The
+  alternative (one alias held by the first pair's coin, no flicker): bimodal 30+ or about 3 dB. The cut gate does not
+  fire (mean |A - B| over the frame about 0.08, under 0.125). D1 ramp: the recommendation at or above 30 on the window
+  while the speed is under about 11 px/frame, except a 12-24 px band at the bottom edge where the inward alias
+  (v - 24, the longer vector) can win locally; under 12 dB past the knee at T = 0.5, the interior on v - 24 (the
+  shorter alias) with a wall near the top edge; clip mean 18-24; hold 12-18, linear 13-20. **Kill tests:** the
+  recommendation's row-sign profile of the A->B field over the window (a read_view 4 dump) is the deciding reading: a
+  split by rows (top +, bottom -) confirms the extrinsic-edge mechanism and names the fix (the survey's ownership
+  gate: a boundary votes only if it moves with the pattern); one sign throughout kills it and confirms persistence as
+  the tie-break; sign changes on more than 10 percent of D1h's frames kill "graceful"; a knee before 9 px/frame on
+  the ramp kills "Itoh inside" and says the small-motion prior decides, not the tie.
+- **(B) C3's oracle** (`tests/probes/cage/c3_oracle.py`, CPU numpy, 89 scored frames, cage.sh's disc and skip rule) [M]:
+  hold 24.42 (the record's GPU 24.4), linear 29.45 (28.9: libplacebo's mixer and a numpy blend differ by half a
+  decibel), **oracle-flow 36.47, oracle-equal 36.50, oracle-rigid 36.47**. The true-flow warp beats the blend by 7 dB
+  and the hold by 12; linearising the rotation costs nothing. Prediction 2 (31-35) MISSED upward: the flow route
+  exists and is worth more than I said; C3 is not a know-when-not-to-warp case. The family sits 13 dB under its
+  ceiling there.
+- **(C) The Sonic dump:** `tests/probes/trust/dump_masks.py` (build: the two shaders from the High recipe without the
+  prune, trust5 = + TRUST_GATE=1 TRUST_UNIQUE=1 TRUST_ALIAS=0.7, generated and checked CPU-side [M]; run: halfrate.py's
+  graph, the two pictures and four taps, every ffmpeg line printed; read: the decision rule in the docstring). The
+  rule, written before the dump: (i) noise-floor decision if the decided cells' margin m is under half the block's
+  own residual r_h with r_h over 2/255 and over half the pictures' difference lies within 16 px of decided cells ->
+  TG_PICK scaled by r_h; (ii) m / r_h over 1 -> the offer's fault, retire as a tier; (iii) under 30 percent of the
+  difference near decided cells -> not the gate's decisions, look downstream.

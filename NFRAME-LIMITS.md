@@ -5282,6 +5282,19 @@ for byte. The order of work that follows from the ruling: instruments first, sin
 and any future rewrite; if an ablation ever shows much of the family inert, a rewrite is earned and has a
 specification. The reasoning is not to be relitigated without new evidence of that kind.
 
+### C3's oracle: a flow route exists (2026-10-22, the night's heartbeat)
+
+The cage section above left C3_bars_spin_drift UNSOLVED and read the cage family's ceiling as "knowing when not to
+warp": with the true flow forced, the family's warp on C1 gave 37.4 against the blend's 43.2. C3 was never given the
+same test. The swarm's periodic lane built it (`tests/probes/cage/c3_oracle.py`, CPU: each source frame warped to the
+output instants by the scene's own law, v = (1, 0.5) + (0.15 / 24)(-(Y - cy), X - cx) px per source frame, scored on
+the disc as cage.sh scores it, 89 frames): hold 24.42, linear 29.45, **the oracle 36.47** (36.50 with the equal-weight
+blend, 36.47 with the rigid-body form, so the linearisation is free). The prediction (31 to 35) missed upward. A flow
+route therefore exists for C3, 7 dB above the blend and 13 above what the shipped tiers reach (23.2); the target is
+the flow, not the refusal, and the lane's ALIAS_Q1D (a quarter-level 1-D rival search along the stripe normal) is the
+candidate. The gate that keeps C3 untouched (the 1/8 margins' ridge test, which cannot see a 9 px print) is the
+reason nothing has moved it since 2026-09-21.
+
 ### The phase-exact fetch: a trade along the texture period (2026-10-22, the night's heartbeat)
 
 The swarm's outsider lane ([SWARM-2026-10-21.md](SWARM-2026-10-21.md), the wildcard) split the weave's comb into two
