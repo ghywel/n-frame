@@ -526,6 +526,12 @@ TRUST_GATE = os.environ.get("TRUST_GATE", "0") == "1"
 # frames' difference is over its threshold AND the final flow leaves more than CUT_EXPLAINED of it unexplained.
 CUT_MOTION = os.environ.get("CUT_MOTION", "0") == "1"
 ALIAS_APERTURE = os.environ.get("ALIAS_APERTURE", "1") == "1"    # the carry's aperture rule (build 5); 0 = build 4
+# LOCAL_CENTRE=1 (2026-10-21, the swarm's reach lane; tests/local_centre.py; np-scratch/swarm-20261021/reach.md): the 1/8
+# level's small-motion prior SEED_MAG_LAMBDA * |flow| is measured from the texel's OWN best coarse candidate where that
+# candidate is more than 1.5 coarse texels from zero and its 3x3 coarse neighbours agree, from zero elsewhere; with
+# GLOBAL_SEED=1 the frame's shift comes first and the local centre fills its zero. No new pass, no new candidate, no
+# change to any SAD. Without the variable the output is byte-identical.
+LOCAL_CENTRE = os.environ.get("LOCAL_CENTRE", "0") == "1"
 # PRUNE=1 (2026-10-21, the swarm's cost lane; tests/prune_passes.py; REPAIRS.md L7): the very last step, after the
 # reading tail is appended: remove the whole passes whose work no live pass can observe, following //!SAVE/BIND and
 # the storage images' imageStore/imageLoad (dead_passes.py's SAVE/BIND-only view cut live producers). PRUNE=2 also
@@ -836,6 +842,9 @@ if __name__ == "__main__":
         text = add_edge_prop(text)
     if COARSE_ENERGY:
         text = add_coarse_energy(text)
+    if LOCAL_CENTRE:
+        import local_centre
+        text = local_centre.add(text, global_seed=GLOBAL_SEED)
     if ALIAS_PRIOR or ALIAS_CARRY:
         import alias_carry
         if ALIAS_PRIOR:
@@ -862,6 +871,7 @@ if __name__ == "__main__":
     env = ("GLOBAL_SEED=1 " if GLOBAL_SEED else "") + ("QZERO_MOIRE=1 " if QZERO_MOIRE else "") + ("COHERENCE_GATE=1 " if COHERENCE_GATE else "") \
         + (f"EDGE_PROP=1 EDGE_PROP_TAU={EDGE_PROP_TAU:g} " if EDGE_PROP else "") \
         + (f"COARSE_ENERGY=1 COARSE_ENERGY_WS={COARSE_ENERGY_WS:g} COARSE_ENERGY_WE={COARSE_ENERGY_WE:g} " if COARSE_ENERGY else "") \
+        + ("LOCAL_CENTRE=1 " if LOCAL_CENTRE else "") \
         + ("ALIAS_PRIOR=1 " if ALIAS_PRIOR else "") + ("ALIAS_CARRY=1 " if ALIAS_CARRY else "") \
         + ("OUTLINE_ADOPT=1 " if OUTLINE_ADOPT else "") \
         + ("PRINT_LATTICE=1 " if PRINT_LATTICE else "") \
