@@ -116,6 +116,17 @@ args = [a for a in sys.argv[1:] if not a.startswith("--")]
 show_variants = "--variants" in sys.argv
 show_min = "--min" in sys.argv          # a worst-frame column per label (2026-10-21)
 show_phase = "--phase" in sys.argv      # a per-phase profile per label, printed under the table (2026-10-21)
+# THE REGION COLUMN (2026-10-21, the swarm's instruments lane). bench.sh scores the same frames a second time over the
+# case's static crop (tests/regions.sh: the object's swept path plus 16 px) into <mode>.region.log. The frame mean
+# understates a defect confined to the mover by 10 log10(1 / its share): 15-25 dB on 22 of the 42 cases, measured
+# (np-scratch/swarm-20261021/instruments/share.txt), so with the cap a 20 dB fault on L1's box reads 42.5 dB and counts
+# for nothing. --region prints the region reading of every mode beside the whole-frame one, with the same scored-frame
+# rule, and a capped mean of its own. Without --region the output is what it was.
+show_region = "--region" in sys.argv
+
+
+def region_log(d, m):
+    return os.path.join(d, m + ".region.log")
 
 if not os.path.isdir(OUTROOT):
     sys.exit(f"no results at {OUTROOT} -- run bench.sh first")
@@ -126,7 +137,7 @@ cases = args or sorted(d for d in os.listdir(OUTROOT)
 labels = set()
 for c in cases:
     for f in os.listdir(os.path.join(OUTROOT, c)):
-        if f.endswith(".log") and not f.startswith("._"):
+        if f.endswith(".log") and not f.endswith(".region.log") and not f.startswith("._"):
             n = f[:-4]
             if n not in BASELINES:
                 labels.add(n)
@@ -137,11 +148,16 @@ w = 22
 head = f"{'case':<{w}}{'hold':>8}{'linear':>8} |" + "".join(f"{l:>9}" for l in labels)
 if not show_variants and labels:
     head += f"{'vs hold':>9}{'vs linear':>11}"
+if show_region:
+    head += f" |R{'hold':>8}{'linear':>8} |" + "".join(f"{l:>9}" for l in labels)
+    if not show_variants and labels:
+        head += f"{'vs linear':>11}"
 print()
 print(head)
 print("-" * len(head))
 
 table = {}
+rtable = {}
 for c in cases:
     d = os.path.join(OUTROOT, c)
     vals = {m: mean_interp(parse(os.path.join(d, m + ".log")))
@@ -157,6 +173,13 @@ for c in cases:
             row += f"{'  -':>9}{'  -':>11}"
         else:
             row += f"{s - h:>+9.2f}{s - l:>+11.2f}"
+    if show_region:
+        rvals = {m: mean_interp(parse(region_log(d, m))) for m in list(BASELINES) + labels}
+        rtable[c] = rvals
+        row += f" |R{fmt(rvals['hold'])}{fmt(rvals['linear'])} |" + "".join(fmt(rvals[l]) for l in labels)
+        if not show_variants and labels:
+            s, l = rvals[labels[0]], rvals["linear"]
+            row += f"{'  -':>11}" if None in (s, l) or float("inf") in (s, l) else f"{s - l:>+11.2f}"
     print(row)
 
 
@@ -181,6 +204,29 @@ if labels:
         print("move the capped mean. The raw mean is kept because the record quotes it,")
         print("but prefer the capped column: it does not average a decibel at 19 dB")
         print("against a decibel at 71 dB as though they were the same quantity.")
+
+if show_region and labels:
+    rusable = [c for c in cases if c in rtable
+               and all(rtable[c].get(l) not in (None, float("inf")) for l in labels)]
+    print()
+    if rusable:
+        rcapped = {l: sum(min(rtable[c][l], CAP_DB) for c in rusable) / len(rusable) for l in labels}
+        rraw = {l: sum(rtable[c][l] for c in rusable) / len(rusable) for l in labels}
+        rbinding = [c for c in rusable if min(rtable[c][l] for l in labels) < CAP_DB]
+        ref = labels[0]
+        print(f"{'REGION, over ' + str(len(rusable)) + ' scoreable cases':<{w}}"
+              f"{'raw mean':>12}{'capped at ' + str(int(CAP_DB)):>14}{'vs ' + ref:>12}")
+        print("-" * (w + 38))
+        for l in labels:
+            print(f"{l:<{w}}{rraw[l]:12.2f}{rcapped[l]:14.2f}{rcapped[l] - rcapped[ref]:+12.2f}")
+        print()
+        print(f"REGION: {len(rbinding)} of {len(rusable)} cases have any variant below {CAP_DB:g} dB on the object's")
+        print("swept path (tests/regions.sh). The |R columns score the same frames over that crop, so a fault")
+        print("confined to the mover is no longer diluted by the frame's flat majority (10 log10(1 / share)).")
+    elif not any(os.path.exists(region_log(os.path.join(OUTROOT, c), l)) for c in cases for l in labels):
+        print("REGION: no <mode>.region.log found for these labels -- bench.sh writes it since 2026-10-21; re-render.")
+    else:
+        print("REGION: no case is scoreable on every label (a region reading of inf or a missing log); the |R columns stand.")
 
 if show_phase and labels:
     print()

@@ -119,7 +119,9 @@ head2 "3c. gen_variational.py with a base -- the propagated-base variant is what
 # The variant on the propagated base (2026-09-06) is the cascade from the 1/4 level down with the zero seed
 # on; it regenerates from the committed propagated base with the generator's base argument.
 PRODVP="$HERE/../shaders/bidirectional-interpolation-variational-propagated.glsl"
-if ZERO_SEED=1 $PY "$HERE/gen_variational.py" "0,0,8,4" 0.3 0.08 "$W/regenvp.glsl" 0 "0,0,2,0" bidirectional-interpolation-propagated.glsl >/dev/null 2>&1; then
+# PRUNE=2 since 2026-10-21: the shipped recommendation and the three -cut tiers carry the dataflow prune (REPAIRS L7;
+# SWARM-2026-10-21.md item 8), proven byte-identical in output frame by frame on the Arc, 42 of 42 cases per tier.
+if ZERO_SEED=1 PRUNE=2 $PY "$HERE/gen_variational.py" "0,0,8,4" 0.3 0.08 "$W/regenvp.glsl" 0 "0,0,2,0" bidirectional-interpolation-propagated.glsl >/dev/null 2>&1; then
   if diff -q <(strip "$W/regenvp.glsl") <(strip "$PRODVP") >/dev/null 2>&1; then
     ok "regenerated propagated-base variant body is byte-identical to the committed one"
   else
@@ -185,7 +187,7 @@ for spec in "ZERO_SEED=1|bidirectional-interpolation-variational-propagated-cut"
             "$PLC PRINT_LATTICE=1|bidirectional-interpolation-variational-propagated-global-cage-energy-carry-adopt-lattice-cut"; do
   vars="${spec%%|*}"; stem="${spec#*|}"
   # shellcheck disable=SC2086
-  if env $vars CUT_MOTION=1 $PY "$HERE/gen_variational.py" "0,0,8,4" 0.3 0.08 "$W/regen-$stem.glsl" 0 "0,0,2,0" \
+  if env $vars CUT_MOTION=1 PRUNE=2 $PY "$HERE/gen_variational.py" "0,0,8,4" 0.3 0.08 "$W/regen-$stem.glsl" 0 "0,0,2,0" \
        bidirectional-interpolation-propagated.glsl >/dev/null 2>&1 \
      && $PY "$HERE/scale_shader.py" "$W/regen-$stem.glsl" "$W/regen-$stem-4k.glsl" 2 >/dev/null 2>&1 \
      && diff -q <(strip "$W/regen-$stem.glsl") <(strip "$HERE/../shaders/$stem.glsl") >/dev/null 2>&1 \

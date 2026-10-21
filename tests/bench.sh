@@ -28,6 +28,7 @@ FFMPEG="${FFMPEG:-ffmpeg}"
 OUTROOT="${OUTROOT:-${TMPDIR:-/tmp}/interp-bench}"
 
 . "$HERE/mvk-env.sh"      # MoltenVK determinism on macOS (MVK_DETERMINISTIC=0 opts out)
+. "$HERE/regions.sh"      # the per-case static crop (2026-10-21): a second psnr over it writes <mode>.region.log
 SHADER_DEFAULT="$HERE/../shaders/bidirectional-interpolation.glsl"
 
 run_case() {
@@ -59,22 +60,40 @@ run_case() {
     SHREL=_shader.glsl
   fi
 
+  # THE REGION (2026-10-21, the swarm's instruments lane). The whole-frame psnr is kept exactly as it was, and a second
+  # psnr scores the same frames over the case's static crop (regions.sh: the object's swept path plus 16 px, derived
+  # from the motion law), writing <mode>.region.log beside <mode>.log in the same run -- cage.sh's form. Both inputs
+  # are cropped identically; crop and stats_file are filter arguments, so the crop is a bare expression and the log a
+  # bare RELATIVE name, as the path rule above requires. A case with no region in the table falls back to the old
+  # graph and writes no region log. analyze.py --region reads the second log.
+  local REGION
+  REGION="$(region_crop "$CASE")"
+
   _run() { # <mode> <filter-chain> <needs-vulkan>
-    local mode="$1" chain="$2" hw=""
+    local mode="$1" chain="$2" hw="" graph
+    local -a maps
     [ "$3" = "vk" ] && hw="-init_hw_device vulkan=vk -filter_hw_device vk"
+    if [ -n "$REGION" ]; then
+      graph="[0:v]${chain}[ip];[ip]format=yuv420p,split[a][a2];[1:v]split[b][b2];[a][b]psnr=stats_file=$mode.log[o];[a2]$REGION[ra];[b2]$REGION[rb];[ra][rb]psnr=stats_file=$mode.region.log[o2]"
+      maps=(-map "[o]" -f null - -map "[o2]" -f null -)    # an array: an unquoted [o] is a glob to the shell
+    else
+      graph="[0:v]${chain}[ip];[ip]format=yuv420p[i2];[i2][1:v]psnr=stats_file=$mode.log[o]"
+      maps=(-map "[o]" -f null -)
+    fi
     # shellcheck disable=SC2086
     ( cd "$OUT" && "$FFMPEG" -y -hide_banner -loglevel error $hw \
       -f lavfi -i "$S24" -f lavfi -i "$S60" \
-      -filter_complex "[0:v]${chain}[ip];[ip]format=yuv420p[i2];[i2][1:v]psnr=stats_file=$mode.log[o]" \
-      -map "[o]" -f null - ) 2>"$OUT/$mode.err" \
+      -filter_complex "$graph" "${maps[@]}" ) 2>"$OUT/$mode.err" \
       && [ "$(grep -c "hook skipped" "$OUT/$mode.err")" -le "${SKIPS_ALLOWED:-2}" ] && ! grep -q "compile status .error" "$OUT/$mode.err" \
       && echo "  $mode ok" || echo "  $mode FAILED (see $OUT/$mode.err; more than the two boundary hook-skipped lines means the host did not deliver the window; a shader compile error means libplacebo silently used its own mixer)"
   }
 
   # Baselines are properties of the content, not the shader, so only compute
-  # them once per case rather than on every shader variant re-run.
-  [ -s "$OUT/hold.log" ]   || _run hold   "fps=60"                               sw
-  [ -s "$OUT/linear.log" ] || _run linear "libplacebo=fps=60:frame_mixer=linear"  vk
+  # them once per case rather than on every shader variant re-run. A results folder from before the region log
+  # has hold.log but no hold.region.log: the baselines are then rendered again, once, to get it.
+  _have() { [ -s "$OUT/$1.log" ] && { [ -z "$REGION" ] || [ -s "$OUT/$1.region.log" ]; }; }
+  _have hold   || _run hold   "fps=60"                               sw
+  _have linear || _run linear "libplacebo=fps=60:frame_mixer=linear"  vk
   _run "$LABEL" "libplacebo=fps=60:frame_mixer=custom_n:custom_shader_path=$SHREL" vk
 }
 
