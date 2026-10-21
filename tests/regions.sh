@@ -101,6 +101,12 @@ region_crop() {
     L8t_diagonal_tex)   echo "crop=524:524:84:84" ;;     # 300x300 box, x0 = y0 = 100 + 192 t: x and y 100..592 -> 84..608
     L9b_occlusion_mid)  echo "crop=532:132:284:294" ;;   # 200x100 boxes: A x0 = 300 + 300 t (300..600, right edge to 800), B x0 = 600 - 300 t (300..600): union x 300..800 -> 284..816; y 310..410 -> 294..426
     R3i_rot_isotropic)  echo "crop=420:420:430:150" ;;   # R3's blob, cx 640 fixed: as R1-R3
+    # D1 (2026-10-22): the window is STILL at x 490..790, y 210..510 (the print drifts behind it, and nothing outside the
+    # window ever changes), so the swept path is the window itself: 490..790 -> 474..806, 210..510 -> 194..526 (w = h = 332).
+    # The 16 px margin is black on every frame and exactly right in every mode; it dilutes the window's own error by
+    # 10 log10(332^2 / 300^2) = 0.9 dB, the same for every row of the table.
+    D1_print_behind_window_ramp)  echo "crop=332:332:474:194" ;;
+    D1h_print_behind_window_v12)  echo "crop=332:332:474:194" ;;
     # ---- field scenes in scenes.sh but in neither list (so bench.sh can score one through the table) ----------
     O7_osc_fast_small)  echo "crop=144:132:578:294" ;;   # x0 = 600 + 6 sin: x 594..706 -> 578..722
     O8_osc_fast_tiny)   echo "crop=140:132:580:294" ;;   # x0 = 600 + 4 sin: x 596..704 -> 580..720

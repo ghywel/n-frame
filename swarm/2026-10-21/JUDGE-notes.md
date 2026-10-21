@@ -249,3 +249,10 @@ tree: base, high, phase, quad, rec: alphabetical.)
 - The audit's P4-P6 (23:57): L8t rec 57.87 (the 1/16 diagonal lock does not reach the picture), L9b 44.85 vs L9 44.35
   with twice the area (occlusion is not the cost: the lane's kill fires on its own name hypothesis, honestly), R3i margin
   +12.3 vs R3's +5.5 (R3's deficit was the texture alias). Three scene lines, two GPU minutes, three questions closed.
+
+## Pre-registered (23:59): the region-scored ladder, the swarm's finding 3 put to the render
+Prediction (ladder-audit, from the saved logs with the size bonus divided out): on-object High 32.54 > quad 32.21 >
+rec 31.52, the binding set 8 -> ~29. Kill: the region column's capped ranking matches the whole-frame one (High > rec
+> quad) or the binding set stays under 15. Run: bench.sh all for rec, base, high, quad into the 10-21 gate tree (the
+region logs are new; the whole-frame logs are re-rendered too and must agree with the 10-21 ones to the hundredth,
+which is the run's own control).

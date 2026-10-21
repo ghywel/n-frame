@@ -269,6 +269,23 @@ scene() {
       echo "nullsrc=s=1280x720:r=$r:d=1,format=gray,geq=lum='st(0\,$CA)\;st(1\,$CB)\;st(2\,255*ld(0))\;ld(2)+(160-ld(2))*ld(1)',format=yuv420p" ;;
     # R3's rotation exactly, the interior isotropic and sub-Nyquist at every angle (see _blobi).
     R3i_rot_isotropic)  _blobi '640' '360' '2.56*T*T' 150 "$r" ;;
+    # D1 (2026-10-22, the swarm's periodic-alias lane, proposal 3): the survey's UNDECIDABLE case, never built until now
+    # (NFRAME-LIMITS.md "What remains" after build 6; PRIOR-ART.md, the periodic-interior survey, item 5). V3's stairs
+    # (the exact-coverage form, as V3x) seen through a STILL 300 x 300 window at x 490..790, y 210..510: the print drifts
+    # down behind it, so every edge the matcher can see is EXTRINSIC (the window's, which does not move with the print:
+    # Shimojo 1989), and inside the window a shift of half a period (12 px) is the same picture as the opposite shift or
+    # a flash. V3 keeps its own ends in view; this takes them away. Two forms:
+    #   D1_print_behind_window_ramp  the drift's speed ramps 4 -> 20 px/frame over the second (offset 96 T + 192 T^2 px,
+    #                                 speed 96 + 384 T px/s = 4 + 16 T px/frame; through P/2 = 12 at T = 0.5): the knee
+    #                                 where the family leaves the truth for the shorter alias v - 24 is the reading.
+    #   D1h_print_behind_window_v12  the exact tie, 12 px/frame (288 T), V3's own speed with the ends hidden.
+    # The offset is written as Y + 2400 - off so mod() never sees a negative argument. Outside the window the frame is 0
+    # (Y = 16); the stairs' gaps are 18, so at the window's top and bottom edges a gap texel matches the black outside
+    # as well as it matches a gap, and only the BAR texels there carry an (extrinsic, misleading) vote.
+    D1_print_behind_window_ramp)
+      echo "nullsrc=s=1280x720:r=$r:d=1,format=gray,geq=lum='st(0\,Y+2400-(96*T+192*T*T))\;(18+220*(clip(12-mod(ld(0)\,24)\,0\,1)+clip(mod(ld(0)\,24)-23\,0\,1)))*gt(X\,489)*lt(X\,790)*gt(Y\,209)*lt(Y\,510)',format=yuv420p" ;;
+    D1h_print_behind_window_v12)
+      echo "nullsrc=s=1280x720:r=$r:d=1,format=gray,geq=lum='st(0\,Y+2400-288*T)\;(18+220*(clip(12-mod(ld(0)\,24)\,0\,1)+clip(mod(ld(0)\,24)-23\,0\,1)))*gt(X\,489)*lt(X\,790)*gt(Y\,209)*lt(Y\,510)',format=yuv420p" ;;
     P1_stairs_along_v4)  _rect '100+96*T'  '210' 600 300 0 "$TEX_P" "$r" ;;  # stairs panning along their bars, 4 px/frame
     P2_stairs_along_v8)  _rect '100+192*T' '210' 600 300 0 "$TEX_PC" "$r" ;;  # 8 px/frame, coarse speckle: the aperture alone
     P3_stairs_along_v12) _rect '100+288*T' '210' 600 300 0 "$TEX_PC" "$r" ;;  # 12 px/frame, the film's fast end
@@ -508,7 +525,9 @@ ALL_CASES="L0_static L1_trans_8px L2_trans_16px L3_trans_23px L4_trans_40px L5_l
 # on their own and never merged into ALL_CASES' mean, so every historical number stays comparable. The three x cases
 # are V2/V3/H2 with an exact-coverage truth; the five c cases are the speed comb; the last three (added later the
 # same night) are the textured diagonal, the mid-clip occlusion and the rotation with an isotropic interior.
-LADDER2_CASES="V2x_stairs_cov_v6 V3x_stairs_cov_v12 H2x_stairs_cov_h6 M1c_noise_v6 M1c_noise_v10 M1c_noise_v12 M2c_period40_v6 M2c_period40_v10 L8t_diagonal_tex L9b_occlusion_mid R3i_rot_isotropic"
+# The two D1 cases (2026-10-22, the periodic-alias lane) are the survey's undecidable print behind a still window: the
+# speed ramp 4 -> 20 px/frame, and the exact half-period tie at 12.
+LADDER2_CASES="V2x_stairs_cov_v6 V3x_stairs_cov_v12 H2x_stairs_cov_h6 M1c_noise_v6 M1c_noise_v10 M1c_noise_v12 M2c_period40_v6 M2c_period40_v10 L8t_diagonal_tex L9b_occlusion_mid R3i_rot_isotropic D1_print_behind_window_ramp D1h_print_behind_window_v12"
 
 # The six added 2026-08-31 are in ALL_CASES deliberately rather than in a
 # group of their own: a case that is not run by default is a case that rots.
