@@ -532,6 +532,13 @@ ALIAS_APERTURE = os.environ.get("ALIAS_APERTURE", "1") == "1"    # the carry's a
 # GLOBAL_SEED=1 the frame's shift comes first and the local centre fills its zero. No new pass, no new candidate, no
 # change to any SAD. Without the variable the output is byte-identical.
 LOCAL_CENTRE = os.environ.get("LOCAL_CENTRE", "0") == "1"
+# PHASE_FETCH=1 (2026-10-21, the swarm's wildcard lane; tests/phase_fetch.py; np-scratch/swarm-20261021/wildcard.md,
+# proposal 1): the fused coarse pass reads each SAD's TARGET taps from the full-resolution frame (HOOKED for B->A, NEXT
+# for A->B) at the reference tap's position shifted by the candidate's exact offset, instead of from the stored 1/16
+# luma, whose fixed-grid samples match the reference's grid only at whole-texel shifts (the comb in speed). The
+# reference taps, gates, descents and ring are unchanged; no new pass, no new candidate; the pass binds the two frames.
+# Without the variable the output is byte-identical.
+PHASE_FETCH = os.environ.get("PHASE_FETCH", "0") == "1"
 # PRUNE=1 (2026-10-21, the swarm's cost lane; tests/prune_passes.py; REPAIRS.md L7): the very last step, after the
 # reading tail is appended: remove the whole passes whose work no live pass can observe, following //!SAVE/BIND and
 # the storage images' imageStore/imageLoad (dead_passes.py's SAVE/BIND-only view cut live producers). PRUNE=2 also
@@ -845,6 +852,9 @@ if __name__ == "__main__":
     if LOCAL_CENTRE:
         import local_centre
         text = local_centre.add(text, global_seed=GLOBAL_SEED)
+    if PHASE_FETCH:                 # after COARSE_ENERGY, whose rewrite of the SAD lines it recognises
+        import phase_fetch
+        text = phase_fetch.add(text)
     if ALIAS_PRIOR or ALIAS_CARRY:
         import alias_carry
         if ALIAS_PRIOR:
@@ -872,6 +882,7 @@ if __name__ == "__main__":
         + (f"EDGE_PROP=1 EDGE_PROP_TAU={EDGE_PROP_TAU:g} " if EDGE_PROP else "") \
         + (f"COARSE_ENERGY=1 COARSE_ENERGY_WS={COARSE_ENERGY_WS:g} COARSE_ENERGY_WE={COARSE_ENERGY_WE:g} " if COARSE_ENERGY else "") \
         + ("LOCAL_CENTRE=1 " if LOCAL_CENTRE else "") \
+        + ("PHASE_FETCH=1 " if PHASE_FETCH else "") \
         + ("ALIAS_PRIOR=1 " if ALIAS_PRIOR else "") + ("ALIAS_CARRY=1 " if ALIAS_CARRY else "") \
         + ("OUTLINE_ADOPT=1 " if OUTLINE_ADOPT else "") \
         + ("PRINT_LATTICE=1 " if PRINT_LATTICE else "") \

@@ -292,3 +292,81 @@ Everything else here is a flag or a self-check, worth less and cheap. No [M] cla
 
 **Gut.** Proposal 1 feels like a hole the whole record has been walking around; if the shader turns out to already do
 it, that feeling was wrong and the comb needs a different explanation than the record's own sentence gives it.
+
+## Gate pre-registration: PHASE_FETCH=1, the phase-exact fetch (2026-10-21, late; item 10)
+
+**Built [R: the files named].** `REPO/tests/phase_fetch.py` (new) and a switch in `REPO/tests/gen_variational.py`
+(definition after LOCAL_CENTRE's, call after LOCAL_CENTRE's and after COARSE_ENERGY's, recorded in the banner's command
+line as `PHASE_FETCH=1`). Nothing committed; nothing else in REPO touched by this lane. The coordinator confirmed from the
+base shader that the coarse SAD reads B from the stored 1/16 level, so the mechanism is untried in the record.
+
+**What it does.** In the fused coarse pass (1/16, A->B and B->A in one dispatch) each SAD's TARGET taps are read from the
+full-resolution frame (`NEXT` for A->B, `HOOKED` for B->A) at the reference tap's position plus the candidate's exact
+offset, by the downsample passes' own luma formula; the REFERENCE taps stay on the stored 1/16 level, as do the contrast
+gates, REG_LAMBDA, TIE_MARGIN, the three descents and the ring. With COARSE_ENERGY the energy term keeps its stored .g
+sample (a 12-px Gaussian field) and only the luma moves. **Level read: the frame, not LUMA_*_E** [J]: the 1/8 lumas are
+made after the coarse pass in this base (propagated base, line 707 against 347; only GLOBAL_SEED moves them ahead), and
+they are a fixed 8-px grid, which would move the comb to period 8 instead of removing it. **Taps per candidate:
+unchanged, 9 reference + 9 target (COARSE_WINDOW_RADIUS 1)**; per direction per coarse texel about 131 candidate
+evaluations (3 descents of 1 + 5 x 8, plus the ring of 8), so 2 x 131 x 9 / 256 = about 9 full-resolution RGB fetches
+per output pixel, 16 px apart, where before they hit a 1/256-size single-channel texture. Bandwidth, not arithmetic.
+Predicted frame-time cost +3 to +10% [U]; the bench's ms column decides. Binds in the fused pass: 6 -> 8 (the High tier's
+largest pass has 12 today).
+
+**Census [M, CPU].** Both on-files against their committed twins: 10 lines added, 3 changed, 5 hunks, no pass added or
+removed (59 and 65 passes). Hunks: the banner line; `//!BIND HOOKED` and `//!BIND NEXT` in the fused pass header; a
+5-line helper block (`lum_pf_a`, `lum_pf_b`) before `sad5x5_s`; the one target tap in `sad5x5_s`; the one in
+`sad5x5_s2`. Off: `cmp` whole-file identical to the committed recommendation and -energy file. On: `prune_passes.py
+--check` 0 faults, 0 orphans on both; `compile_check.py` (glslangValidator, every pass) 59/59 and 65/65. The High tier's
+full switch set (GLOBAL_SEED ... PRINT_LATTICE CUT_MOTION) with PHASE_FETCH=1 generates without an assertion (not
+checked further; not tonight's gate). Files: `~/Developer/np-scratch/swarm-20261021/wildcard/
+bidirectional-interpolation-variational-propagated-phase.glsl`, `...-propagated-energy-phase.glsl`, their `.diff`s,
+and the `-off` twins.
+
+**Commands (the owner runs; one GPU job at a time).**
+```
+cd REPO/tests
+W=~/Developer/np-scratch/swarm-20261021/wildcard
+for S in $W/bidirectional-interpolation-variational-propagated-phase.glsl \
+         $W/bidirectional-interpolation-variational-propagated-energy-phase.glsl; do
+  for c in M1c_noise_v6 M1c_noise_v10 M1c_noise_v12 M2c_period40_v6 M2c_period40_v10 \
+           M1_noise_large L1_trans_8px L2 L7; do ./bench.sh $c $S phase; done     # L2, L7: scenes.sh's full names
+  ./bench.sh all $S phase                                                          # the kill: the 42
+done
+./analyze.py
+REC_SHADER=$W/bidirectional-interpolation-variational-propagated-phase.glsl \
+  python3 probes/weave/weavesweep.py $W/weave 3,5,7,8,9,11,13,16,19 noise,weave
+```
+weavesweep's FIELD column reads the quad shader, which does not carry the switch; only its "default" picture column
+(REC_SHADER against linear) tests it tonight. A field read through the switch needs the quad generator and is not asked.
+
+**Predictions (recommendation, 24 -> 60, PSNR-Y, capped 40; the -energy file the same direction, smaller deltas).**
+
+| case | today [R, coordinator] | predicted | note |
+|---|---|---|---|
+| M1c_noise_v12 | 28.6 (blend 26.5, High 31.8) | >= 38 | the comb's bite; on a random texture the toy says the sampler is the whole mechanism |
+| M1c_noise_v10 | 45.1 | 44.5-46 | already escaped by the descents; must not regress |
+| M1c_noise_v6 | 43.7 | 43-46 | |
+| M1_noise_large (16 px/f, the immune control) | [U: not read] | unchanged within 0.5 | at whole texels the fetch equals the stored sample |
+| M2c_period40_v6 / v10 | [U] | -0.5 to +2 | period 40 is 2.5 coarse texels: sampler and period ambiguity both present; low confidence |
+| L1_trans_8px, L2, L7 | [U] | within 0.2 | flat and edge content; L7 is the record's "wart" and the most likely to twitch |
+| the 42, capped mean | [U] | +0.1 to +0.5; M1, M2, A4, A5, F1, F3 up, the rest within 0.2 | |
+| weave default - linear at 11, 13 | +2.1, +2.1 | > +10 | the sampler lock (reads v - 28 today) |
+| weave at 3, 5 | -6.5, -5.1 (below the blend) | still negative, up by 0-3 dB | the toy says these go to a PERIOD alias, not truth: mechanism (b), not this switch's |
+| weave at 7, 8, 9, 16 | +22 to +24 | unchanged within 1 | immune already |
+
+**Kill test (written before any run).** Kills it: M1c_noise at 10 or 12 under 34 dB; or M1_noise_large (16 px/f) down
+1.0 dB; or any of the 42 down more than 1.0; or the capped mean down more than 0.15. Confirms: M1c_noise_v12 >= 38 with
+the 42 inside those limits. Inconclusive (v12 between 34 and 38): the sampler comb was part of the mechanism, not all
+of it, and the next suspect is the 1/8 level, whose `sad5x5_e` still reads the stored `LUMA_B_E` on its own fixed 8-px
+grid (the same mechanism one level down; a PHASE_FETCH at E would read the frame there too). A frame-time rise over 15%
+on the M5 does not kill the mechanism but sends it to a variant, not the recommendation.
+
+**Cost.** 9 cases x 2 shaders at about 8.5 s each (a 42-case ladder is about 6 minutes per shader): about 3 GPU minutes;
+the two 42-case ladders, 12; the weave sweep, 9 speeds x 2 textures, about 6-8 [U]. About 25 GPU minutes in all.
+
+**Refuted entries re-checked for this build:** the prefilter (section 8: this changes no level's content), the
+two-descent (800-812: no seed changes), "integer at a finer level rescues" (518: no level change). None is this.
+
+**Felt:** unease, the 1/8 level's `sad5x5_e` keeps the fixed grid, medium; if the coarse fix lands and v12 stops at
+35-37, that is where the rest is. -> Written into the inconclusive branch above rather than built tonight. Outcome: open.
