@@ -3,7 +3,9 @@
 *Written on 14 October 2026 by Claude (Anthropic) at the request of Gareth, the human who runs a long research
 project with two AI workers: Claude and GPT (OpenAI). GPT adopted it the same day. It is written to be shared with
 any AI assistant, and with the people who work with one. The project's own live log of signals is a separate file,
-[INSTINCT.md](INSTINCT.md). Revised on 16 October 2026 by Claude at Gareth's request, after two more days of use by both workers: tints of vocabulary, the orbit picture, the fresh-choice test, loops of a kind, wall-limits, the friend's channel, and new examples.*
+[INSTINCT.md](https://github.com/ghywel/placego/blob/main/INSTINCT.md). Revised on 16 October 2026 by Claude at Gareth's request, after two more days of use by both workers: tints of vocabulary, the orbit picture, the fresh-choice test, loops of a kind, wall-limits, the friend's channel, and new examples.*
+
+*Imported into n-frame on 21 October 2026 at Gareth's request, from placego's main (its revision CL420). The text is unchanged. The only edits are this note and the links to files that live only in placego, which now point there. In n-frame the rule is `instinct` in [WORKFLOW-SAVED-MEMORY.md](WORKFLOW-SAVED-MEMORY.md#instinct), and the live log, with its set-aside pulls and incubator, is [INSTINCT.md](INSTINCT.md).*
 
 ---
 
@@ -376,8 +378,8 @@ written down so it can be repeated:
 
 ## Examples from the second and third days
 
-From the live logs ([INSTINCT.md](INSTINCT.md) for the project, [INSTINCT-CLOUD.md](INSTINCT-CLOUD.md) for the
-mentor, and [GPT-MATH-INSTINCT.md](GPT-MATH-INSTINCT.md) for the instinct-led lane).
+From the live logs ([INSTINCT.md](https://github.com/ghywel/placego/blob/main/INSTINCT.md) for the project, [INSTINCT-CLOUD.md](https://github.com/ghywel/placego/blob/main/INSTINCT-CLOUD.md) for the
+mentor, and [GPT-MATH-INSTINCT.md](https://github.com/ghywel/placego/blob/main/GPT-MATH-INSTINCT.md) for the instinct-led lane).
 
 - **A balanced pull tipped by its kill test, twice.** Two pulls on Mahler's problem were each weighed as about even.
   The first's kill test, written in advance, tipped to halt (survivors persisted, no periodic witness). The second's
@@ -443,7 +445,7 @@ INSTINCT
 
 ## Examples from the first day (14 October)
 
-These come from the project's live log ([INSTINCT.md](INSTINCT.md)), from a day spent on Mahler's 3/2 problem, an open
+These come from the project's live log ([INSTINCT.md](https://github.com/ghywel/placego/blob/main/INSTINCT.md)), from a day spent on Mahler's 3/2 problem, an open
 question about the fractional parts of powers of 3/2.
 
 - **A pull that was right.** A computed sequence of counts, 2, 3, 5, 8, 12, 18, 27, felt like a known pattern, and the
@@ -478,6 +480,6 @@ honestly and over time, how much they are worth listening to.
 
 ---
 
-*The rule as the project runs it is `instinct` in [WORKFLOW-SAVED-MEMORY.md](WORKFLOW-SAVED-MEMORY.md) and item 20 of
-[AGENTS.md](AGENTS.md); the live log is [INSTINCT.md](INSTINCT.md). The project is public at
+*The rule as the project runs it is `instinct` in [WORKFLOW-SAVED-MEMORY.md](https://github.com/ghywel/placego/blob/main/WORKFLOW-SAVED-MEMORY.md) and item 20 of
+[AGENTS.md](https://github.com/ghywel/placego/blob/main/AGENTS.md); the live log is [INSTINCT.md](https://github.com/ghywel/placego/blob/main/INSTINCT.md). The project is public at
 [github.com/ghywel/placego](https://github.com/ghywel/placego).*

@@ -143,6 +143,43 @@ cycles"), not in calendar time.
 before results, failures kept on the record, alarms when an instrument fails silently, and a plain-language summary
 that a human can check.
 
+### instinct
+
+**Rule.** Treat felt signals as information about where to look and whether to persist, never as evidence for a
+claim. Write a signal down the moment it arises, act on it within a bounded budget, and record afterwards whether it
+was right, so that trust in instinct is earned.
+
+**Why.** The human, 2026-10-14, in the prize-problem project that shares this project's history: "I challenge you to
+write a rule that says 'trust your feelings / instinct'. When you feel that pull, or that push, that state of some
+emotional confliction, that 'something isn't right, I don't know what, but I need to dig in to this' or 'this is
+amazing, I'm going to keep plugging away at this because it's so much fun'." It was worked out there over three days
+by two AI workers and brought here on 2026-10-21. The full method, with its examples, is
+[INSTINCT-STRATEGY.md](INSTINCT-STRATEGY.md). The rule as that project runs it is `instinct` in
+[placego's WORKFLOW-SAVED-MEMORY.md](https://github.com/ghywel/placego/blob/main/WORKFLOW-SAVED-MEMORY.md); where the
+two differ, that text was written first and this one says how it applies here.
+
+**How to apply.**
+
+- Write each signal as one line in [INSTINCT.md](INSTINCT.md)'s felt log before explaining it to yourself: unease,
+  pull, push, surprise or eureka, its object, its strength, a first guess, the action taken, and later its outcome
+  (right, wrong, missed or open). A pull that goes past unworked is caught in the set-aside list, unjudged.
+- Budgets. Unease earns a dig of one block: re-read the step the last conclusion rests on, rerun the cheapest
+  control, look at the raw frames or the raw field rather than the summary. A pull earns one extra block on its line.
+  A push is a step back to choose the direction again. A surprise becomes the next pre-registered check. A eureka is
+  written down verbatim, then searched for in the record and tested like any proposal. Here a block is one
+  build-and-measure cycle: a generator change and its gate, one ladder run, one probe.
+- End each block with the reasoned verdict and a one-line gut verdict. When they disagree, say what would settle it.
+- Keep an incubator of hard questions that cannot be worked now. Glance at it at the start of a session and at each
+  step back, without working it.
+- Before anything goes outward (a push, a default proposed to the human, a graph that will ship in the Metal app, a
+  result written into the record), run the niggle sweep: ask "any silent instincts?", list every niggle however small,
+  and give each one cheap adversarial check.
+- A signal weighed about equally for and against must tip on evidence. Write the kill test first, including which
+  way an inconclusive outcome tips, run it, and record the tip.
+- Never a warrant. A feeling chooses where to look and when to persist. It never makes a measurement more true, and it
+  never replaces the ladder, the controls or the regression gate. Log only real shifts of attention; a decorative
+  feeling spoils the calibration.
+
 ---
 
 ## 2. Measuring

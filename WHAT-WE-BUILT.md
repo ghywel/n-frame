@@ -478,6 +478,11 @@ the research record, the scientific record and the instruments.
 **How the work is done**
 - [WORKFLOW-SAVED-MEMORY.md](WORKFLOW-SAVED-MEMORY.md) — the rules the work follows, from the assistant's
   saved memory, edited for reading and for import into your own.
+- [INSTINCT-STRATEGY.md](INSTINCT-STRATEGY.md) — how an assistant can give its hunches a proper channel: name
+  each one the moment it arises, act on it within a fixed budget, and record afterwards whether it was right.
+  Written in the sister mathematics project and brought here, for any assistant and the people who work with one.
+- [INSTINCT.md](INSTINCT.md) — this project's own log of those hunches, the ones set aside for later, and the
+  hard questions parked until something surfaces.
 - [METHODOLOGY.md](METHODOLOGY.md) — how the method began, including the division of labour between the
   human and the AI (history of the first phase).
 - [HANDOVER.md](HANDOVER.md) — how to get up to speed and take one of the open leads, for a person or for an
