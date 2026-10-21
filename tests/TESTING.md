@@ -24,7 +24,8 @@ The dated record: [Results on the reset ladder](#results-on-the-reset-ladder) ·
 [The ripple](#the-ripple-motion-far-beyond-the-search-reach----unsolved) ·
 [The research build updated (2026-09-30)](#the-research-build-updated-2026-09-30) ·
 [The Linux witness on the Arc (2026-09-30)](#the-linux-witness-on-the-arc-2026-09-30) ·
-[The Mac wander solved (2026-09-30)](#the-mac-wander-solved-two-moltenvk-switches-2026-09-30).
+[The Mac wander solved (2026-09-30)](#the-mac-wander-solved-two-moltenvk-switches-2026-09-30) ·
+[The research build updated (2026-10-21)](#the-research-build-updated-2026-10-21).
 
 ## How to run it today
 
@@ -2362,3 +2363,58 @@ MVK_CONFIG_USE_METAL_ARGUMENT_BUFFERS=0.
   0.3; the V3 branch differs. That is different compilers on different GPUs, now each self-consistent.
 - **The mechanism, in short:** on the Apple GPU a resource-binding hazard in the argument-buffer path; on AMD a race
   between command buffers in flight. Neither is in our shaders (the audit above), and neither on Linux.
+
+## The research build updated (2026-10-21)
+
+The owner, the same day: "Yes please check the libplacebo and FFMPEG upstream sources to get us up to date." The
+upstream check: FFmpeg master was 894 commits past the pin (ff2059a, 09-30), with no release since 9.0.2 and 8.1.3;
+three of those commits touch `vf_libplacebo.c` (the chroma location is negotiated; commands for negotiated options
+are refused; a security fix in libavfilter rejects frames whose size or format changed after configuration).
+libplacebo master was 44 commits past c42968d (7.372), now 7.377: tone mapping and colour work, Vulkan fixes, and
+API 375, which changes `pl_source_frame` and `pl_frame_mix` timestamps from float to double. The new pins are FFmpeg
+3a5eb948e7 (2026-10-21) and libplacebo 285d1cc8 (2026-10-19). The Homebrew Vulkan toolchain (shaderc 2026.3,
+glslang 16.5, spirv 1.4.357, vulkan-headers and loader 1.4.357) is one point release behind; it is left as it is, to
+be its own step, so that only one thing changes in this gate. MoltenVK 1.4.2 is current.
+
+**Built beside the working build,** in `~/np-build/up-20261021` (`ROOT=... FFMPEG_REF=... PLACEBO_REF=...
+../build-macos.sh placebo`). The three patches applied cleanly; libplacebo's renderer hunks moved 92 lines. Smoke
+18 of 18. One compiler warning, in the patch's own code: `fabsf()` given a double, the window's tie comparison.
+
+**The window probe, written for this (`probes/window/window_live.sh`).** It paints each slot's `rts_mix` into its own
+columns and decodes which source frames the hook was given, at 24 -> 24, 24 -> 60 and 25 -> 60, for windows of three,
+four and five. The documented rule breaks ties toward the earlier frame, which is what puts the four-frame window at
+[-2, -1, 0, +1] at N:N.
+
+| build | windows matching the rule | the N:N four-frame window |
+|---|---|---|
+| ff2059a + c42968d (the working build) | 63 of 63 | [-2, -1, 0, +1] on 4 of 4 |
+| 3a5eb948e7 + 285d1cc8, the patch unchanged | 57 of 63 | [-1, 0, +1, +2] on 3 of 4 |
+
+The six that flipped are exactly the ties: the four-frame window at phase 0 (N:N, and every fifth output at
+24 -> 60) and the three- and five-frame windows at phase one half (25 -> 60). Double timestamps come out a hair
+uneven, and `fabsf()` truncated only one side of the comparison. Nothing else in the harness would have shown it: a
+translation's flow is the same for every pair, the picture at N:N is a passthrough, and the ladder scores only
+interpolated outputs. It would have changed what the quad measures at N:N. **The patch is carried forward with a
+tolerance:** `-ts[lo] <= ts[hi] + 1e-4` (the earlier frame's timestamp is never positive, so its negation is its
+distance), which keeps an exact tie a tie in either precision. It applies to both pins.
+
+The probe also measured, on BOTH builds alike, that the timestamps the hook receives are not exact away from phase 0:
+up to 0.0064 of a frame off at 24 -> 60 and 0.0053 at 25 -> 60, with the pair that straddles the output 0.9959 apart
+instead of 1. The sets are right; the values are slightly off. It predates this update, and double precision did not
+change it. It is an open lead (below).
+
+**Pre-registered, before the ladder ran** (each build one run, `mvk-env.sh` set, the M5, nothing else on the GPU):
+- *Must hold.* Smoke 18 of 18 on the fixed build. The window probe 63 of 63 on the fixed build, the timestamp errors
+  as before. Hold identical on 42 of 42 between the builds: the scenes are rendered by FFmpeg's own lavfi sources, so a
+  difference in hold means the scenes moved and every comparison needs care. The control comparison (the plain
+  bidirectional against the recommendation, through the same table) shows large differences, so the table can see one.
+- *Predicted.* The recommendation, the plain bidirectional, the player's High tier (`...-lattice-cut`) and the
+  four-frame field shader (`quaddirectional-interpolation-propagated`): every case within 0.10 dB of the working
+  build, the capped mean within 0.05. Linear within 0.05 dB on every case.
+- *Blind.* Whether the chroma location negotiation moves linear or the shaders at all (the ladder renders through
+  `format=yuv420p` after libplacebo; the prediction is no move, since input and output are both unspecified); whether
+  anything moves by more than a hundredth.
+- *Refuted by.* Any case beyond 0.10 dB that no named upstream change explains, or hold differing.
+- *Then:* real footage (decimate and reconstruct on a film segment, both builds, the recommendation and linear;
+  prediction: SSIM within 0.0005, PSNR within 0.05 dB), time from a file (`probes/cost/timing.sh`, interleaved;
+  prediction: within 3 percent), and NFrameDemo's lockstep after adoption (prediction: PASS).

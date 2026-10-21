@@ -254,7 +254,7 @@ index df206b2..0273336 100644
  bool pl_render_image_mix(pl_renderer rr, const struct pl_frame_mix *images,
                           const struct pl_frame *ptarget,
                           const struct pl_render_params *params)
-@@ -3834,8 +3944,65 @@ bool pl_render_image_mix(pl_renderer rr, const struct pl_frame_mix *images,
+@@ -3834,8 +3944,72 @@ bool pl_render_image_mix(pl_renderer rr, const struct pl_frame_mix *images,
      int fidx = 0;
      struct cached_frame frames[MAX_MIX_FRAMES];
      float weights[MAX_MIX_FRAMES];
@@ -303,9 +303,16 @@ index df206b2..0273336 100644
 +
 +        // Remaining slots (fmix_want > 2) fill greedily from whichever
 +        // side's next candidate sits closer to the output timestamp.
++        // An exact tie goes to the earlier frame: that is what puts a
++        // four-frame window at [-2,-1,0,+1] when the output sits on a
++        // source frame. The tolerance keeps the tie a tie: since API
++        // 375 the queue's timestamps are doubles and come out a hair
++        // uneven (|-2| against 2 in the last bits), which flipped the
++        // window to [-1,0,+1,+2]. 1e-4 of a frame is far below any
++        // real difference between two candidates' distances.
 +        while (fmix_n < fmix_want && (lo >= 0 || hi < images->num_frames)) {
 +            bool take_lo = lo >= 0 && (hi >= images->num_frames ||
-+                            fabsf(images->timestamps[lo]) <= images->timestamps[hi]);
++                            -images->timestamps[lo] <= images->timestamps[hi] + 1e-4);
 +            fmix_sel[fmix_n++] = take_lo ? lo-- : hi++;
 +        }
 +
@@ -320,7 +327,7 @@ index df206b2..0273336 100644
      // Garbage collect the cache by evicting all frames from the cache that are
      // not determined to still be required
      for (int i = 0; i < rr->frames.num; i++)
-@@ -3884,6 +4051,21 @@ retry:
+@@ -3884,6 +4058,21 @@ retry:
                  continue;
              }
  
@@ -342,7 +349,7 @@ index df206b2..0273336 100644
          // For backwards compatibility, treat !kernel as oversample
          } else if (!mixer.kernel || mixer.kernel == &pl_filter_function_oversample) {
  
-@@ -4078,6 +4260,7 @@ inter_pass_error:
+@@ -4078,6 +4267,7 @@ inter_pass_error:
          pl_assert(fidx < MAX_MIX_FRAMES);
          frames[fidx] = *f;
          weights[fidx] = weight;
@@ -350,7 +357,7 @@ index df206b2..0273336 100644
          wsum += weight;
          fidx++;
      }
-@@ -4102,6 +4285,105 @@ inter_pass_error:
+@@ -4102,6 +4292,105 @@ inter_pass_error:
          goto retry;
      }
  
