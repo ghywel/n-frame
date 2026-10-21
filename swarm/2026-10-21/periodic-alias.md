@@ -298,3 +298,39 @@ once and may erase this one. What settles it: `flowtap.py` on C3 after proposal 
   own residual r_h with r_h over 2/255 and over half the pictures' difference lies within 16 px of decided cells ->
   TG_PICK scaled by r_h; (ii) m / r_h over 1 -> the offer's fault, retire as a tier; (iii) under 30 percent of the
   difference near decided cells -> not the gate's decisions, look downstream.
+
+### D1 rendered (the coordinator, the M5, one run) and the field reader
+
+Region: D1h hold 7.22, linear 10.01, rec 6.78, High 9.90, quad 10.70; the ramp hold 7.57, linear 9.65, rec 15.94,
+High 13.51, quad 15.65. My D1h band for the recommendation (8-16) and my ramp hold / linear (12-18 / 13-20) MISSED:
+the hold and linear arithmetic was wrong (a 2-5 px shift of 12-px bars already costs 20-40 percent of the window's
+pixels at every speed, and past the knee every frame is bad), and the two-domain hypothesis, done properly, predicts
+about 6 dB, not 8-16: a frame half right and half a wrong alias has half the all-wrong MSE, 3 dB above about 3.
+
+**What the two numbers already say [J].** The recommendation at 6.78 on D1h, below hold and 3 dB below the blend,
+fits neither mode of the one-alias hypothesis (one run should read 30+ or about 3) and fits a per-frame mixture of
+right and wrong texels: two domains or a wandering wall, as the extrinsic-edge mechanism predicts; a zero-flow
+collapse would read the blend's 10, so part of the window chose and chose wrong. On the ramp, High (13.5) below the
+recommendation (15.9) while the quad matches the recommendation says the carry, which exists to carry an END's vote
+into a tied interior, carried the extrinsic edges' votes further and committed more of the window to them: the
+mechanism hurts most where the edge-carrying machinery is strongest. The field read decides it: `d1_rowsign.py`.
+
+**The reader:** `tests/probes/cage/d1_rowsign.py` (CPU; the GPU export command in its docstring: read_view 4 by the
+loop.sh sed, format=rgb48le inside the graph, frames 6..15 at N:N). Per 24-px row band of the window: median fy and
+fx, the share of frames positive, median |fy|, the texel shares near 0 / near +-12 / elsewhere, the flip share; the
+pooled histogram; the verdicts SPLIT / ONE SIGN / FLICKER / ZERO FLOOR applied automatically (thresholds in the
+docstring). Self-test on a made-up split field passes.
+
+**Closing (2026-10-22, after the row-sign read).** I read the field as the coordinator does. On the recommendation
+every interior band sits on -12 at 100 percent with no flips: one wrong alias, locked by persistence from the first
+pair's coin, V3's mechanism; the two-domain hypothesis is killed for the interior and survives only as the edge
+bands' 100-percent flicker, which is the extrinsic edges' vote with nothing to carry it inward. On High the carry
+re-decides every frame (flips 100 percent, the pooled histogram spread over -12..+12): a mixture that averages above
+the lock and below the blend. My reader's fault: ONE SIGN pooled all thirteen bands, so two flickering edge bands
+(12 of 13 x 10 band-frames) dragged the share to 86-88 percent and under the 90-percent line; it should have been
+asked of the interior bands alone (rows 258-473), where it reads 100 percent. The edge bands belong to a separate
+FLICKER line, which the reader already prints.
+
+Felt: pull, the two-domain picture of the still window, medium; the edge votes seemed too neat not to split the
+field. -> Written as the primary prediction and the reader built to see it. Outcome: wrong on the interior (one
+alias, persistence), right only on the edges; the oracle's result (C3 36.5) was the night's real return.

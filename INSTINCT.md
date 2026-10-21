@@ -107,6 +107,9 @@ never upgrades a status: nothing here is a measurement, and nothing here changes
 - 2026-10-22 00:13, Claude: delight, the region column confirming the re-ranking with its control to the hundredth,
   high; "that is clean": a prediction from the saved logs, a calibrated instrument, a render, the order as predicted.
   -> said plainly in TESTING.md; the headline column is Gareth's. Outcome: right.
+- 2026-10-22 00:18, Claude: satisfaction, D1's field read, medium; "closed honestly": the undecidable case the record
+  named on 2026-09-28 is a measured one, the first pair's coin and persistence, and the lane's two-domain guess fell to
+  its own kill test within the hour. Outcome: right.
 
 ## The set-aside pulls
 

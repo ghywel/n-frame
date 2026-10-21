@@ -2510,8 +2510,13 @@ refuted. All three are in LADDER2_CASES with their crops in regions.sh.
 px/frame reads, on the object's crop, hold 7.22 / linear 10.01 / rec **6.78** / High 9.90 / quad 10.70: the
 recommendation is below hold where the frame can anchor nothing, and no gate blends. D1_print_behind_window_ramp (4 ->
 20 px/frame) reads 7.57 / 9.65 / 15.94 / 13.51 / 15.65: the recommendation holds the truth before the knee and falls
-after it, 6 dB over the blend on the clip. The lane's kill test, the A->B row-sign profile through read_view 4 (two
-domains voting from the two window edges, or one alias by the first pair's coin), is the next read.
+after it, 6 dB over the blend on the clip. The lane's kill test, the A->B row-sign profile through read_view 4 (two domains voting from the two window edges, or one alias by the first pair's coin), was read the same night
+(`tests/probes/cage/d1_rowsign.py`, read_view 4, frames 6 to 15): on the recommendation every interior row band reads
+fy = -12.00, the wrong alias, with no sign flips, the two edge bands flickering; the first pair's coin decided and
+persistence locked it, V3's mechanism. On High the interior wanders (a quarter of texels near zero, the rest at +-12
+of both signs, flips on every frame pair): the carry re-decides each frame, so High's mixture averages above the
+recommendation's lock and below the blend. The undecidable case is now a measured one, and the only route is an anchor
+from outside the window.
 
 `--min` (the worst scored frame) shows what the means hide: the quad's M2c means are 52.6 and 51.1 with worst frames
 of 22.6 and 21.5. With `SKIP_END=2` (the mixer's end frames dropped) the means rise by 0.5 to 2 dB on every case

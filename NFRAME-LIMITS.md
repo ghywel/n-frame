@@ -5282,6 +5282,19 @@ for byte. The order of work that follows from the ruling: instruments first, sin
 and any future rewrite; if an ablation ever shows much of the family inert, a rewrite is earned and has a
 specification. The reasoning is not to be relitigated without new evidence of that kind.
 
+### The print behind a still window, built and read (2026-10-22, the night's heartbeat)
+
+The case the 2026-09-28 entry called undecidable and never built: V3x's exact-coverage stairs drifting behind a still
+300 x 300 window (`D1h_print_behind_window_v12`, 12 px per source frame; and `D1_print_behind_window_ramp`, 4 to 20),
+in LADDER2 with crops. On the object's crop at 12 px/frame: hold 7.22, linear 10.01, the recommendation **6.78**, High
+9.90, the quad 10.70; the ramp 7.57 / 9.65 / 15.94 / 13.51 / 15.65. The field (read_view 4, frames 6 to 15,
+`tests/probes/cage/d1_rowsign.py`) says how: the recommendation's interior reads fy = -12.00 on every row band with no
+flips, one wrong alias locked by persistence from the first pair's coin (V3's mechanism; the window's edges flicker);
+High's interior wanders, a quarter near zero and the rest at +-12 of both signs, re-decided every frame by the carry,
+which is why its mixture averages above the lock and still below the blend. So the case is decided by nothing in the
+frame, as the survey said, and the only route is an anchor from outside the window; a gate that blends where the frame
+cannot decide is the alternative, and none of the shipped gates fires here (the cut gate's frame difference is 0.08).
+
 ### C3's oracle: a flow route exists (2026-10-22, the night's heartbeat)
 
 The cage section above left C3_bars_spin_drift UNSOLVED and read the cage family's ceiling as "knowing when not to
