@@ -2505,6 +2505,14 @@ R3i_rot_isotropic (R2's rotation on three 40 px plane waves at 0, 60 and 120 deg
 deficit was TEX_M2's off-axis alias, not rotation, and the record's explanation at 375-379 is upheld rather than
 refuted. All three are in LADDER2_CASES with their crops in regions.sh.
 
+**And the undecidable case, built at last** (the periodic lane's D1: V3x's exact-coverage stairs drifting behind a still
+300 x 300 window, the case the 2026-09-28 record named and never built): D1h_print_behind_window_v12 at a constant 12
+px/frame reads, on the object's crop, hold 7.22 / linear 10.01 / rec **6.78** / High 9.90 / quad 10.70: the
+recommendation is below hold where the frame can anchor nothing, and no gate blends. D1_print_behind_window_ramp (4 ->
+20 px/frame) reads 7.57 / 9.65 / 15.94 / 13.51 / 15.65: the recommendation holds the truth before the knee and falls
+after it, 6 dB over the blend on the clip. The lane's kill test, the A->B row-sign profile through read_view 4 (two
+domains voting from the two window edges, or one alias by the first pair's coin), is the next read.
+
 `--min` (the worst scored frame) shows what the means hide: the quad's M2c means are 52.6 and 51.1 with worst frames
 of 22.6 and 21.5. With `SKIP_END=2` (the mixer's end frames dropped) the means rise by 0.5 to 2 dB on every case
 (`np-scratch/swarm-20261021/gpu/ladder2-table-skipend.txt`); the table above is the comparable, unskipped form.
@@ -2532,4 +2540,24 @@ build on both sides, two samples: the recommendation 18.29 / 18.66 -> 13.92 / 13
 18.63 -> 13.55 / 13.34, Standard 26.22 / 26.19 -> 20.23 / 20.02, High 32.91 / 32.39 -> 27.98 / 28.48. `smoke.sh`'s
 recipes carry `PRUNE=2`; `scale_shader.py` accepts a pruned file's one-direction hand-off and still refuses an unmarked
 one. Smoke and the Metal lockstep on the adopted files are recorded in the commit that adopts them.
+
+## The region column on the ladder (2026-10-22, the night's heartbeat)
+
+The swarm's instruments and ladder lanes both found that whole-frame PSNR scores the ladder by object size (a 100 x 100
+mover gets a 19.6 dB bonus over its own error) and predicted, from the saved logs with the bonus divided out, that the
+three shipped tiers re-rank on the object. The region column (`regions.sh`, `bench.sh`'s second psnr, `analyze.py
+--region`; calibrated with a planted defect) put it to the render: the four gate shaders, all 42 cases, the adopted
+build. Whole-frame, the re-render reproduces the 2026-10-21 gate to the hundredth (base 34.95 / rec 38.05 / High
+38.33 / quad 37.80 capped): the control. On each case's own crop (the swept path plus 16 px), capped at 40:
+
+| | base | rec | High | quad | cases binding |
+|---|---|---|---|---|---|
+| whole frame | 34.95 | 38.05 | **38.33** | 37.80 | 22 of 42 |
+| the object's crop | 29.11 | 34.65 | **35.34** | 34.92 | 33 of 42 |
+
+The order of the two picture tiers holds (High first); the quad passes the recommendation on the object (its 3 to 6 dB
+lead on O1-O3 is above 40 whole-frame and below it on the crop), and eleven more cases bind. The crop still dilutes by
+the path's share (width over width plus distance), least kindly on the P and F cases, as the instruments lane warned;
+it is not the final instrument, it is the honest one the ladder had lacked. Which column the headline mean reads is
+the owner's decision; both are printed from now on.
 

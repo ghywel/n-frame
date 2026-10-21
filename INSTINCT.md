@@ -104,6 +104,9 @@ never upgrades a status: nothing here is a measurement, and nothing here changes
   rule, and the coordinator commits only reviewed deliverables. Caught on reading the commit's file list; the files
   checked sound after the fact (scenes parse, both D1 scenes bit-identical under scenecheck). Outcome: missed. Fix:
   stage by name on every tick while a lane is writing.
+- 2026-10-22 00:13, Claude: delight, the region column confirming the re-ranking with its control to the hundredth,
+  high; "that is clean": a prediction from the saved logs, a calibrated instrument, a render, the order as predicted.
+  -> said plainly in TESTING.md; the headline column is Gareth's. Outcome: right.
 
 ## The set-aside pulls
 

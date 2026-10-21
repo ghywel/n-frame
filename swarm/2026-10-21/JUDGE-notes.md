@@ -256,3 +256,9 @@ rec 31.52, the binding set 8 -> ~29. Kill: the region column's capped ranking ma
 > quad) or the binding set stays under 15. Run: bench.sh all for rec, base, high, quad into the 10-21 gate tree (the
 region logs are new; the whole-frame logs are re-rendered too and must agree with the 10-21 ones to the hundredth,
 which is the run's own control).
+
+## The region-scored ladder landed (00:12): finding 3 CONFIRMED
+Control held (whole-frame means to the hundredth). On the crop: High 35.34 > quad 34.92 > rec 34.65 > base 29.11;
+binding 33 of 42 (predicted ~29; kill < 15). The lane's absolute numbers (32.5/32.2/31.5) were its approximate division
+of the bonus; the order it predicted is the measured order. DECISION OWED: the headline column.
+
