@@ -278,9 +278,11 @@ steps, by heading only.
 - Felt: surprise, the staggered-PRF transfer, medium; the modulus is the scene's period, not the sampler's. -> Split
   the comb into two mechanisms and re-aimed at the sampler half. Outcome: right (the toy separates them).
 - Felt: pull, "fetch B at the candidate's phase", high; the drizzle rule, and nobody in the record says it. -> Spent
-  the lane's one block on the numpy toy instead of a tenth transfer. Outcome: right on the toy; open on the shader.
+  the lane's one block on the numpy toy instead of a tenth transfer. Outcome: MIXED (item 10 ran): the named prediction
+  (M1c_v12 >= 38) was wrong, the mechanism was right in kind (capped mean +0.31, L7 +19.7, weave at 3 px/f +19 dB) and
+  wrong in place (the comb at 12 px lives at the 1/8 level) and blind to a cost (period-24 aliases brought into reach).
 - Felt: unease, whether the shader already does this and the record's sentence is loose, medium; the lane forbids
-  reading the shader. -> Made it the first hand-off. Outcome: open.
+  reading the shader. -> Made it the first hand-off. Outcome: right to ask; the coordinator confirmed the stored read.
 
 ## Verdicts
 
@@ -370,3 +372,37 @@ two-descent (800-812: no seed changes), "integer at a finer level rescues" (518:
 
 **Felt:** unease, the 1/8 level's `sad5x5_e` keeps the fixed grid, medium; if the coarse fix lands and v12 stops at
 35-37, that is where the rest is. -> Written into the inconclusive branch above rather than built tonight. Outcome: open.
+
+## Item 10's result, read on paper (2026-10-21, night)
+
+**Prediction killed, mechanism alive [R: the coordinator's numbers].** M1c_v12 28.61 -> 28.71; capped mean +0.31 with
+five cases down over 1.0, so a variant, not the recommendation. The weave (`gpu/phase-weave.log`, my column is "default"):
+3 px/f -6.5 -> +13.0 over linear, 5: -5.1 -> +1.5, 11/13/19 still locked at v - 28, 7/8/9/16 held.
+
+**(1) L7 against M1c_v12 [J].** L7 moves 16 px = one 1/16 texel, immune to the sampler comb by section 8's own
+argument, so its +19.7 is not the comb removed: the stored-grid match there compared two beats of a 837-px Moire
+(period 15.7 sampled at 16), nearly flat over the 3x3 window, and the 0.3-px drift won as a REG_LAMBDA near-tie; the
+frame-fetched target restores the texture's full contrast at every candidate, so 16 px beats 0.3 px by the 9 taps'
+gradient x 0.3 px (about 0.35) against REG_LAMBDA's 0.06. M1c_v12 is the inconclusive branch: 12 px is 1.5 texels of
+the 1/8 level, whose `sad5x5_e` still reads the stored `LUMA_B_E`; v6 and v10 (0.75 and 1.25 texels there) were already
+escaped by the descents. The 1/8 form: the same transform on `sad5x5_e`/`sad5x5_e2` and the post-propagation check
+(coarse_energy.py's anchors exist), about 2 x 25 x 9 / 64 = 7 full-res fetches per output pixel more, an hour to write,
+gate on M1c_v12 + the 42, 8 GPU minutes.
+
+**(2) The period-24 losses: section 8 in reverse, and the mechanism is REACH [J].** Period 24 at 16-px pitch aliases
+to a 48-px Moire; its false basin sat beyond the 23-px reach, so the stored grid left one basin in reach, distorted but
+unique. The frame fetch restores the true 24-px ambiguity, whose alias at v - 24 is inside reach for v = 4-12 (P1, V1,
+H1, V3, V3x), and at v = 12 the two tie exactly. The weave confirms the rule: locked at 11/13/19 (alias v - 28 at
+17/15/9 px, in reach), freed at 3 (alias at 25 px, out of reach), half-freed at 5 (23 px, the edge); M2 period 40 and L7
+gain because their aliases are out of reach. The anomaly: weave 7-9 (aliases 19-21 px, in reach) hold; REG_LAMBDA's
+margin or the descents' 12-px first step; unresolved.
+
+**(3) Classes and the gate.** Gains: random texture (M1c_v10, noise column), periodic content whose period exceeds
+v + 23 px (L7, M2, P5, weave 3), flat (L6). Loses: periodic content with |v - P| <= 23 px (period 24 at v <= 12; the weave
+at 11-19). The cue is the two-basin tie the fused pass already produces: where the ring descent's basin is >= 0.75 texel
+from the zero descent's and `cost_b` within 10% of `cost_a` under the frame fetch, a period alias is in reach; take the
+stored-grid result there (both forms in one pass, 18 target fetches per output pixel; or the stored form only in the tied
+branch). moire_s would serve the same role if it reads the 1/16 period [U: not read]. **Kill test for the gated form:**
+kills it if any of P1, V3, V1, H1, L1 is still more than 1.0 below the recommendation, or L7/P5/M2/L6 keep less than half
+their gain, or the capped mean is under 38.26. Confirms: all nine inside those bounds and M1c_v12 unchanged (it is the
+1/8's). Cost: a switch, 1-2 hours; one 42-case ladder plus the comb cases, 8 GPU minutes.

@@ -106,7 +106,12 @@ only to write a storage texture whose sole reader is the dead second median. A d
 of 52 (35% of dispatches), the Low tier 17 of 53, Standard 24 of 80, High 17 of 92, the base 6 of 22, the N-frame
 shaders none; 14 to 15 of the dead passes recompute every output frame. Do not prune from `dead_passes.py`'s list. The
 prune belongs at the end of `gen_variational.py`, gated by the identity check frame by frame on all 42 cases (a
-warm-up render first, L8). The original lead as written on 2026-10-04 follows. In every two-frame
+warm-up render first, L8). **CLOSED 2026-10-22:** the prune is built (`tests/prune_passes.py`, `PRUNE=2` in `gen_variational.py`) and
+adopted in the recommendation and the three `-cut` tiers: 17 / 17 / 24 / 17 passes removed; byte-identical frames on the
+Arc, 42 of 42 per file and per 4K twin (the M5 could not judge: it wanders on 3 to 7 cases even with the switches);
+time from a file -24 to -30% (rec), -27 (Low), -23 (Standard), -13 to -15 (High). The hand-maintained bases are not
+pruned (the N-frame generators clone their B->A chain by name); a pruned shipped copy of them is the owner's call. The
+original lead as written on 2026-10-04 follows. In every two-frame
 shader the B->A flow ends unread: the whole chain in the base and its forks (six passes of 31 in the base: four
 searches and two medians), `FLOW_H_BA` alone in the variational line, and in the carry line also `ALIAS_E_AB` and
 `ALIAS_Q_AB` (three of Cadence High's 101 passes). The generators clone the base's B->A chain for the N-frame shaders,

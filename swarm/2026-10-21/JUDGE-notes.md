@@ -230,3 +230,22 @@ whether -energy-centre is a candidate (it would be a High-tier change, Gareth's 
   the lane: "I did not carry it"). R3/O5/O6/V3: the same coherent Moire winner on isotropic texture. A next form (the
   carry's tensor to drop the along-stripe component, plus moire_s as the gate, free) has its kill test written; it is
   NOT built tonight: the pull's budget is spent, and the next block on this line must differ in kind.
+
+## item 10 (23:49): the phase-exact fetch is a trade along the texture period
+Killed by its own rule for the recommendation (5 cases down > 1.0) and killed in its prediction (M1c at 12 unmoved,
+the weave's locked speeds still locked). Yet: capped mean +0.31, L7 +19.7 (the period-16 lock broken), P5 +8.5,
+M2 +7.2, L6 +6.2, M1 +2.3; losses P1 -6.7, V3 -5.4, V1 -3.0, H1 -2.5, L1 -2.2 (the period-24 family and the 8 px
+translation). Reading: at period 16 = 1 coarse texel the Moire IS the lock, and the exact fetch removes it; at period
+24 = 1.5 texels the Moire was carrying the match (section 8's "aliased contrast is load-bearing", now seen from the
+other side), and the exact fetch takes it away. A variant with a period-aware gate is the natural form; the wildcard
+lane writes its kill test. This is the first switch of the night whose capped mean rose. (Table columns in the 42
+tree: base, high, phase, quad, rec: alphabetical.)
+
+- The Arc's 4K twins (ran 22:40-22:47 its clock): old against new 42/42 on all four. Eight identity gates passed.
+- The wildcard's section (23:58): the loss is through REACH, not contrast: the 48 px Moire's false basin was out of
+  reach; the true 24 px alias is in reach for v 4-12. Evidence: the weave freed at 3 and 5 (alias out of reach), locked
+  at 11/13/19. My "aliased contrast seen from the other side" was the looser reading; the entry now carries the lane's.
+  Gated form with its kill test written; the 1/8 form named. Pull: alive as a variant, killed as a candidate.
+- The audit's P4-P6 (23:57): L8t rec 57.87 (the 1/16 diagonal lock does not reach the picture), L9b 44.85 vs L9 44.35
+  with twice the area (occlusion is not the cost: the lane's kill fires on its own name hypothesis, honestly), R3i margin
+  +12.3 vs R3's +5.5 (R3's deficit was the texture alias). Three scene lines, two GPU minutes, three questions closed.

@@ -6,7 +6,7 @@
 // generator and regenerate. Hand edits will be lost, and the ~100
 // near-identical iteration passes are not maintainable by hand anyway.
 //
-//   GLOBAL_SEED=1 QZERO_MOIRE=1 COHERENCE_GATE=1 COARSE_ENERGY=1 COARSE_ENERGY_WS=8 COARSE_ENERGY_WE=1 ALIAS_PRIOR=1 ALIAS_CARRY=1 OUTLINE_ADOPT=1 CUT_MOTION=1 ./gen_variational.py "0,0,8,4" 0.3 0.08 <output.glsl> 0 "0,0,2,0"
+//   GLOBAL_SEED=1 QZERO_MOIRE=1 COHERENCE_GATE=1 COARSE_ENERGY=1 COARSE_ENERGY_WS=8 COARSE_ENERGY_WE=1 ALIAS_PRIOR=1 ALIAS_CARRY=1 OUTLINE_ADOPT=1 CUT_MOTION=1 PRUNE=2 ./gen_variational.py "0,0,8,4" 0.3 0.08 <output.glsl> 0 "0,0,2,0"
 //
 // Variational iterations per pyramid level: S=0 E=0 Q=8 H=4
 // (S = 1/16 resolution, E = 1/8, Q = 1/4, H = 1/2). Roughly 3.0
@@ -1633,17 +1633,10 @@ vec4 hook() {
     return result;
 }
 
-//!TEXTURE FLOW_E_BA_PROP_ST1
-//!SIZE 480 270
-//!FORMAT rgba32f
-//!STORAGE
-
 //!HOOK FRAME_MIX
 //!BIND FLOW_E_AB_RAW
 //!BIND LUMA_A_E
 //!BIND LUMA_B_E
-//!BIND FLOW_E_BA_RAW
-//!BIND FLOW_E_BA_PROP_ST1
 //!SAVE FLOW_E_AB_PROP
 //!WIDTH HOOKED.w 8 /
 //!HEIGHT HOOKED.h 8 /
@@ -1663,27 +1656,7 @@ float prop_conf(vec2 uv) {
     return clamp((hi - lo) / PROP_CONF_FULL, 0.0, 1.0);
 }
 
-void hook_ba() {
-    vec2 uv = FLOW_E_BA_RAW_pos;
-    vec2 own = FLOW_E_BA_RAW_tex(uv).xy;
-    float c_own = prop_conf(uv);
-    vec2 acc = vec2(0.0);
-    float wsum = 0.0;
-    for (int y = -2; y <= 2; y++)
-        for (int x = -2; x <= 2; x++) {
-            if (x == 0 && y == 0) continue;
-            vec2 o = vec2(float(x), float(y)) * FLOW_E_BA_RAW_pt;
-            float w = prop_conf(uv + o) / (1.0 + 0.5 * float(abs(x) + abs(y)));
-            acc += w * FLOW_E_BA_RAW_tex(uv + o).xy;
-            wsum += w;
-        }
-    float w_own = PROP_SELF_WEIGHT * c_own * c_own;
-    if (wsum + w_own <= 0.0)
-        { imageStore(FLOW_E_BA_PROP_ST1, ivec2(gl_FragCoord.xy), vec4(own, 0.0, 0.0)); return; }
-    { imageStore(FLOW_E_BA_PROP_ST1, ivec2(gl_FragCoord.xy), vec4((w_own * own + acc) / (w_own + wsum), 0.0, 0.0)); return; }
-}
 vec4 hook() {
-    hook_ba();
     vec2 uv = FLOW_E_AB_RAW_pos;
     vec2 own = FLOW_E_AB_RAW_tex(uv).xy;
     float c_own = prop_conf(uv);
@@ -1703,17 +1676,10 @@ vec4 hook() {
     return vec4((w_own * own + acc) / (w_own + wsum), 0.0, 0.0);
 }
 
-//!TEXTURE FLOW_E_BA_PROP_ST2
-//!SIZE 480 270
-//!FORMAT rgba32f
-//!STORAGE
-
 //!HOOK FRAME_MIX
 //!BIND FLOW_E_AB_PROP
 //!BIND LUMA_A_E
 //!BIND LUMA_B_E
-//!BIND FLOW_E_BA_PROP_ST1
-//!BIND FLOW_E_BA_PROP_ST2
 //!SAVE FLOW_E_AB_PROP
 //!WIDTH HOOKED.w 8 /
 //!HEIGHT HOOKED.h 8 /
@@ -1733,27 +1699,7 @@ float prop_conf(vec2 uv) {
     return clamp((hi - lo) / PROP_CONF_FULL, 0.0, 1.0);
 }
 
-void hook_ba() {
-    vec2 uv = FLOW_E_AB_PROP_pos;
-    vec2 own = imageLoad(FLOW_E_BA_PROP_ST1, ivec2(floor((FLOW_E_AB_PROP_size) * (uv)))).xy;
-    float c_own = prop_conf(uv);
-    vec2 acc = vec2(0.0);
-    float wsum = 0.0;
-    for (int y = -2; y <= 2; y++)
-        for (int x = -2; x <= 2; x++) {
-            if (x == 0 && y == 0) continue;
-            vec2 o = vec2(float(x), float(y)) * FLOW_E_AB_PROP_pt;
-            float w = prop_conf(uv + o) / (1.0 + 0.5 * float(abs(x) + abs(y)));
-            acc += w * imageLoad(FLOW_E_BA_PROP_ST1, ivec2(floor((FLOW_E_AB_PROP_size) * (uv + o)))).xy;
-            wsum += w;
-        }
-    float w_own = PROP_SELF_WEIGHT * c_own * c_own;
-    if (wsum + w_own <= 0.0)
-        { imageStore(FLOW_E_BA_PROP_ST2, ivec2(gl_FragCoord.xy), vec4(own, 0.0, 0.0)); return; }
-    { imageStore(FLOW_E_BA_PROP_ST2, ivec2(gl_FragCoord.xy), vec4((w_own * own + acc) / (w_own + wsum), 0.0, 0.0)); return; }
-}
 vec4 hook() {
-    hook_ba();
     vec2 uv = FLOW_E_AB_PROP_pos;
     vec2 own = FLOW_E_AB_PROP_tex(uv).xy;
     float c_own = prop_conf(uv);
@@ -1773,17 +1719,10 @@ vec4 hook() {
     return vec4((w_own * own + acc) / (w_own + wsum), 0.0, 0.0);
 }
 
-//!TEXTURE FLOW_E_BA_PROP_ST3
-//!SIZE 480 270
-//!FORMAT rgba32f
-//!STORAGE
-
 //!HOOK FRAME_MIX
 //!BIND FLOW_E_AB_PROP
 //!BIND LUMA_A_E
 //!BIND LUMA_B_E
-//!BIND FLOW_E_BA_PROP_ST2
-//!BIND FLOW_E_BA_PROP_ST3
 //!SAVE FLOW_E_AB_PROP
 //!WIDTH HOOKED.w 8 /
 //!HEIGHT HOOKED.h 8 /
@@ -1803,27 +1742,7 @@ float prop_conf(vec2 uv) {
     return clamp((hi - lo) / PROP_CONF_FULL, 0.0, 1.0);
 }
 
-void hook_ba() {
-    vec2 uv = FLOW_E_AB_PROP_pos;
-    vec2 own = imageLoad(FLOW_E_BA_PROP_ST2, ivec2(floor((FLOW_E_AB_PROP_size) * (uv)))).xy;
-    float c_own = prop_conf(uv);
-    vec2 acc = vec2(0.0);
-    float wsum = 0.0;
-    for (int y = -2; y <= 2; y++)
-        for (int x = -2; x <= 2; x++) {
-            if (x == 0 && y == 0) continue;
-            vec2 o = vec2(float(x), float(y)) * FLOW_E_AB_PROP_pt;
-            float w = prop_conf(uv + o) / (1.0 + 0.5 * float(abs(x) + abs(y)));
-            acc += w * imageLoad(FLOW_E_BA_PROP_ST2, ivec2(floor((FLOW_E_AB_PROP_size) * (uv + o)))).xy;
-            wsum += w;
-        }
-    float w_own = PROP_SELF_WEIGHT * c_own * c_own;
-    if (wsum + w_own <= 0.0)
-        { imageStore(FLOW_E_BA_PROP_ST3, ivec2(gl_FragCoord.xy), vec4(own, 0.0, 0.0)); return; }
-    { imageStore(FLOW_E_BA_PROP_ST3, ivec2(gl_FragCoord.xy), vec4((w_own * own + acc) / (w_own + wsum), 0.0, 0.0)); return; }
-}
 vec4 hook() {
-    hook_ba();
     vec2 uv = FLOW_E_AB_PROP_pos;
     vec2 own = FLOW_E_AB_PROP_tex(uv).xy;
     float c_own = prop_conf(uv);
@@ -1843,19 +1762,11 @@ vec4 hook() {
     return vec4((w_own * own + acc) / (w_own + wsum), 0.0, 0.0);
 }
 
-//!TEXTURE FLOW_E_BA_ST
-//!SIZE 480 270
-//!FORMAT rgba32f
-//!STORAGE
-
 //!HOOK FRAME_MIX
 //!BIND FLOW_E_AB_RAW
 //!BIND FLOW_E_AB_PROP
 //!BIND LUMA_A_E
 //!BIND LUMA_B_E
-//!BIND FLOW_E_BA_RAW
-//!BIND FLOW_E_BA_PROP_ST3
-//!BIND FLOW_E_BA_ST
 //!SAVE FLOW_E_AB
 //!WIDTH HOOKED.w 8 /
 //!HEIGHT HOOKED.h 8 /
@@ -1911,41 +1822,7 @@ float sad5_ba(vec2 uv, vec2 flow_uv) {
     return s;
 }
 
-void hook_ba() {
-    vec2 uv = FLOW_E_AB_PROP_pos;
-    vec2 raw = FLOW_E_BA_RAW_tex(uv).xy;
-    vec2 prop = imageLoad(FLOW_E_BA_PROP_ST3, ivec2(floor((FLOW_E_AB_PROP_size) * (uv)))).xy;
-    if (prop == raw)
-        { imageStore(FLOW_E_BA_ST, ivec2(gl_FragCoord.xy), vec4(raw, 0.0, 0.0)); return; }
-    float s_prop = sad5_ba(uv, prop * LUMA_B_E_pt);
-    float s_raw  = sad5_ba(uv, raw * LUMA_B_E_pt);
-    float s_zero = sad5_ba(uv, vec2(0.0));
-    float best = min(s_raw, s_zero);
-    bool textured = prop_conf_ba(uv) >= PROP_FLAT_CONF;
-    if (textured) {
-        // prop9: a proven consensus wins outright; where the neighbourhood
-        // DISAGREES with the raw flow and neither is proven, the raw flow is
-        // an alias suspect and a blend (zero) beats trusting it; otherwise
-        // the three-way rule as before.
-        if (s_prop < best * (1.0 - PROP_CHECK_MARGIN) - 1e-4)
-            { imageStore(FLOW_E_BA_ST, ivec2(gl_FragCoord.xy), vec4(prop, 0.0, 0.0)); return; }
-        // prop12: the disagreement threshold scales with the flow, so a fast
-        // translation whose consensus is diluted by background votes near its
-        // edges is not mistaken for an alias (aliases sit texels apart at
-        // speeds of a texel or two).
-        if (length(prop - raw) > max(PROP_DISAGREE, PROP_DISAGREE_REL * length(raw)))
-            { imageStore(FLOW_E_BA_ST, ivec2(gl_FragCoord.xy), vec4(0.0)); return; }
-        if (s_prop <= best * (1.0 + PROP_CHECK_MARGIN) + 1e-4)
-            { imageStore(FLOW_E_BA_ST, ivec2(gl_FragCoord.xy), vec4(prop, 0.0, 0.0)); return; }
-        { imageStore(FLOW_E_BA_ST, ivec2(gl_FragCoord.xy), s_raw <= s_zero ? vec4(raw, 0.0, 0.0) : vec4(0.0)); return; }
-    }
-    // flat: evidence required
-    if (s_prop < best * (1.0 - PROP_CHECK_MARGIN) - 1e-4)
-        { imageStore(FLOW_E_BA_ST, ivec2(gl_FragCoord.xy), vec4(prop, 0.0, 0.0)); return; }
-    { imageStore(FLOW_E_BA_ST, ivec2(gl_FragCoord.xy), vec4(0.0)); return; }
-}
 vec4 hook() {
-    hook_ba();
     vec2 uv = FLOW_E_AB_PROP_pos;
     vec2 raw = FLOW_E_AB_RAW_tex(uv).xy;
     vec2 prop = FLOW_E_AB_PROP_tex(uv).xy;
@@ -2140,141 +2017,6 @@ vec4 hook() {
     }
     vec4 result = vec4(best_off / LUMA_A_Q_pt, 0.0, 0.0);
     imageStore(FLOW_Q_AB_CACHE, coord, result);
-    return result;
-}
-
-//!TEXTURE FLOW_Q_BA_CACHE
-//!SIZE 960 540
-//!FORMAT rgba32f
-//!STORAGE
-
-//!HOOK FRAME_MIX
-//!BIND FLOW_Q_BA_CACHE
-//!BIND LUMA_A_Q
-//!BIND LUMA_B_Q
-//!BIND LUMA_B_E
-//!BIND FLOW_E_BA_ST
-//!BIND FLOW_E_AB
-//!SAVE FLOW_Q_BA
-//!WIDTH HOOKED.w 4 /
-//!HEIGHT HOOKED.h 4 /
-//!COMPONENTS 2
-//!DESC [high] refine flow B->A (1/4 res)
-
-// See snap_texel() in the A->B pass above.
-vec2 snap_texel(vec2 uv, vec2 size) {
-    return (floor(uv * size) + 0.5) / size;
-}
-
-// See COARSE_WINDOW_RADIUS in the A->B pass above.
-const int COARSE_WINDOW_RADIUS = 1;
-
-float sad5x5_q2(vec2 uv_b, vec2 uv_a) {
-    float s = 0.0;
-    for (int y = -COARSE_WINDOW_RADIUS; y <= COARSE_WINDOW_RADIUS; y++) {
-        for (int x = -COARSE_WINDOW_RADIUS; x <= COARSE_WINDOW_RADIUS; x++) {
-            vec2 o = vec2(float(x), float(y)) * LUMA_A_Q_pt;
-            s += abs(LUMA_B_Q_tex(uv_b + o).r - LUMA_A_Q_tex(uv_a + o).r);
-        }
-    }
-    return s;
-}
-
-// See local_contrast_5x5_e()/MIN_CONTRAST in the 1/8-res A->B pass.
-// See the E-level A->B pass for the full reasoning.
-// RETIRED 2026-10-04 (REPAIRS.md L3): at 0.0 this level's gate could never
-// fire (a contrast is never negative, and the test was a strict <), yet its
-// contrast window was read for every texel. The early exit is gone; the
-// 1/16 level keeps its gate at 0.02.
-
-float local_contrast_5x5_q2(vec2 uv_b) {
-    float lo = 1.0, hi = 0.0;
-    for (int y = -2; y <= 2; y++) {
-        for (int x = -2; x <= 2; x++) {
-            float v = LUMA_B_Q_tex(uv_b + vec2(float(x), float(y)) * LUMA_A_Q_pt).r;
-            lo = min(lo, v);
-            hi = max(hi, v);
-        }
-    }
-    return hi - lo;
-}
-
-
-// MOIRE EVIDENCE for the 1/8 level at this texel, as moire_s() reads it for the coarse level: point contrast
-// at 1/8 against the same footprint box-averaged from this level's texels. Structure between this level's
-// Nyquist and the 1/8 level's survives there as a Moire whose motion is its own (bars nine pixels apart
-// under eight-pixel sampling: the film's cage, 2026-09-21), and a flow read from it is not the frame's.
-float moire_e_B(vec2 uv) {
-    float plo = 1.0, phi = 0.0, blo = 1.0, bhi = 0.0;
-    for (int j = -1; j <= 1; j++) {
-        for (int i = -1; i <= 1; i++) {
-            vec2 c = uv + vec2(float(i), float(j)) * LUMA_B_E_pt;
-            float p = LUMA_B_E_tex(c).r;
-            float b = 0.25 * (LUMA_B_Q_tex(c + vec2(-0.25, -0.25) * LUMA_B_E_pt).r + LUMA_B_Q_tex(c + vec2(0.25, -0.25) * LUMA_B_E_pt).r
-                            + LUMA_B_Q_tex(c + vec2(-0.25, 0.25) * LUMA_B_E_pt).r + LUMA_B_Q_tex(c + vec2(0.25, 0.25) * LUMA_B_E_pt).r);
-            plo = min(plo, p); phi = max(phi, p); blo = min(blo, b); bhi = max(bhi, b);
-        }
-    }
-    float cp = phi - plo, cb = bhi - blo;
-    return cp > 0.02 ? clamp(1.0 - cb / cp, 0.0, 1.0) : 0.0;
-}
-const float MOIRE_E_MIN = 0.25;
-vec4 hook() {
-    ivec2 coord = ivec2(LUMA_B_Q_pos * LUMA_B_Q_size);
-    if (!pair_changed)
-        return imageLoad(FLOW_Q_BA_CACHE, coord);
-
-    vec2 uv_b = LUMA_B_Q_pos;
-    vec2 base_off = imageLoad(FLOW_E_BA_ST, ivec2(floor((FLOW_E_AB_size) * (snap_texel(uv_b, FLOW_E_AB_size))))).xy * 2.0 * LUMA_A_Q_pt;
-    bool moire_here = moire_e_B(uv_b) > MOIRE_E_MIN;
-
-    // See REFINE_SEARCH_RADIUS/REFINE_REG_LAMBDA in the A->B pass above.
-    const int REFINE_SEARCH_RADIUS = 2;
-    const float REFINE_REG_LAMBDA = 0.05;
-
-    vec2 best_off = base_off;
-    // See TIE_MARGIN in the coarse A->B search above.
-    const float TIE_MARGIN = 1.0e-4;
-    float best_cost = sad5x5_q2(uv_b, uv_b + base_off);
-
-    for (int y = -REFINE_SEARCH_RADIUS; y <= REFINE_SEARCH_RADIUS; y++) {
-        for (int x = -REFINE_SEARCH_RADIUS; x <= REFINE_SEARCH_RADIUS; x++) {
-            if (x == 0 && y == 0)
-                continue;
-            vec2 off = base_off + vec2(float(x), float(y)) * LUMA_A_Q_pt;
-            float cost = sad5x5_q2(uv_b, uv_b + off)
-                       + REFINE_REG_LAMBDA * length(vec2(float(x), float(y)));
-            if (cost < best_cost * (1.0 - TIE_MARGIN)) {
-                best_cost = cost;
-                best_off = off;
-            }
-        }
-    }
-    if (moire_here) {
-        // The 1/8 level's picture here was a Moire, so its flow may be the Moire's: a second descent from ZERO,
-        // and the two compete. The zero descent wins only when BOTH matches are good, a 1.5 lies between
-        // them (half way between two minima of a periodic print the match is at its worst; a flat interior
-        // matches everywhere and has no ridge, and there the seed stands) and it is the smaller motion -- only
-        // the prior knows which of two good matches is the frame's (2026-09-21).
-        vec2 z_off = vec2(0.0);
-        float z_cost = sad5x5_q2(uv_b, uv_b);
-        for (int y = -REFINE_SEARCH_RADIUS; y <= REFINE_SEARCH_RADIUS; y++) {
-            for (int x = -REFINE_SEARCH_RADIUS; x <= REFINE_SEARCH_RADIUS; x++) {
-                if (x == 0 && y == 0) continue;
-                vec2 off = vec2(float(x), float(y)) * LUMA_A_Q_pt;
-                float cost = sad5x5_q2(uv_b, uv_b + off) + REFINE_REG_LAMBDA * length(vec2(float(x), float(y)));
-                if (cost < z_cost * (1.0 - TIE_MARGIN)) { z_cost = cost; z_off = off; }
-            }
-        }
-        float good = 0.30 * 9.0 * max(local_contrast_5x5_q2(uv_b), 0.02);
-        float z_mag = length(z_off / LUMA_A_Q_pt), b_mag = length(best_off / LUMA_A_Q_pt);
-        float ridge = sad5x5_q2(uv_b, uv_b + 0.5 * (z_off + best_off));
-        if (z_cost <= good && best_cost <= good && ridge > 1.5 * good && z_mag < b_mag - 0.5) {
-            best_off = z_off; best_cost = z_cost;
-        }
-    }
-    vec4 result = vec4(best_off / LUMA_A_Q_pt, 0.0, 0.0);
-    imageStore(FLOW_Q_BA_CACHE, coord, result);
     return result;
 }
 
@@ -2644,57 +2386,6 @@ vec4 hook() {
     return result;
 }
 
-//!TEXTURE ALIAS_OUT_BA_ST
-//!SIZE 960 540
-//!FORMAT rgba32f
-//!STORAGE
-
-//!HOOK FRAME_MIX
-//!BIND FLOW_Q_BA
-//!BIND ALIAS_Q_BA_ST
-//!BIND ALIAS_Q1_BA_ST
-//!BIND ALIAS_HF_BA_ST
-//!BIND ALIAS_HB_BA_ST
-//!BIND ALIAS_VF_BA_ST
-//!BIND ALIAS_VB_BA_ST
-//!BIND ALIAS_H_DONE
-//!BIND ALIAS_V_DONE
-//!BIND ALIAS_OUT_BA_ST
-//!BIND LUMA_A_Q
-//!SAVE FLOW_Q_BA
-//!WIDTH HOOKED.w 4 /
-//!HEIGHT HOOKED.h 4 /
-//!COMPONENTS 2
-//!DESC [alias] each quarter-level cell takes its cheaper hypothesis over the four scans (BA)
-vec4 hook() {
-    ivec2 coord = ivec2(LUMA_A_Q_pos * LUMA_A_Q_size);
-    if (!pair_changed)
-        return imageLoad(ALIAS_OUT_BA_ST, coord);
-    vec2 h = FLOW_Q_BA_tex(LUMA_A_Q_pos).xy;
-    vec4 hy = imageLoad(ALIAS_Q_BA_ST, coord);
-    vec4 q1 = imageLoad(ALIAS_Q1_BA_ST, coord);
-    vec2 b1 = q1.xy, w = q1.zw;
-    vec4 result = vec4(h, 0.0, 0.0);
-    if (hy.z >= 0.0 && hy.w < 500000.0) {
-        vec2 tot = imageLoad(ALIAS_HF_BA_ST, coord).xy + imageLoad(ALIAS_HB_BA_ST, coord).xy
-                 + imageLoad(ALIAS_VF_BA_ST, coord).xy + imageLoad(ALIAS_VB_BA_ST, coord).xy - 3.0 * hy.zw;
-        // The carry only SWITCHES ALIASES: in a TIED cell (both data costs exactly 0) whose own flow lies in one of its
-        // two basins, it may move the flow to the other. Build 3 also replaced a flow that lay in neither basin, and an
-        // untied cell's flow when the scans outvoted its margin: near a pattern's ends a cell's 1/8-level basins can
-        // both be wrong, and the level's right flow was overwritten -- V1 and H1 fell from 55 to 34 dB, R3 -7.6.
-        // Build 5, the aperture: membership and the switch are measured across the cell's stripes only, and a switched
-        // flow keeps the level's own component along them (w = 0 on isotropic texture: build 4 exactly).
-        vec2 pick = tot.y < tot.x - 1.0e-4 ? hy.xy : b1;
-        vec2 e1 = b1 - h, e2 = hy.xy - h, mv = pick - h;
-        e1 -= dot(e1, w) * w; e2 -= dot(e2, w) * w; mv -= dot(mv, w) * w;
-        float in1 = max(abs(e1.x), abs(e1.y)), in2 = max(abs(e2.x), abs(e2.y));
-        bool tied = hy.z == 0.0 && hy.w == 0.0;
-        if (tied && min(in1, in2) < 1.5 && max(abs(mv.x), abs(mv.y)) >= 1.5) result = vec4(pick + dot(h - pick, w) * w, 0.0, 0.0);
-    }
-    imageStore(ALIAS_OUT_BA_ST, coord, result);
-    return result;
-}
-
 // ---------------------------------------------------------------------
 // VARIATIONAL REFINEMENT at Q (4x downsampled), 8 iterations per
 // direction. Warped Horn-Schunck with edge-aware smoothness.
@@ -2881,173 +2572,6 @@ vec4 hook() {
         }
     }
     imageStore(ADOPT_OUT_AB_ST, coord, result);
-    return result;
-}
-
-//!HOOK FRAME_MIX
-//!BIND FLOW_Q_BA
-//!SAVE ADOPT_ANCH_BA
-//!WIDTH HOOKED.w 4 /
-//!HEIGHT HOOKED.h 4 /
-//!COMPONENTS 1
-//!DESC [adopt] anchors (BA): a moving quarter texel with a still one within 16 px
-vec4 hook() {
-    if (!pair_changed) return vec4(0.0);                  // unused: the adopt pass reuses its cached result
-    vec2 uv = FLOW_Q_BA_pos;
-    float m = length(FLOW_Q_BA_tex(uv).xy * 4.0);
-    if (m <= 0.50) return vec4(0.0);
-    for (int y = -4; y <= 4; y++)
-        for (int x = -4; x <= 4; x++) {
-            vec2 p = uv + vec2(float(x), float(y)) * FLOW_Q_BA_pt;
-            if (length(FLOW_Q_BA_tex(p).xy * 4.0) <= 0.50) return vec4(1.0);
-        }
-    return vec4(0.0);
-}
-
-//!HOOK FRAME_MIX
-//!BIND FLOW_Q_BA
-//!BIND ADOPT_ANCH_BA
-//!SAVE ADOPT_HIST_BA
-//!WIDTH HOOKED.w 31 + 32 / 65 *
-//!HEIGHT HOOKED.h 31 + 32 /
-//!COMPONENTS 2
-//!DESC [adopt] histograms (BA): each 32-px cell's anchors' flow components in one-pixel bins
-vec4 hook() {
-    if (!pair_changed) return vec4(0.0);
-    ivec2 t = ivec2(gl_FragCoord.xy);                        // this pass's own texel (its output has no _pos)
-    int cx = t.x / 65, b = t.x - cx * 65;
-    float cntx = 0.0, cnty = 0.0;
-    for (int y = 0; y < 8; y++)
-        for (int x = 0; x < 8; x++) {
-            vec2 p = (vec2(float(cx * 8 + x), float(t.y * 8 + y)) + 0.5) * FLOW_Q_BA_pt;
-            if (p.x >= 1.0 || p.y >= 1.0 || ADOPT_ANCH_BA_tex(p).r < 0.5) continue;
-            vec2 f = clamp(round(FLOW_Q_BA_tex(p).xy * 4.0), -32.0, 32.0) + 32.0;
-            if (int(f.x) == b) cntx += 1.0;
-            if (int(f.y) == b) cnty += 1.0;
-        }
-    return vec4(cntx, cnty, 0.0, 0.0);
-}
-
-//!HOOK FRAME_MIX
-//!BIND ADOPT_HIST_BA
-//!SAVE ADOPT_HSUM_BA
-//!WIDTH HOOKED.w 31 + 32 / 65 *
-//!HEIGHT HOOKED.h 31 + 32 /
-//!COMPONENTS 2
-//!DESC [adopt] the wide sum along the rows (BA): each bin over +-8 coarse cells (separable: the same sums)
-vec4 hook() {
-    if (!pair_changed) return vec4(0.0);
-    ivec2 t = ivec2(gl_FragCoord.xy);
-    ivec2 n = ivec2(ADOPT_HIST_BA_size) / ivec2(65, 1);
-    int cx = t.x / 65, b = t.x - cx * 65;
-    vec2 s = vec2(0.0);
-    for (int i = max(cx - 8, 0); i <= min(cx + 8, n.x - 1); i++)
-        s += ADOPT_HIST_BA_tex((vec2(float(i * 65 + b), float(t.y)) + 0.5) * ADOPT_HIST_BA_pt).xy;
-    return vec4(s, 0.0, 0.0);
-}
-
-//!HOOK FRAME_MIX
-//!BIND ADOPT_HSUM_BA
-//!SAVE ADOPT_VSUM_BA
-//!WIDTH HOOKED.w 31 + 32 / 65 *
-//!HEIGHT HOOKED.h 31 + 32 /
-//!COMPONENTS 2
-//!DESC [adopt] the wide sum along the columns (BA)
-vec4 hook() {
-    if (!pair_changed) return vec4(0.0);
-    ivec2 t = ivec2(gl_FragCoord.xy);
-    ivec2 n = ivec2(ADOPT_HSUM_BA_size) / ivec2(65, 1);
-    vec2 s = vec2(0.0);
-    for (int j = max(t.y - 8, 0); j <= min(t.y + 8, n.y - 1); j++)
-        s += ADOPT_HSUM_BA_tex((vec2(float(t.x), float(j)) + 0.5) * ADOPT_HSUM_BA_pt).xy;
-    return vec4(s, 0.0, 0.0);
-}
-
-//!HOOK FRAME_MIX
-//!BIND ADOPT_VSUM_BA
-//!SAVE ADOPT_REF_BA
-//!WIDTH HOOKED.w 31 + 32 /
-//!HEIGHT HOOKED.h 31 + 32 /
-//!COMPONENTS 4
-//!DESC [adopt] the reference (BA): the anchors' median within +-256 px of each 32-px cell
-vec4 hook() {
-    if (!pair_changed) return vec4(0.0);
-    ivec2 c = ivec2(gl_FragCoord.xy);                        // this pass's own coarse cell
-    float hx[65], hy[65];
-    float tot = 0.0;
-    for (int b = 0; b < 65; b++) {                       // the window's sums, already summed by the two passes above
-        vec2 h = ADOPT_VSUM_BA_tex((vec2(float(c.x * 65 + b), float(c.y)) + 0.5) * ADOPT_VSUM_BA_pt).xy;
-        hx[b] = h.x; hy[b] = h.y;
-    }
-    for (int b = 0; b < 65; b++) tot += hx[b];
-    if (tot < 8.0) return vec4(0.0, 0.0, tot, 0.0);
-    float mx = 0.0, my = 0.0, sx = 0.0, sy = 0.0;
-    bool dx = false, dy = false;
-    for (int b = 0; b < 65; b++) {
-        sx += hx[b]; sy += hy[b];
-        if (!dx && sx >= 0.5 * tot) { mx = float(b) - 32.0; dx = true; }
-        if (!dy && sy >= 0.5 * tot) { my = float(b) - 32.0; dy = true; }
-    }
-    return vec4(mx, my, tot, 1.0);
-}
-
-//!TEXTURE ADOPT_OUT_BA_ST
-//!SIZE 960 540
-//!FORMAT rgba32f
-//!STORAGE
-
-//!HOOK FRAME_MIX
-//!BIND FLOW_Q_BA
-//!BIND ADOPT_REF_BA
-//!BIND ALIAS_E_M_ST
-//!BIND ADOPT_OUT_BA_ST
-//!BIND LUMA_A_Q
-//!BIND LUMA_B_Q
-//!SAVE FLOW_Q_BA
-//!WIDTH HOOKED.w 4 /
-//!HEIGHT HOOKED.h 4 /
-//!COMPONENTS 2
-//!DESC [adopt] a locked print adopts its outline's motion (BA)
-float adopt_sad(vec2 uv, vec2 d) {
-    float s = 0.0;
-    for (int y = -2; y <= 2; y++)
-        for (int x = -2; x <= 2; x++) {
-            vec2 o = vec2(float(x), float(y)) * LUMA_A_Q_pt;
-            s += abs(LUMA_B_Q_tex(uv + o).r - LUMA_A_Q_tex(uv + o + d * LUMA_A_Q_pt).r);
-        }
-    return s;
-}
-vec4 hook() {
-    ivec2 coord = ivec2(LUMA_A_Q_pos * LUMA_A_Q_size);
-    if (!pair_changed)
-        return imageLoad(ADOPT_OUT_BA_ST, coord);
-    vec2 uv = LUMA_A_Q_pos;
-    vec2 h = FLOW_Q_BA_tex(uv).xy;                          // quarter texels
-    vec4 result = vec4(h, 0.0, 0.0);
-    // THE GATE: a rival basin within margin at the 1/8 level, in this cell or a neighbour (the print's signature)
-    bool gate = false;
-    ivec2 ec = coord / 2, en = ivec2(LUMA_A_Q_size) / 2;       // the 1/8 grid actually in use (the storage is 4K-sized)
-    for (int y = -1; y <= 1; y++)
-        for (int x = -1; x <= 1; x++) {
-            ivec2 e = clamp(ec + ivec2(x, y), ivec2(0), en - 1);
-            if (imageLoad(ALIAS_E_M_ST, e).y < 0.30) gate = true;
-        }
-    if (gate && length(h * 4.0) > 0.50) {
-        vec4 ref = ADOPT_REF_BA_tex((vec2(coord / 8) + 0.5) * ADOPT_REF_BA_pt);   // this texel's 32-px cell, exactly
-        if (ref.w > 0.5) {
-            vec2 best = ref.xy * 0.25;                          // px -> quarter texels
-            float bc = adopt_sad(uv, best);
-            for (int j = -2; j <= 2; j++)
-                for (int i = -2; i <= 2; i++) {
-                    vec2 d = ref.xy * 0.25 + vec2(float(i), float(j)) * 0.125;   // +-1 px in half-pixel steps
-                    float c = adopt_sad(uv, d);
-                    if (c < bc) { bc = c; best = d; }
-                }
-            if (length((best - h) * 4.0) > 2.0 && bc <= adopt_sad(uv, h))
-                result = vec4(best, 0.0, 0.0);
-        }
-    }
-    imageStore(ADOPT_OUT_BA_ST, coord, result);
     return result;
 }
 //!HOOK FRAME_MIX
@@ -3394,350 +2918,6 @@ vec4 hook() {
     float denom = VAR_ALPHA * VAR_ALPHA + Ix * Ix + Iy * Iy;
     return vec4(favg - vec2(Ix, Iy) * (rho / denom), 0.0, 0.0);
 }
-//!HOOK FRAME_MIX
-//!BIND FLOW_Q_BA
-//!BIND LUMA_B_Q
-//!BIND LUMA_A_Q
-//!SAVE FLOW_Q_BA
-//!WIDTH HOOKED.w 4 /
-//!HEIGHT HOOKED.h 4 /
-//!COMPONENTS 2
-//!DESC [high] variational Q B->A (iter 1)
-const float VAR_ALPHA = 0.3;
-const float VAR_SIGMA_LUMA = 0.08;
-vec4 hook() {
-    vec2 uv = FLOW_Q_BA_pos;
-    vec2 f0 = FLOW_Q_BA_tex(uv).xy;
-    vec2 pt = LUMA_B_Q_pt;
-
-    float cl = LUMA_B_Q_tex(uv).r;
-    vec2 acc = vec2(0.0);
-    float wsum = 0.0;
-    for (int y = -1; y <= 1; y++) {
-        for (int x = -1; x <= 1; x++) {
-            if (x == 0 && y == 0) continue;
-            vec2 o = vec2(float(x), float(y)) * pt;
-            float dl = LUMA_B_Q_tex(uv + o).r - cl;
-            float ws = (x == 0 || y == 0) ? 1.0 : 0.70710678;
-            float w = ws * exp(-(dl * dl) / (2.0 * VAR_SIGMA_LUMA * VAR_SIGMA_LUMA));
-            vec2 nf = FLOW_Q_BA_tex(uv + o).xy;
-            acc += nf * w;
-            wsum += w;
-        }
-    }
-    vec2 favg = wsum > 0.0001 ? acc / wsum : f0;
-
-    vec2 wuv = uv + f0 * pt;
-    float It = LUMA_A_Q_tex(wuv).r - LUMA_B_Q_tex(uv).r;
-    float Ix = (LUMA_A_Q_tex(wuv + vec2(pt.x, 0.0)).r - LUMA_A_Q_tex(wuv - vec2(pt.x, 0.0)).r) * 0.5;
-    float Iy = (LUMA_A_Q_tex(wuv + vec2(0.0, pt.y)).r - LUMA_A_Q_tex(wuv - vec2(0.0, pt.y)).r) * 0.5;
-
-    vec2 g = favg - f0;
-    float rho = Ix * g.x + Iy * g.y + It;
-    float denom = VAR_ALPHA * VAR_ALPHA + Ix * Ix + Iy * Iy;
-    return vec4(favg - vec2(Ix, Iy) * (rho / denom), 0.0, 0.0);
-}
-//!HOOK FRAME_MIX
-//!BIND FLOW_Q_BA
-//!BIND LUMA_B_Q
-//!BIND LUMA_A_Q
-//!SAVE FLOW_Q_BA
-//!WIDTH HOOKED.w 4 /
-//!HEIGHT HOOKED.h 4 /
-//!COMPONENTS 2
-//!DESC [high] variational Q B->A (iter 2)
-const float VAR_ALPHA = 0.3;
-const float VAR_SIGMA_LUMA = 0.08;
-vec4 hook() {
-    vec2 uv = FLOW_Q_BA_pos;
-    vec2 f0 = FLOW_Q_BA_tex(uv).xy;
-    vec2 pt = LUMA_B_Q_pt;
-
-    float cl = LUMA_B_Q_tex(uv).r;
-    vec2 acc = vec2(0.0);
-    float wsum = 0.0;
-    for (int y = -1; y <= 1; y++) {
-        for (int x = -1; x <= 1; x++) {
-            if (x == 0 && y == 0) continue;
-            vec2 o = vec2(float(x), float(y)) * pt;
-            float dl = LUMA_B_Q_tex(uv + o).r - cl;
-            float ws = (x == 0 || y == 0) ? 1.0 : 0.70710678;
-            float w = ws * exp(-(dl * dl) / (2.0 * VAR_SIGMA_LUMA * VAR_SIGMA_LUMA));
-            vec2 nf = FLOW_Q_BA_tex(uv + o).xy;
-            acc += nf * w;
-            wsum += w;
-        }
-    }
-    vec2 favg = wsum > 0.0001 ? acc / wsum : f0;
-
-    vec2 wuv = uv + f0 * pt;
-    float It = LUMA_A_Q_tex(wuv).r - LUMA_B_Q_tex(uv).r;
-    float Ix = (LUMA_A_Q_tex(wuv + vec2(pt.x, 0.0)).r - LUMA_A_Q_tex(wuv - vec2(pt.x, 0.0)).r) * 0.5;
-    float Iy = (LUMA_A_Q_tex(wuv + vec2(0.0, pt.y)).r - LUMA_A_Q_tex(wuv - vec2(0.0, pt.y)).r) * 0.5;
-
-    vec2 g = favg - f0;
-    float rho = Ix * g.x + Iy * g.y + It;
-    float denom = VAR_ALPHA * VAR_ALPHA + Ix * Ix + Iy * Iy;
-    return vec4(favg - vec2(Ix, Iy) * (rho / denom), 0.0, 0.0);
-}
-//!HOOK FRAME_MIX
-//!BIND FLOW_Q_BA
-//!BIND LUMA_B_Q
-//!BIND LUMA_A_Q
-//!SAVE FLOW_Q_BA
-//!WIDTH HOOKED.w 4 /
-//!HEIGHT HOOKED.h 4 /
-//!COMPONENTS 2
-//!DESC [high] variational Q B->A (iter 3)
-const float VAR_ALPHA = 0.3;
-const float VAR_SIGMA_LUMA = 0.08;
-vec4 hook() {
-    vec2 uv = FLOW_Q_BA_pos;
-    vec2 f0 = FLOW_Q_BA_tex(uv).xy;
-    vec2 pt = LUMA_B_Q_pt;
-
-    float cl = LUMA_B_Q_tex(uv).r;
-    vec2 acc = vec2(0.0);
-    float wsum = 0.0;
-    for (int y = -1; y <= 1; y++) {
-        for (int x = -1; x <= 1; x++) {
-            if (x == 0 && y == 0) continue;
-            vec2 o = vec2(float(x), float(y)) * pt;
-            float dl = LUMA_B_Q_tex(uv + o).r - cl;
-            float ws = (x == 0 || y == 0) ? 1.0 : 0.70710678;
-            float w = ws * exp(-(dl * dl) / (2.0 * VAR_SIGMA_LUMA * VAR_SIGMA_LUMA));
-            vec2 nf = FLOW_Q_BA_tex(uv + o).xy;
-            acc += nf * w;
-            wsum += w;
-        }
-    }
-    vec2 favg = wsum > 0.0001 ? acc / wsum : f0;
-
-    vec2 wuv = uv + f0 * pt;
-    float It = LUMA_A_Q_tex(wuv).r - LUMA_B_Q_tex(uv).r;
-    float Ix = (LUMA_A_Q_tex(wuv + vec2(pt.x, 0.0)).r - LUMA_A_Q_tex(wuv - vec2(pt.x, 0.0)).r) * 0.5;
-    float Iy = (LUMA_A_Q_tex(wuv + vec2(0.0, pt.y)).r - LUMA_A_Q_tex(wuv - vec2(0.0, pt.y)).r) * 0.5;
-
-    vec2 g = favg - f0;
-    float rho = Ix * g.x + Iy * g.y + It;
-    float denom = VAR_ALPHA * VAR_ALPHA + Ix * Ix + Iy * Iy;
-    return vec4(favg - vec2(Ix, Iy) * (rho / denom), 0.0, 0.0);
-}
-//!HOOK FRAME_MIX
-//!BIND FLOW_Q_BA
-//!BIND LUMA_B_Q
-//!BIND LUMA_A_Q
-//!SAVE FLOW_Q_BA
-//!WIDTH HOOKED.w 4 /
-//!HEIGHT HOOKED.h 4 /
-//!COMPONENTS 2
-//!DESC [high] variational Q B->A (iter 4)
-const float VAR_ALPHA = 0.3;
-const float VAR_SIGMA_LUMA = 0.08;
-vec4 hook() {
-    vec2 uv = FLOW_Q_BA_pos;
-    vec2 f0 = FLOW_Q_BA_tex(uv).xy;
-    vec2 pt = LUMA_B_Q_pt;
-
-    float cl = LUMA_B_Q_tex(uv).r;
-    vec2 acc = vec2(0.0);
-    float wsum = 0.0;
-    for (int y = -1; y <= 1; y++) {
-        for (int x = -1; x <= 1; x++) {
-            if (x == 0 && y == 0) continue;
-            vec2 o = vec2(float(x), float(y)) * pt;
-            float dl = LUMA_B_Q_tex(uv + o).r - cl;
-            float ws = (x == 0 || y == 0) ? 1.0 : 0.70710678;
-            float w = ws * exp(-(dl * dl) / (2.0 * VAR_SIGMA_LUMA * VAR_SIGMA_LUMA));
-            vec2 nf = FLOW_Q_BA_tex(uv + o).xy;
-            acc += nf * w;
-            wsum += w;
-        }
-    }
-    vec2 favg = wsum > 0.0001 ? acc / wsum : f0;
-
-    vec2 wuv = uv + f0 * pt;
-    float It = LUMA_A_Q_tex(wuv).r - LUMA_B_Q_tex(uv).r;
-    float Ix = (LUMA_A_Q_tex(wuv + vec2(pt.x, 0.0)).r - LUMA_A_Q_tex(wuv - vec2(pt.x, 0.0)).r) * 0.5;
-    float Iy = (LUMA_A_Q_tex(wuv + vec2(0.0, pt.y)).r - LUMA_A_Q_tex(wuv - vec2(0.0, pt.y)).r) * 0.5;
-
-    vec2 g = favg - f0;
-    float rho = Ix * g.x + Iy * g.y + It;
-    float denom = VAR_ALPHA * VAR_ALPHA + Ix * Ix + Iy * Iy;
-    return vec4(favg - vec2(Ix, Iy) * (rho / denom), 0.0, 0.0);
-}
-//!HOOK FRAME_MIX
-//!BIND FLOW_Q_BA
-//!BIND LUMA_B_Q
-//!BIND LUMA_A_Q
-//!SAVE FLOW_Q_BA
-//!WIDTH HOOKED.w 4 /
-//!HEIGHT HOOKED.h 4 /
-//!COMPONENTS 2
-//!DESC [high] variational Q B->A (iter 5)
-const float VAR_ALPHA = 0.3;
-const float VAR_SIGMA_LUMA = 0.08;
-vec4 hook() {
-    vec2 uv = FLOW_Q_BA_pos;
-    vec2 f0 = FLOW_Q_BA_tex(uv).xy;
-    vec2 pt = LUMA_B_Q_pt;
-
-    float cl = LUMA_B_Q_tex(uv).r;
-    vec2 acc = vec2(0.0);
-    float wsum = 0.0;
-    for (int y = -1; y <= 1; y++) {
-        for (int x = -1; x <= 1; x++) {
-            if (x == 0 && y == 0) continue;
-            vec2 o = vec2(float(x), float(y)) * pt;
-            float dl = LUMA_B_Q_tex(uv + o).r - cl;
-            float ws = (x == 0 || y == 0) ? 1.0 : 0.70710678;
-            float w = ws * exp(-(dl * dl) / (2.0 * VAR_SIGMA_LUMA * VAR_SIGMA_LUMA));
-            vec2 nf = FLOW_Q_BA_tex(uv + o).xy;
-            acc += nf * w;
-            wsum += w;
-        }
-    }
-    vec2 favg = wsum > 0.0001 ? acc / wsum : f0;
-
-    vec2 wuv = uv + f0 * pt;
-    float It = LUMA_A_Q_tex(wuv).r - LUMA_B_Q_tex(uv).r;
-    float Ix = (LUMA_A_Q_tex(wuv + vec2(pt.x, 0.0)).r - LUMA_A_Q_tex(wuv - vec2(pt.x, 0.0)).r) * 0.5;
-    float Iy = (LUMA_A_Q_tex(wuv + vec2(0.0, pt.y)).r - LUMA_A_Q_tex(wuv - vec2(0.0, pt.y)).r) * 0.5;
-
-    vec2 g = favg - f0;
-    float rho = Ix * g.x + Iy * g.y + It;
-    float denom = VAR_ALPHA * VAR_ALPHA + Ix * Ix + Iy * Iy;
-    return vec4(favg - vec2(Ix, Iy) * (rho / denom), 0.0, 0.0);
-}
-//!HOOK FRAME_MIX
-//!BIND FLOW_Q_BA
-//!BIND LUMA_B_Q
-//!BIND LUMA_A_Q
-//!SAVE FLOW_Q_BA
-//!WIDTH HOOKED.w 4 /
-//!HEIGHT HOOKED.h 4 /
-//!COMPONENTS 2
-//!DESC [high] variational Q B->A (iter 6)
-const float VAR_ALPHA = 0.3;
-const float VAR_SIGMA_LUMA = 0.08;
-vec4 hook() {
-    vec2 uv = FLOW_Q_BA_pos;
-    vec2 f0 = FLOW_Q_BA_tex(uv).xy;
-    vec2 pt = LUMA_B_Q_pt;
-
-    float cl = LUMA_B_Q_tex(uv).r;
-    vec2 acc = vec2(0.0);
-    float wsum = 0.0;
-    for (int y = -1; y <= 1; y++) {
-        for (int x = -1; x <= 1; x++) {
-            if (x == 0 && y == 0) continue;
-            vec2 o = vec2(float(x), float(y)) * pt;
-            float dl = LUMA_B_Q_tex(uv + o).r - cl;
-            float ws = (x == 0 || y == 0) ? 1.0 : 0.70710678;
-            float w = ws * exp(-(dl * dl) / (2.0 * VAR_SIGMA_LUMA * VAR_SIGMA_LUMA));
-            vec2 nf = FLOW_Q_BA_tex(uv + o).xy;
-            acc += nf * w;
-            wsum += w;
-        }
-    }
-    vec2 favg = wsum > 0.0001 ? acc / wsum : f0;
-
-    vec2 wuv = uv + f0 * pt;
-    float It = LUMA_A_Q_tex(wuv).r - LUMA_B_Q_tex(uv).r;
-    float Ix = (LUMA_A_Q_tex(wuv + vec2(pt.x, 0.0)).r - LUMA_A_Q_tex(wuv - vec2(pt.x, 0.0)).r) * 0.5;
-    float Iy = (LUMA_A_Q_tex(wuv + vec2(0.0, pt.y)).r - LUMA_A_Q_tex(wuv - vec2(0.0, pt.y)).r) * 0.5;
-
-    vec2 g = favg - f0;
-    float rho = Ix * g.x + Iy * g.y + It;
-    float denom = VAR_ALPHA * VAR_ALPHA + Ix * Ix + Iy * Iy;
-    return vec4(favg - vec2(Ix, Iy) * (rho / denom), 0.0, 0.0);
-}
-//!HOOK FRAME_MIX
-//!BIND FLOW_Q_BA
-//!BIND LUMA_B_Q
-//!BIND LUMA_A_Q
-//!SAVE FLOW_Q_BA
-//!WIDTH HOOKED.w 4 /
-//!HEIGHT HOOKED.h 4 /
-//!COMPONENTS 2
-//!DESC [high] variational Q B->A (iter 7)
-const float VAR_ALPHA = 0.3;
-const float VAR_SIGMA_LUMA = 0.08;
-vec4 hook() {
-    vec2 uv = FLOW_Q_BA_pos;
-    vec2 f0 = FLOW_Q_BA_tex(uv).xy;
-    vec2 pt = LUMA_B_Q_pt;
-
-    float cl = LUMA_B_Q_tex(uv).r;
-    vec2 acc = vec2(0.0);
-    float wsum = 0.0;
-    for (int y = -1; y <= 1; y++) {
-        for (int x = -1; x <= 1; x++) {
-            if (x == 0 && y == 0) continue;
-            vec2 o = vec2(float(x), float(y)) * pt;
-            float dl = LUMA_B_Q_tex(uv + o).r - cl;
-            float ws = (x == 0 || y == 0) ? 1.0 : 0.70710678;
-            float w = ws * exp(-(dl * dl) / (2.0 * VAR_SIGMA_LUMA * VAR_SIGMA_LUMA));
-            vec2 nf = FLOW_Q_BA_tex(uv + o).xy;
-            acc += nf * w;
-            wsum += w;
-        }
-    }
-    vec2 favg = wsum > 0.0001 ? acc / wsum : f0;
-
-    vec2 wuv = uv + f0 * pt;
-    float It = LUMA_A_Q_tex(wuv).r - LUMA_B_Q_tex(uv).r;
-    float Ix = (LUMA_A_Q_tex(wuv + vec2(pt.x, 0.0)).r - LUMA_A_Q_tex(wuv - vec2(pt.x, 0.0)).r) * 0.5;
-    float Iy = (LUMA_A_Q_tex(wuv + vec2(0.0, pt.y)).r - LUMA_A_Q_tex(wuv - vec2(0.0, pt.y)).r) * 0.5;
-
-    vec2 g = favg - f0;
-    float rho = Ix * g.x + Iy * g.y + It;
-    float denom = VAR_ALPHA * VAR_ALPHA + Ix * Ix + Iy * Iy;
-    return vec4(favg - vec2(Ix, Iy) * (rho / denom), 0.0, 0.0);
-}
-//!HOOK FRAME_MIX
-//!BIND FLOW_Q_BA
-//!BIND LUMA_B_Q
-//!BIND LUMA_A_Q
-//!SAVE FLOW_Q_BA
-//!WIDTH HOOKED.w 4 /
-//!HEIGHT HOOKED.h 4 /
-//!COMPONENTS 2
-//!DESC [high] variational Q B->A (iter 8)
-const float VAR_ALPHA = 0.3;
-const float VAR_SIGMA_LUMA = 0.08;
-vec4 hook() {
-    vec2 uv = FLOW_Q_BA_pos;
-    vec2 f0 = FLOW_Q_BA_tex(uv).xy;
-    vec2 pt = LUMA_B_Q_pt;
-
-    float cl = LUMA_B_Q_tex(uv).r;
-    vec2 acc = vec2(0.0);
-    float wsum = 0.0;
-    for (int y = -1; y <= 1; y++) {
-        for (int x = -1; x <= 1; x++) {
-            if (x == 0 && y == 0) continue;
-            vec2 o = vec2(float(x), float(y)) * pt;
-            float dl = LUMA_B_Q_tex(uv + o).r - cl;
-            float ws = (x == 0 || y == 0) ? 1.0 : 0.70710678;
-            float w = ws * exp(-(dl * dl) / (2.0 * VAR_SIGMA_LUMA * VAR_SIGMA_LUMA));
-            vec2 nf = FLOW_Q_BA_tex(uv + o).xy;
-            acc += nf * w;
-            wsum += w;
-        }
-    }
-    vec2 favg = wsum > 0.0001 ? acc / wsum : f0;
-
-    vec2 wuv = uv + f0 * pt;
-    float It = LUMA_A_Q_tex(wuv).r - LUMA_B_Q_tex(uv).r;
-    float Ix = (LUMA_A_Q_tex(wuv + vec2(pt.x, 0.0)).r - LUMA_A_Q_tex(wuv - vec2(pt.x, 0.0)).r) * 0.5;
-    float Iy = (LUMA_A_Q_tex(wuv + vec2(0.0, pt.y)).r - LUMA_A_Q_tex(wuv - vec2(0.0, pt.y)).r) * 0.5;
-
-    vec2 g = favg - f0;
-    float rho = Ix * g.x + Iy * g.y + It;
-    float denom = VAR_ALPHA * VAR_ALPHA + Ix * Ix + Iy * Iy;
-    return vec4(favg - vec2(Ix, Iy) * (rho / denom), 0.0, 0.0);
-}
 // ---------------------------------------------------------------------
 // VECTOR MEDIAN at Q (4x downsampled), 2 pass(es) per direction.
 //
@@ -3824,90 +3004,6 @@ vec4 hook() {
         for (int x = -1; x <= 1; x++) {
             vec2 o = vec2(float(x), float(y)) * FLOW_Q_AB_pt;
             v[n++] = FLOW_Q_AB_tex(FLOW_Q_AB_pos + o).xy;
-        }
-    }
-
-    // The vector median is the candidate minimising total distance to all the
-    // others -- a joint choice over (x,y), not two independent scalar medians,
-    // which could otherwise invent a vector no neighbour actually voted for.
-    //
-    // TIE_MARGIN: deterministic tie-breaking, the same mechanism and the same
-    // reasoning as the block match's -- see the base shader's coarse A->B
-    // search. It matters here too: where several of the nine candidates agree,
-    // their totals are near-tied, so without a margin a rounding difference
-    // decides between two equal-sized clusters that disagree. The incumbent is
-    // the first candidate in a fixed scan order.
-    const float TIE_MARGIN = 1.0e-4;
-    float best_cost = 1e30;
-    vec2 best = v[4];
-    for (int i = 0; i < 9; i++) {
-        float cost = 0.0;
-        for (int j = 0; j < 9; j++)
-            cost += length(v[i] - v[j]);
-        if (cost < best_cost * (1.0 - TIE_MARGIN)) {
-            best_cost = cost;
-            best = v[i];
-        }
-    }
-
-    return vec4(best, 0.0, 0.0);
-}
-//!HOOK FRAME_MIX
-//!BIND FLOW_Q_BA
-//!SAVE FLOW_Q_BA
-//!WIDTH HOOKED.w 4 /
-//!HEIGHT HOOKED.h 4 /
-//!COMPONENTS 2
-//!DESC [high] vector median Q B->A (pass 1)
-vec4 hook() {
-    vec2 v[9];
-    int n = 0;
-    for (int y = -1; y <= 1; y++) {
-        for (int x = -1; x <= 1; x++) {
-            vec2 o = vec2(float(x), float(y)) * FLOW_Q_BA_pt;
-            v[n++] = FLOW_Q_BA_tex(FLOW_Q_BA_pos + o).xy;
-        }
-    }
-
-    // The vector median is the candidate minimising total distance to all the
-    // others -- a joint choice over (x,y), not two independent scalar medians,
-    // which could otherwise invent a vector no neighbour actually voted for.
-    //
-    // TIE_MARGIN: deterministic tie-breaking, the same mechanism and the same
-    // reasoning as the block match's -- see the base shader's coarse A->B
-    // search. It matters here too: where several of the nine candidates agree,
-    // their totals are near-tied, so without a margin a rounding difference
-    // decides between two equal-sized clusters that disagree. The incumbent is
-    // the first candidate in a fixed scan order.
-    const float TIE_MARGIN = 1.0e-4;
-    float best_cost = 1e30;
-    vec2 best = v[4];
-    for (int i = 0; i < 9; i++) {
-        float cost = 0.0;
-        for (int j = 0; j < 9; j++)
-            cost += length(v[i] - v[j]);
-        if (cost < best_cost * (1.0 - TIE_MARGIN)) {
-            best_cost = cost;
-            best = v[i];
-        }
-    }
-
-    return vec4(best, 0.0, 0.0);
-}
-//!HOOK FRAME_MIX
-//!BIND FLOW_Q_BA
-//!SAVE FLOW_Q_BA
-//!WIDTH HOOKED.w 4 /
-//!HEIGHT HOOKED.h 4 /
-//!COMPONENTS 2
-//!DESC [high] vector median Q B->A (pass 2)
-vec4 hook() {
-    vec2 v[9];
-    int n = 0;
-    for (int y = -1; y <= 1; y++) {
-        for (int x = -1; x <= 1; x++) {
-            vec2 o = vec2(float(x), float(y)) * FLOW_Q_BA_pt;
-            v[n++] = FLOW_Q_BA_tex(FLOW_Q_BA_pos + o).xy;
         }
     }
 
@@ -4173,214 +3269,6 @@ vec4 hook() {
     return result;
 }
 
-//!TEXTURE FLOW_H_BA_CACHE
-//!SIZE 1920 1080
-//!FORMAT rgba32f
-//!STORAGE
-
-//!HOOK FRAME_MIX
-//!BIND FLOW_H_BA_CACHE
-//!BIND LUMA_A_H
-//!BIND LUMA_B_H
-//!BIND FLOW_Q_BA
-//!SAVE FLOW_H_BA
-//!WIDTH HOOKED.w 2 /
-//!HEIGHT HOOKED.h 2 /
-//!COMPONENTS 2
-//!DESC [high] refine flow B->A (half res)
-
-// See snap_texel() in the A->B pass above.
-vec2 snap_texel(vec2 uv, vec2 size) {
-    return (floor(uv * size) + 0.5) / size;
-}
-
-float sad3x3_h2_self(vec2 uv, vec2 o) {
-    float s = 0.0;
-    for (int y = -1; y <= 1; y++) {
-        for (int x = -1; x <= 1; x++) {
-            vec2 d = vec2(float(x), float(y)) * LUMA_A_H_pt;
-            s += abs(LUMA_B_H_tex(uv + d).r - LUMA_B_H_tex(uv + o + d).r);
-        }
-    }
-    return s;
-}
-float sad3x3_h2(vec2 uv_b, vec2 uv_a) {
-    float s = 0.0;
-    for (int y = -1; y <= 1; y++) {
-        for (int x = -1; x <= 1; x++) {
-            vec2 o = vec2(float(x), float(y)) * LUMA_A_H_pt;
-            s += abs(LUMA_B_H_tex(uv_b + o).r - LUMA_A_H_tex(uv_a + o).r);
-        }
-    }
-    return s;
-}
-
-// See local_contrast_5x5_e()/MIN_CONTRAST in the 1/8-res A->B pass.
-// See the E-level A->B pass for the full reasoning.
-// RETIRED 2026-10-04 (REPAIRS.md L3): at 0.0 this level's gate could never
-// fire (a contrast is never negative, and the test was a strict <), yet its
-// contrast window was read for every texel. The early exit is gone; the
-// 1/16 level keeps its gate at 0.02.
-
-float local_contrast_3x3_h2(vec2 uv_b) {
-    float lo = 1.0, hi = 0.0;
-    for (int y = -1; y <= 1; y++) {
-        for (int x = -1; x <= 1; x++) {
-            float v = LUMA_B_H_tex(uv_b + vec2(float(x), float(y)) * LUMA_A_H_pt).r;
-            lo = min(lo, v);
-            hi = max(hi, v);
-        }
-    }
-    return hi - lo;
-}
-
-vec4 hook() {
-    ivec2 coord = ivec2(LUMA_B_H_pos * LUMA_B_H_size);
-    if (!pair_changed)
-        return imageLoad(FLOW_H_BA_CACHE, coord);
-
-    vec2 uv_b = LUMA_B_H_pos;
-    vec2 base_off = FLOW_Q_BA_tex(snap_texel(uv_b, FLOW_Q_BA_size)).xy * 2.0 * LUMA_A_H_pt;
-
-    // See REFINE_SEARCH_RADIUS/REFINE_REG_LAMBDA in the A->B pass above.
-    const int REFINE_SEARCH_RADIUS = 2;
-    const float REFINE_REG_LAMBDA = 0.05;
-
-    vec2 best_off = base_off;
-    // See TIE_MARGIN in the coarse A->B search above.
-    const float TIE_MARGIN = 1.0e-4;
-    float best_cost = sad3x3_h2(uv_b, uv_b + base_off);
-
-    for (int y = -REFINE_SEARCH_RADIUS; y <= REFINE_SEARCH_RADIUS; y++) {
-        for (int x = -REFINE_SEARCH_RADIUS; x <= REFINE_SEARCH_RADIUS; x++) {
-            if (x == 0 && y == 0)
-                continue;
-            vec2 off = base_off + vec2(float(x), float(y)) * LUMA_A_H_pt;
-            float cost = sad3x3_h2(uv_b, uv_b + off)
-                       + REFINE_REG_LAMBDA * length(vec2(float(x), float(y)));
-            if (cost < best_cost * (1.0 - TIE_MARGIN)) {
-                best_cost = cost;
-                best_off = off;
-            }
-        }
-    }
-
-    // SUB-PIXEL REFINEMENT. The three refine levels step WHOLE texels of
-    // their own level, added to the seed handed down, so without this no
-    // search after the coarse one can move the flow by less than one texel
-    // of this level (2 full-res px per interval in the unscaled shaders).
-    // The coarse search is not whole-texel: it steps 0.75, 0.375, ...,
-    // 0.046875 of its own texels, so its result is generally fractional, and
-    // the refine levels pass that fraction down as it is, never correcting
-    // it (BIDIRECTIONAL-AS-MATHEMATICS.md, section 12.4; until 2026-10-04
-    // this note said every search stepped whole texels). Nothing finer in
-    // the sampled field is measured: it is bilinear interpolation of a
-    // half-res texture, which looks smooth and carries no extra information.
-    //
-    // That floor is invisible to the interpolator on fast motion and decisive
-    // for the acceleration field, which is a small residual of two such flows
-    // and inherits the floor twice. Below |a| ~ 0.5 px/interval^2 the readings
-    // pin to the resampling lattice instead of tracking the truth (A4 in
-    // tests/scenes.sh errs 69-125% there).
-    //
-    // A parabola through the SAD minimum and its two neighbours per axis
-    // recovers the sub-texel position of the true minimum -- standard block
-    // matching, four extra SAD evaluations against the 25 the search already
-    // does. The denominator is the valley's curvature: at or below zero the
-    // neighbourhood is flat or non-convex, the fit is meaningless, and the
-    // integer result is kept. Displacement is clamped to half a texel because
-    // a parabola fit cannot legitimately move the minimum outside the bracket
-    // it was fitted to.
-    //
-    // Deliberately at the HALF-RES level only. The coarser levels are each
-    // re-searched by the level below, but only in whole texels around their
-    // result: a sub-texel fraction found there is not discarded by that
-    // search, it passes down uncorrected, as the coarse search's own fraction
-    // does (until 2026-10-04 this note said it was discarded).
-    //
-    // OFF in this shader, ON in the generated tridirectional one, and the
-    // asymmetry is measured rather than arbitrary. Fractional flow forces the
-    // warp to resample bilinearly where an integer half-res flow landed on
-    // pixel centres, and that costs real dB on a pure interpolator: measured
-    // -0.48 on L1_trans_8px, -0.66 on L2, -0.16 on O4_osc_flat300, with
-    // nothing to show for it here because this shader has no acceleration
-    // field to sharpen. The tridirectional shader pays the same cost and gets
-    // a 5x better field for it (60.6% -> 11.2% error at |a| = 2.2), so there
-    // the trade is worth taking. See tests/gen_tridirectional.py, which flips
-    // this, and PLAN.md T1.1.
-    const int SUBPEL_REFINE = 0;
-
-    // SUBPEL_FIT 1 (equiangular) is the DEFAULT, from a measured A/B on the
-    // acceleration calibration -- 15 of 18 paired samples improved, the low
-    // band most (A5 f12 32.0% -> 3.9%, A4 f6 25.4% -> 4.3%, A6 f12
-    // 15.3% -> 3.3%), the three losses all <= 0.7 points, and the quad
-    // shader's jerk NULLS fell ~3.7x (A6 f12 -0.263 -> -0.070
-    // px/interval^3). Exactly the peak-locking prediction from the stereo/
-    // PIV literature (PRIOR-ART.md): the V fit matches the SAD valley's
-    // piecewise-linear shape, the parabola does not. The interpolation-side
-    // cost is small and confined to the sharpest content (tri ladder:
-    // L1 -0.37, O2 -0.18, O4 -0.08, O5 -0.02 dB) -- more honest fractional
-    // flow means marginally more resampling. Inert here while SUBPEL_REFINE
-    // is 0; the field shaders inherit it live.
-    const int SUBPEL_FIT = 1;
-
-    // SUBPEL_SELFREF: subtract the fit's own bias. For a PERFECT integer match the fit's vertex is
-    // not zero: the 3x3 costs at -1 and +1 texel differ whenever the block spans a fraction of a
-    // texture period, and the vertex moves with the block's phase -- a quarter-pixel floor locked
-    // to the texture, the same at every speed, integer or fractional (NFRAME-LIMITS.md section 9).
-    // That vertex is the fit of the reference block against ITSELF shifted, computable from one
-    // frame; subtracting it makes the fit exact at integer shifts. Measured through the four-frame
-    // shader: integer translation 0.33 -> 0.001 px median per-texel error, fractional 0.37 -> 0.13,
-    // aperiodic texture unchanged, A4's per-texel acceleration spread 2.3x tighter, ladder +0.54 dB
-    // mean over 32 cases with one loss (L1, the near-ceiling flat square, -4.7 dB at 74 dB), +2.4%
-    // time. OFF here like SUBPEL_REFINE, for the same reason: this shader has no field to sharpen.
-    // The generated field shaders turn both on.
-    const int SUBPEL_SELFREF = 0;
-    if (SUBPEL_REFINE != 0) {
-        float c0  = sad3x3_h2(uv_b, uv_b + best_off);
-        vec2  ex  = vec2(LUMA_A_H_pt.x, 0.0);
-        vec2  ey  = vec2(0.0, LUMA_A_H_pt.y);
-        float cxm = sad3x3_h2(uv_b, uv_b + best_off - ex);
-        float cxp = sad3x3_h2(uv_b, uv_b + best_off + ex);
-        float cym = sad3x3_h2(uv_b, uv_b + best_off - ey);
-        float cyp = sad3x3_h2(uv_b, uv_b + best_off + ey);
-        // TWO FITS, matched to two valley shapes -- and the choice is a
-        // measured one, not a style preference. A parabola is the matched
-        // estimator for an SSD valley (quadratic near its minimum); an SAD
-        // valley of a well-matched shifted pattern is PIECEWISE LINEAR, for
-        // which the matched estimator is the equiangular fit: two lines of
-        // equal slope meeting at the vertex (Shimizu & Okutomi; standard in
-        // stereo and PIV, where the parabola's mismatch is called PEAK
-        // LOCKING -- a bias toward integer positions, worst at small
-        // fractional displacements). Both share the same numerator; only
-        // the denominator differs:
-        //
-        //   parabola:    x0 = (c_m - c_p) / (2*(c_m - 2*c_0 + c_p))
-        //   equiangular: x0 = (c_m - c_p) / (2*(max(c_m, c_p) - c_0))
-        //
-        // A non-positive denominator means the neighbourhood is flat or
-        // non-convex, the fit is meaningless, and the integer result is
-        // kept. SUBPEL_FIT: 0 = parabola, 1 = equiangular.
-        float dx = SUBPEL_FIT != 0 ? max(cxm, cxp) - c0 : cxm - 2.0 * c0 + cxp;
-        float dy = SUBPEL_FIT != 0 ? max(cym, cyp) - c0 : cym - 2.0 * c0 + cyp;
-        vec2  sub = vec2(dx > 1.0e-6 ? clamp(0.5 * (cxm - cxp) / dx, -0.5, 0.5) : 0.0,
-                         dy > 1.0e-6 ? clamp(0.5 * (cym - cyp) / dy, -0.5, 0.5) : 0.0);
-        if (SUBPEL_SELFREF != 0) {
-            float sxm = sad3x3_h2_self(uv_b, -ex), sxp = sad3x3_h2_self(uv_b, ex);
-            float sym = sad3x3_h2_self(uv_b, -ey), syp = sad3x3_h2_self(uv_b, ey);
-            float ddx = SUBPEL_FIT != 0 ? max(sxm, sxp) : sxm + sxp;
-            float ddy = SUBPEL_FIT != 0 ? max(sym, syp) : sym + syp;
-            vec2  bias0 = vec2(ddx > 1.0e-6 ? 0.5 * (sxm - sxp) / ddx : 0.0,
-                               ddy > 1.0e-6 ? 0.5 * (sym - syp) / ddy : 0.0);
-            sub = clamp(sub - bias0, -0.5, 0.5);
-        }
-        best_off += sub * LUMA_A_H_pt;
-    }
-    vec4 result = vec4(best_off / LUMA_A_H_pt, 0.0, 0.0);
-    imageStore(FLOW_H_BA_CACHE, coord, result);
-    return result;
-}
-
 // ---------------------------------------------------------------------
 // VARIATIONAL REFINEMENT at H (2x downsampled), 4 iterations per
 // direction. Warped Horn-Schunck with edge-aware smoothness.
@@ -4574,237 +3462,20 @@ vec4 hook() {
     float denom = VAR_ALPHA * VAR_ALPHA + Ix * Ix + Iy * Iy;
     return vec4(favg - vec2(Ix, Iy) * (rho / denom), 0.0, 0.0);
 }
-//!HOOK FRAME_MIX
-//!BIND FLOW_H_BA
-//!BIND LUMA_B_H
-//!BIND LUMA_A_H
-//!SAVE FLOW_H_BA
-//!WIDTH HOOKED.w 2 /
-//!HEIGHT HOOKED.h 2 /
-//!COMPONENTS 2
-//!DESC [high] variational H B->A (iter 1)
-const float VAR_ALPHA = 0.3;
-const float VAR_SIGMA_LUMA = 0.08;
-vec4 hook() {
-    vec2 uv = FLOW_H_BA_pos;
-    vec2 f0 = FLOW_H_BA_tex(uv).xy;
-    vec2 pt = LUMA_B_H_pt;
-
-    float cl = LUMA_B_H_tex(uv).r;
-    vec2 acc = vec2(0.0);
-    float wsum = 0.0;
-    for (int y = -1; y <= 1; y++) {
-        for (int x = -1; x <= 1; x++) {
-            if (x == 0 && y == 0) continue;
-            vec2 o = vec2(float(x), float(y)) * pt;
-            float dl = LUMA_B_H_tex(uv + o).r - cl;
-            float ws = (x == 0 || y == 0) ? 1.0 : 0.70710678;
-            float w = ws * exp(-(dl * dl) / (2.0 * VAR_SIGMA_LUMA * VAR_SIGMA_LUMA));
-            vec2 nf = FLOW_H_BA_tex(uv + o).xy;
-            acc += nf * w;
-            wsum += w;
-        }
-    }
-    vec2 favg = wsum > 0.0001 ? acc / wsum : f0;
-
-    vec2 wuv = uv + f0 * pt;
-    float It = LUMA_A_H_tex(wuv).r - LUMA_B_H_tex(uv).r;
-    float Ix = (LUMA_A_H_tex(wuv + vec2(pt.x, 0.0)).r - LUMA_A_H_tex(wuv - vec2(pt.x, 0.0)).r) * 0.5;
-    float Iy = (LUMA_A_H_tex(wuv + vec2(0.0, pt.y)).r - LUMA_A_H_tex(wuv - vec2(0.0, pt.y)).r) * 0.5;
-
-    vec2 g = favg - f0;
-    float rho = Ix * g.x + Iy * g.y + It;
-    float denom = VAR_ALPHA * VAR_ALPHA + Ix * Ix + Iy * Iy;
-    return vec4(favg - vec2(Ix, Iy) * (rho / denom), 0.0, 0.0);
-}
-//!HOOK FRAME_MIX
-//!BIND FLOW_H_BA
-//!BIND LUMA_B_H
-//!BIND LUMA_A_H
-//!SAVE FLOW_H_BA
-//!WIDTH HOOKED.w 2 /
-//!HEIGHT HOOKED.h 2 /
-//!COMPONENTS 2
-//!DESC [high] variational H B->A (iter 2)
-const float VAR_ALPHA = 0.3;
-const float VAR_SIGMA_LUMA = 0.08;
-vec4 hook() {
-    vec2 uv = FLOW_H_BA_pos;
-    vec2 f0 = FLOW_H_BA_tex(uv).xy;
-    vec2 pt = LUMA_B_H_pt;
-
-    float cl = LUMA_B_H_tex(uv).r;
-    vec2 acc = vec2(0.0);
-    float wsum = 0.0;
-    for (int y = -1; y <= 1; y++) {
-        for (int x = -1; x <= 1; x++) {
-            if (x == 0 && y == 0) continue;
-            vec2 o = vec2(float(x), float(y)) * pt;
-            float dl = LUMA_B_H_tex(uv + o).r - cl;
-            float ws = (x == 0 || y == 0) ? 1.0 : 0.70710678;
-            float w = ws * exp(-(dl * dl) / (2.0 * VAR_SIGMA_LUMA * VAR_SIGMA_LUMA));
-            vec2 nf = FLOW_H_BA_tex(uv + o).xy;
-            acc += nf * w;
-            wsum += w;
-        }
-    }
-    vec2 favg = wsum > 0.0001 ? acc / wsum : f0;
-
-    vec2 wuv = uv + f0 * pt;
-    float It = LUMA_A_H_tex(wuv).r - LUMA_B_H_tex(uv).r;
-    float Ix = (LUMA_A_H_tex(wuv + vec2(pt.x, 0.0)).r - LUMA_A_H_tex(wuv - vec2(pt.x, 0.0)).r) * 0.5;
-    float Iy = (LUMA_A_H_tex(wuv + vec2(0.0, pt.y)).r - LUMA_A_H_tex(wuv - vec2(0.0, pt.y)).r) * 0.5;
-
-    vec2 g = favg - f0;
-    float rho = Ix * g.x + Iy * g.y + It;
-    float denom = VAR_ALPHA * VAR_ALPHA + Ix * Ix + Iy * Iy;
-    return vec4(favg - vec2(Ix, Iy) * (rho / denom), 0.0, 0.0);
-}
-//!HOOK FRAME_MIX
-//!BIND FLOW_H_BA
-//!BIND LUMA_B_H
-//!BIND LUMA_A_H
-//!SAVE FLOW_H_BA
-//!WIDTH HOOKED.w 2 /
-//!HEIGHT HOOKED.h 2 /
-//!COMPONENTS 2
-//!DESC [high] variational H B->A (iter 3)
-const float VAR_ALPHA = 0.3;
-const float VAR_SIGMA_LUMA = 0.08;
-vec4 hook() {
-    vec2 uv = FLOW_H_BA_pos;
-    vec2 f0 = FLOW_H_BA_tex(uv).xy;
-    vec2 pt = LUMA_B_H_pt;
-
-    float cl = LUMA_B_H_tex(uv).r;
-    vec2 acc = vec2(0.0);
-    float wsum = 0.0;
-    for (int y = -1; y <= 1; y++) {
-        for (int x = -1; x <= 1; x++) {
-            if (x == 0 && y == 0) continue;
-            vec2 o = vec2(float(x), float(y)) * pt;
-            float dl = LUMA_B_H_tex(uv + o).r - cl;
-            float ws = (x == 0 || y == 0) ? 1.0 : 0.70710678;
-            float w = ws * exp(-(dl * dl) / (2.0 * VAR_SIGMA_LUMA * VAR_SIGMA_LUMA));
-            vec2 nf = FLOW_H_BA_tex(uv + o).xy;
-            acc += nf * w;
-            wsum += w;
-        }
-    }
-    vec2 favg = wsum > 0.0001 ? acc / wsum : f0;
-
-    vec2 wuv = uv + f0 * pt;
-    float It = LUMA_A_H_tex(wuv).r - LUMA_B_H_tex(uv).r;
-    float Ix = (LUMA_A_H_tex(wuv + vec2(pt.x, 0.0)).r - LUMA_A_H_tex(wuv - vec2(pt.x, 0.0)).r) * 0.5;
-    float Iy = (LUMA_A_H_tex(wuv + vec2(0.0, pt.y)).r - LUMA_A_H_tex(wuv - vec2(0.0, pt.y)).r) * 0.5;
-
-    vec2 g = favg - f0;
-    float rho = Ix * g.x + Iy * g.y + It;
-    float denom = VAR_ALPHA * VAR_ALPHA + Ix * Ix + Iy * Iy;
-    return vec4(favg - vec2(Ix, Iy) * (rho / denom), 0.0, 0.0);
-}
-//!HOOK FRAME_MIX
-//!BIND FLOW_H_BA
-//!BIND LUMA_B_H
-//!BIND LUMA_A_H
-//!SAVE FLOW_H_BA
-//!WIDTH HOOKED.w 2 /
-//!HEIGHT HOOKED.h 2 /
-//!COMPONENTS 2
-//!DESC [high] variational H B->A (iter 4)
-const float VAR_ALPHA = 0.3;
-const float VAR_SIGMA_LUMA = 0.08;
-vec4 hook() {
-    vec2 uv = FLOW_H_BA_pos;
-    vec2 f0 = FLOW_H_BA_tex(uv).xy;
-    vec2 pt = LUMA_B_H_pt;
-
-    float cl = LUMA_B_H_tex(uv).r;
-    vec2 acc = vec2(0.0);
-    float wsum = 0.0;
-    for (int y = -1; y <= 1; y++) {
-        for (int x = -1; x <= 1; x++) {
-            if (x == 0 && y == 0) continue;
-            vec2 o = vec2(float(x), float(y)) * pt;
-            float dl = LUMA_B_H_tex(uv + o).r - cl;
-            float ws = (x == 0 || y == 0) ? 1.0 : 0.70710678;
-            float w = ws * exp(-(dl * dl) / (2.0 * VAR_SIGMA_LUMA * VAR_SIGMA_LUMA));
-            vec2 nf = FLOW_H_BA_tex(uv + o).xy;
-            acc += nf * w;
-            wsum += w;
-        }
-    }
-    vec2 favg = wsum > 0.0001 ? acc / wsum : f0;
-
-    vec2 wuv = uv + f0 * pt;
-    float It = LUMA_A_H_tex(wuv).r - LUMA_B_H_tex(uv).r;
-    float Ix = (LUMA_A_H_tex(wuv + vec2(pt.x, 0.0)).r - LUMA_A_H_tex(wuv - vec2(pt.x, 0.0)).r) * 0.5;
-    float Iy = (LUMA_A_H_tex(wuv + vec2(0.0, pt.y)).r - LUMA_A_H_tex(wuv - vec2(0.0, pt.y)).r) * 0.5;
-
-    vec2 g = favg - f0;
-    float rho = Ix * g.x + Iy * g.y + It;
-    float denom = VAR_ALPHA * VAR_ALPHA + Ix * Ix + Iy * Iy;
-    return vec4(favg - vec2(Ix, Iy) * (rho / denom), 0.0, 0.0);
-}
-
-// ---------------------------------------------------------------------
-// Vector median filter on both flow fields: rejects outlier vectors that
-// disagree with their neighborhood (typical of ambiguous/textured content
-// like smoke or particle effects), while preserving genuine motion
-// boundaries -- unlike a blur, which would smear across them instead.
-// ---------------------------------------------------------------------
-// Pass 1's result only ever feeds pass 2 within this same dispatch, so it
-// has no cache of its own -- on a cache hit it returns a cheap dummy that
-// pass 2 will never look at, skipping the real 9x9-comparison cost.
-//!TEXTURE FLOW_H_BA_M1_ST
-//!SIZE 1920 1080
-//!FORMAT rgba32f
-//!STORAGE
 
 //!HOOK FRAME_MIX
 //!BIND FLOW_H_AB
-//!BIND FLOW_H_BA
-//!BIND FLOW_H_BA_M1_ST
 //!SAVE FLOW_H_AB
 //!WIDTH HOOKED.w 2 /
 //!HEIGHT HOOKED.h 2 /
 //!COMPONENTS 2
 //!DESC [high] vector median filter on flow A->B (pass 1) [fused with its B->A twin: one dispatch]
-void hook_ba() {
-    if (!pair_changed)
-        { imageStore(FLOW_H_BA_M1_ST, ivec2(gl_FragCoord.xy), vec4(0.0)); return; }
 
-    vec2 v[9];
-    int n = 0;
-    for (int y = -1; y <= 1; y++) {
-        for (int x = -1; x <= 1; x++) {
-            vec2 o = vec2(float(x), float(y)) * FLOW_H_BA_pt;
-            v[n++] = FLOW_H_BA_tex(FLOW_H_BA_pos + o).xy;
-        }
-    }
-
-    // See TIE_MARGIN in the coarse A->B search above.
-    const float TIE_MARGIN = 1.0e-4;
-    float best_cost = 1e30;
-    vec2 best = v[4];
-    for (int i = 0; i < 9; i++) {
-        float cost = 0.0;
-        for (int j = 0; j < 9; j++)
-            cost += length(v[i] - v[j]);
-        if (cost < best_cost * (1.0 - TIE_MARGIN)) {
-            best_cost = cost;
-            best = v[i];
-        }
-    }
-
-    { imageStore(FLOW_H_BA_M1_ST, ivec2(gl_FragCoord.xy), vec4(best, 0.0, 0.0)); return; }
-}
 
 // Second pass: a single 3x3 vector median can be out-voted by a small cluster of neighboring cells that all agree with each other on the same wrong (but locally self-consistent) vector; running it twice extends its effective reach.
 // This one's result is what the final warp actually reads, so it gets a
 // real persistent cache (unlike pass 1 above).
 vec4 hook() {
-    hook_ba();
     if (!pair_changed)
         return vec4(0.0);
 
@@ -4885,53 +3556,6 @@ vec4 hook() {
 
     vec4 result = vec4(best, 0.0, 0.0);
     imageStore(FLOW_H_AB_MEDIAN_CACHE, coord, result);
-    return result;
-}
-
-//!TEXTURE FLOW_H_BA_MEDIAN_CACHE
-//!SIZE 1920 1080
-//!FORMAT rgba32f
-//!STORAGE
-
-//!HOOK FRAME_MIX
-//!BIND FLOW_H_BA_MEDIAN_CACHE
-//!BIND FLOW_H_BA_M1_ST
-//!BIND FLOW_H_AB
-//!SAVE FLOW_H_BA
-//!WIDTH HOOKED.w 2 /
-//!HEIGHT HOOKED.h 2 /
-//!COMPONENTS 2
-//!DESC [high] vector median filter on flow B->A (pass 2)
-vec4 hook() {
-    ivec2 coord = ivec2(FLOW_H_AB_pos * FLOW_H_AB_size);
-    if (!pair_changed)
-        return imageLoad(FLOW_H_BA_MEDIAN_CACHE, coord);
-
-    vec2 v[9];
-    int n = 0;
-    for (int y = -1; y <= 1; y++) {
-        for (int x = -1; x <= 1; x++) {
-            vec2 o = vec2(float(x), float(y)) * FLOW_H_AB_pt;
-            v[n++] = imageLoad(FLOW_H_BA_M1_ST, ivec2(floor((FLOW_H_AB_size) * (FLOW_H_AB_pos + o)))).xy;
-        }
-    }
-
-    // See TIE_MARGIN in the coarse A->B search above.
-    const float TIE_MARGIN = 1.0e-4;
-    float best_cost = 1e30;
-    vec2 best = v[4];
-    for (int i = 0; i < 9; i++) {
-        float cost = 0.0;
-        for (int j = 0; j < 9; j++)
-            cost += length(v[i] - v[j]);
-        if (cost < best_cost * (1.0 - TIE_MARGIN)) {
-            best_cost = cost;
-            best = v[i];
-        }
-    }
-
-    vec4 result = vec4(best, 0.0, 0.0);
-    imageStore(FLOW_H_BA_MEDIAN_CACHE, coord, result);
     return result;
 }
 

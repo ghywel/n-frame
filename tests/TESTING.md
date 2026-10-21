@@ -2493,6 +2493,43 @@ and 16" and the weave's locked speeds (3, 5, 11, 13, 19) are both consistent wit
 recommendation. M2 at period 40 is above the coarse Nyquist and reads 53-58 at both speeds. These two cases are the
 regression gate the family's best-documented failure never had.
 
+**Three more, the audit's P4-P6, built and measured the same night** (rec / High / quad; hold / linear): L8t_diagonal_tex
+(TEX_M2 at (8, 8) px/frame, the texture the diagonal lock was measured on) 57.87 / 59.14 / 58.78 (25.86 / 29.82): the
+prediction was 45 or more if the zero seed holds the diagonal in the picture, the kill under 36; the lock measured at
+the 1/16 level does not reach the picture, and M2c at 10 (53.5) says it is not the speed comb either. L9b_occlusion_mid
+(L9's boxes crossing mid-clip, occlusion on 32 of 44 scored frames against L9's 8) 44.85 / 45.73 / 43.43 (31.13 /
+33.71): the prediction was 36 to 40, the kill 43 or more, and it fires: with twice the box area (worth about -3 dB on
+its own) the recommendation reads 0.5 above L9's 44.35, so occlusion is not the cost and L9's name was fair.
+R3i_rot_isotropic (R2's rotation on three 40 px plane waves at 0, 60 and 120 degrees, no lattice-axis alias) 47.96 /
+48.45 / 48.10 (31.40 / 35.63): a margin over linear of +12.3 against R3's +5.5 (the prediction: +7 or more), so R3's
+deficit was TEX_M2's off-axis alias, not rotation, and the record's explanation at 375-379 is upheld rather than
+refuted. All three are in LADDER2_CASES with their crops in regions.sh.
+
 `--min` (the worst scored frame) shows what the means hide: the quad's M2c means are 52.6 and 51.1 with worst frames
 of 22.6 and 21.5. With `SKIP_END=2` (the mixer's end frames dropped) the means rise by 0.5 to 2 dB on every case
 (`np-scratch/swarm-20261021/gpu/ladder2-table-skipend.txt`); the table above is the comparable, unskipped form.
+
+## The prune adopted (2026-10-22, the night's heartbeat)
+
+The dataflow prune ([../SWARM-2026-10-21.md](../SWARM-2026-10-21.md) item 8; REPAIRS L7) was gated and adopted overnight
+on Gareth's go ("gated by the frame-by-frame identity check on all 42 cases"). The gate is `probes/repairs/identity.sh`
+(framemd5 per output frame) on the Arc, the deterministic witness, with a warm-up render first (L8: the first render of a
+fresh container differs from itself; the control is identical after):
+
+| file | control, old against itself | old against pruned | its 4K twin, old against new |
+|---|---|---|---|
+| the recommendation | 42 of 42 | **42 of 42** | **42 of 42** |
+| Low (`-cut`) | | 42 of 42 | 42 of 42 |
+| Standard (`-adopt-cut`) | | 42 of 42 | 42 of 42 |
+| High (`-lattice-cut`) | | 42 of 42 | 42 of 42 |
+
+The M5 could not be the judge: with the switches set it still fails to repeat itself on 3 to 7 cases a run (a shipped
+file against itself differed on M3, O3 and P4 in one run and on none of them in the next), which is the record's "40
+of 42". Two earlier refusals were the instrument's, not the prune's: libplacebo's parser on an orphaned `//!TEXTURE`
+block (the tool gained a parser-level check with positive controls), and `compile_all.sh` reporting four parse-clean
+files as failing because its default source was absent (it now refuses a missing source). Time from a file, the same
+build on both sides, two samples: the recommendation 18.29 / 18.66 -> 13.92 / 13.08 ms per output frame, Low 18.46 /
+18.63 -> 13.55 / 13.34, Standard 26.22 / 26.19 -> 20.23 / 20.02, High 32.91 / 32.39 -> 27.98 / 28.48. `smoke.sh`'s
+recipes carry `PRUNE=2`; `scale_shader.py` accepts a pruned file's one-direction hand-off and still refuses an unmarked
+one. Smoke and the Metal lockstep on the adopted files are recorded in the commit that adopts them.
+

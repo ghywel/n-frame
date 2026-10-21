@@ -52,7 +52,7 @@ any two members of this family and is not a picture difference at all.**
 | `bidirectional-interpolation-variational-propagated.glsl` (4K) | General viewing and the velocity field; the reference the science is measured against | **Recommended** since 2026-09-06; the reference for the science | 54 |
 | `…-global-cage-energy-carry-adopt-lattice-cut.glsl` (4K) | A video player: the recommendation plus the global-motion seed, the cage, the texture energy, the half-period alias carry, the outline adoption, the print lattice with its cost cap, and the motion-aware cut gate | **A video player's default**: the Cadence player's High tier from the 1.0.4 rebuild (2026-10-01, evening) | 94 |
 | `…-global-cage-energy-carry-adopt-cut.glsl` (4K) | The same without the print lattice; cheaper where a moving print fills the frame | The Cadence player's Standard tier from the 1.0.4 rebuild | 82 |
-| `bidirectional-interpolation-variational-propagated-cut.glsl` (4K) | The recommendation with the motion-aware cut gate | The Cadence player's Low tier from the 1.0.4 rebuild | 53 |
+| `bidirectional-interpolation-variational-propagated-cut.glsl` (4K) | The recommendation with the motion-aware cut gate | The Cadence player's Low tier from the 1.0.4 rebuild | 36 |
 | `…-global-cage-energy-carry-adopt-lattice.glsl`, `…-adopt.glsl` (4K) | The two upper tiers without the cut gate | The High and Standard tiers of 1.0.4's first build; superseded by their `-cut` forms | 93 / 81 |
 | `bidirectional-interpolation-animation.glsl` | Hand-drawn and cel-shaded content | **Recommended for animation** | 26 |
 | `bidirectional-interpolation-propagated.glsl` | The fast tier, when the cascade does not fit (about +13% over the base) | Variant | 26 |
@@ -550,7 +550,7 @@ PSNR left, SSIM right. At twice the ladder's size: V1 19.29 -> 53.52, L1 53.64 -
 A5 42.57 -> 53.72, R3 33.24 -> 38.09. Time at the film's size, 158 output
 frames: 8.73 s against 7.46 s.
 
-### `bidirectional-interpolation-variational-propagated.glsl` -- the recommendation, 52 passes
+### `bidirectional-interpolation-variational-propagated.glsl` -- the recommendation, 35 passes
 
 The variational cascade rebuilt on the propagated base, with the zero seed
 on: the propagated base's 24 passes, plus 24 variational-refinement passes
@@ -563,6 +563,14 @@ directions are saved textures. Recommended for viewing since 2026-09-06, and,
 in its `-cut` form (the motion-aware cut gate added), the Cadence player's Low tier from 1.0.4. `-4k` is its scaled twin, the
 recommendation for 4K sources, measured at the end of the variational
 build's 4K section above.
+
+**Pruned since 2026-10-22 (REPAIRS L7 closed; [SWARM-2026-10-21.md](SWARM-2026-10-21.md) item 8).** This file and the
+three `-cut` tiers below are generated with `PRUNE=2`: the passes whose work no live pass can observe (the B->A chain
+that only a dead median read, and a fused pass's dead B->A twin) are removed by `tests/prune_passes.py` as the
+generator's last step, 17 of 52 here (the counts above are the pruned ones; the reading tail's 7 passes are not
+counted, as before). The output is byte-identical: on the Arc, 42 of 42 ladder cases frame for frame against the
+unpruned file, for each of the four files and for their 4K twins; time from a file on the M5 fell 24 to 30 percent
+here, 27 on Low, 23 on Standard, 13 to 15 on High. Regenerating with `PRUNE=0` gives the unpruned form.
 
 Regenerate both from `scripts/` (checked byte-identical on 2026-10-01; the
 twin apart from the date in its header):

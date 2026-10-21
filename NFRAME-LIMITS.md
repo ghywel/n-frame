@@ -5282,3 +5282,43 @@ for byte. The order of work that follows from the ruling: instruments first, sin
 and any future rewrite; if an ablation ever shows much of the family inert, a rewrite is earned and has a
 specification. The reasoning is not to be relitigated without new evidence of that kind.
 
+### The phase-exact fetch: a trade along the texture period (2026-10-22, the night's heartbeat)
+
+The swarm's outsider lane ([SWARM-2026-10-21.md](SWARM-2026-10-21.md), the wildcard) split the weave's comb into two
+mechanisms: the print's own period ambiguity, irreducible locally, and a SAMPLER comb, both frames point-decimated on
+one fixed grid so that B's Moire differs from A's unless the shift is a whole coarse texel. Its proposed cure changes
+WHICH samples are compared rather than what is in them (section 8's prefilter changed the content and was refuted):
+`PHASE_FETCH=1` in `tests/gen_variational.py` (`tests/phase_fetch.py`) makes the coarse SAD read B's taps from the
+full-resolution frame at `uv_b + o`, A's taps and everything else unchanged. Pre-registered (the lane's report, last
+section): M1c at 12 px/frame from 28.6 to 38 or more; kill if under 34 or any ladder case down more than 1.0.
+
+**Measured (the M5, one run, `mvk-env.sh` set), recommendation -> switch.** The prediction failed where it was
+sharpest: M1c_noise_v12 28.61 -> 28.71, and the weave's locked speeds (11, 13, 19 px/frame) stayed locked at 15.7 to
+16.2 dB; so on random texture the sampler comb at 12 px is not the 1/16 level's (the lane's own inconclusive branch
+names the 1/8 level's fixed grid, where 12 px is 1.5 texels). But on the 42 the capped mean rose 38.05 -> 38.36, the
+first single switch tonight to lift it, and the movement sorts by the texture's period against the coarse texel:
+
+| up | | down | |
+|---|---|---|---|
+| L7_textured_large (period 15.7, 16 px/f) | 23.57 -> **43.29** | P1_stairs_along_v4 (period 24) | 45.25 -> 38.58 |
+| P5_stairs_along_v8_alias | 41.88 -> 50.38 | V3_stairs_sq24_v12 | 26.46 -> 21.08 |
+| M2_period40 | 52.03 -> 59.19 | V1_bars_sine24_v6 | 55.72 -> 52.74 |
+| L6_flat_large | 48.75 -> 54.92 | H1_bars_sine24_h6 | 55.64 -> 53.16 |
+| M1_noise_large (16 px/f) | 46.96 -> 49.23 | L1_trans_8px | 65.69 -> 63.49 |
+
+L7 is the period-16 lock the record calls "a failure, not sigma_f", broken by 19.7 dB: at one coarse texel the Moire
+IS the lock, and fetching B at A's phase removes it. The period-24 family (1.5 coarse texels) loses 2.5 to 6.7 dB: the
+loss is through REACH, the lane's sharper reading [J]: period 24 at a 16 px pitch aliases to a 48 px Moire whose false
+basin lay beyond the 23 px reach, so the stored grid could not fall into it; the frame fetch restores the true 24 px
+ambiguity, whose alias at v - 24 is within reach for v = 4 to 12 (a tie at 12, V3). The weave sweep is the evidence:
+freed at 3 and 5 px/frame (-6.5 -> +13.0 and -5.1 -> +1.5 over linear), where the alias is out of reach, and still
+locked at 11, 13 and 19, where it is in. L7's gain is read the same way, not as the comb: it moves one coarse texel
+exactly, and the stored grid's near-flat Moire let the 0.3 px drift win a REG_LAMBDA near-tie that full contrast
+settles. M1c at 12 is the 1/8 level's business (`sad5x5_e` still reads the stored `LUMA_B_E`; 12 px is 1.5 of its
+texels): the 1/8 form of the fetch is about seven more full-resolution taps per output pixel, an hour and 8 GPU minutes.
+Five cases down more than 1.0 kill it as a change to the recommendation (the pre-registered rule); it is a VARIANT.
+The gate the lane proposes: where the fused coarse pass finds two basins (the ring basin 0.75 texel or more from the
+zero basin, costs within 10 percent under the frame fetch), take the stored-grid result; kill if any of P1, V3, V1, H1,
+L1 stays more than 1.0 below the recommendation, or L7, P5, M2, L6 keep less than half their gain, or the capped mean
+reads under 38.26. Unresolved: the weave at 7 to 9 holds though its alias is in reach. Not retried: the prefilter.
+

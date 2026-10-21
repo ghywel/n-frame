@@ -96,6 +96,22 @@ _blobt() {
   echo "nullsrc=s=1280x720:r=$r:d=1,format=gray,geq=lum='$PRE\;30+(($TEXB)-30)*clip(($E-hypot(ld(2)\,ld(3)))/2\,0\,1)',format=yuv420p"
 }
 
+# The blob with an ISOTROPIC SUB-NYQUIST interior (2026-10-21, the swarm's ladder-audit lane, for R3i). _blobt's
+# TEX_M2 is a product of sines, which is two DIAGONAL plane waves of period 28.3 px: sub-Nyquist on the 1/16 lattice
+# while the body is axis-aligned, aliased once the rotation carries it into the 17-73 degree band -- NFRAME-LIMITS
+# 375-379 named this as the likely cause of R3's interior failing past 25 degrees, "one datum, not a test". This
+# interior is a SUM of three plane waves of period 40 px at 0, 60 and 120 degrees in the body frame: each has
+# |k| = 1/40 cycles per px, so its projection on either lattice axis is at most 1/40 < 1/32, the 1/16 level's
+# Nyquist, at EVERY angle of the body. R3i minus R3 is therefore the alias's share of R3; R3i alone is rotation.
+# Amplitude 36 x 3 = 108, the same +-110 range as the other textures; sum, not product, deliberately.
+_blobi() {
+  local CX=$1 CY=$2 TH=$3 R=$4 r=$5
+  local PRE="st(0\,cos($TH))\;st(1\,sin($TH))\;st(2\,(X-($CX))*ld(0)+(Y-($CY))*ld(1))\;st(3\,(0-(X-($CX)))*ld(1)+(Y-($CY))*ld(0))\;st(4\,atan2(ld(3)\,ld(2)))"
+  local E="$R*(1+0.1200*cos(3*ld(4)+0.7)+0.0720*cos(5*ld(4)+2.1)+0.0450*cos(8*ld(4)+4.3)+0.0277*cos(13*ld(4)+1.2)+0.0171*cos(21*ld(4)+5.6)+0.0106*cos(34*ld(4)+3.4))"
+  local TEXI="128+36*(sin(ld(2)/6.366)+sin((0.5*ld(2)+0.8660*ld(3))/6.366)+sin((0.8660*ld(3)-0.5*ld(2))/6.366))"
+  echo "nullsrc=s=1280x720:r=$r:d=1,format=gray,geq=lum='$PRE\;30+(($TEXI)-30)*clip(($E-hypot(ld(2)\,ld(3)))/2\,0\,1)',format=yuv420p"
+}
+
 # ---------------------------------------------------------------------
 # EXACT-COVERAGE RECTANGLES.
 #
@@ -237,6 +253,22 @@ scene() {
     M1c_noise_v12)      _rect '288*T' '210' 300 300 0 "$TEX_M1"  "$r" ;;  # M1 at 12
     M2c_period40_v6)    _rect '144*T' '210' 300 300 0 "$TEX_M2"  "$r" ;;  # M2 at 6
     M2c_period40_v10)   _rect '240*T' '210' 300 300 0 "$TEX_M2"  "$r" ;;  # M2 at 10
+    # Three more (2026-10-21, late, the ladder-audit lane's P4-P6; SWARM-2026-10-21.md). Every textured case in
+    # ALL_CASES moves along an axis and L8 is a flat box, so the diagonal Moire NFRAME-LIMITS 1336-1340 measured on
+    # TEX_M2 at (8, 8) px per frame (61% of texels locked, 21 px) has never been scored as a picture. TEX_M2 is the
+    # texture to use because it is the one the lock was measured on, and because its product form is what makes it
+    # alias on the diagonal (two 28.3-px waves) while clean on the axes: M2's 16 px/frame row is its own control.
+    L8t_diagonal_tex)   _rect '100+192*T' '100+192*T' 300 300 0 "$TEX_M2" "$r" ;;  # (8, 8) px/frame = 0.5 coarse texel per axis
+    # L9's boxes touch only at t = 5/6, so 3 of its 24 source frames occlude (8 of the 44 scored output frames). Same
+    # speeds, same gray levels, same compositing (grey B in front of white A); the boxes are 200 wide instead of 100 and
+    # start 100 px apart, so they touch at t = 1/6, A is wholly hidden at t = 1/2 and they part at t = 5/6: occlusion or
+    # disocclusion on 32 of the 44 scored frames, centred on mid-clip.
+    L9b_occlusion_mid)
+      local CA="clip(min((300+300*T)+200\,X+1)-max((300+300*T)\,X)\,0\,1)*clip(min(310+100\,Y+1)-max(310\,Y)\,0\,1)"
+      local CB="clip(min((600-300*T)+200\,X+1)-max((600-300*T)\,X)\,0\,1)*clip(min(310+100\,Y+1)-max(310\,Y)\,0\,1)"
+      echo "nullsrc=s=1280x720:r=$r:d=1,format=gray,geq=lum='st(0\,$CA)\;st(1\,$CB)\;st(2\,255*ld(0))\;ld(2)+(160-ld(2))*ld(1)',format=yuv420p" ;;
+    # R3's rotation exactly, the interior isotropic and sub-Nyquist at every angle (see _blobi).
+    R3i_rot_isotropic)  _blobi '640' '360' '2.56*T*T' 150 "$r" ;;
     P1_stairs_along_v4)  _rect '100+96*T'  '210' 600 300 0 "$TEX_P" "$r" ;;  # stairs panning along their bars, 4 px/frame
     P2_stairs_along_v8)  _rect '100+192*T' '210' 600 300 0 "$TEX_PC" "$r" ;;  # 8 px/frame, coarse speckle: the aperture alone
     P3_stairs_along_v12) _rect '100+288*T' '210' 600 300 0 "$TEX_PC" "$r" ;;  # 12 px/frame, the film's fast end
@@ -474,8 +506,9 @@ ALL_CASES="L0_static L1_trans_8px L2_trans_16px L3_trans_23px L4_trans_40px L5_l
 
 # LADDER2 (2026-10-21): cases built beside the frozen 42 after the swarm's audit, scored the same way but summarised
 # on their own and never merged into ALL_CASES' mean, so every historical number stays comparable. The three x cases
-# are V2/V3/H2 with an exact-coverage truth; the five c cases are the speed comb.
-LADDER2_CASES="V2x_stairs_cov_v6 V3x_stairs_cov_v12 H2x_stairs_cov_h6 M1c_noise_v6 M1c_noise_v10 M1c_noise_v12 M2c_period40_v6 M2c_period40_v10"
+# are V2/V3/H2 with an exact-coverage truth; the five c cases are the speed comb; the last three (added later the
+# same night) are the textured diagonal, the mid-clip occlusion and the rotation with an isotropic interior.
+LADDER2_CASES="V2x_stairs_cov_v6 V3x_stairs_cov_v12 H2x_stairs_cov_h6 M1c_noise_v6 M1c_noise_v10 M1c_noise_v12 M2c_period40_v6 M2c_period40_v10 L8t_diagonal_tex L9b_occlusion_mid R3i_rot_isotropic"
 
 # The six added 2026-08-31 are in ALL_CASES deliberately rather than in a
 # group of their own: a case that is not run by default is a case that rots.

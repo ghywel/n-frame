@@ -98,6 +98,9 @@ region_crop() {
     M1c_noise_v10)      echo "crop=556:332:0:194" ;;     # x0 = 240 t: x 0..540 -> 0..556
     M2c_period40_v10)   echo "crop=556:332:0:194" ;;
     M1c_noise_v12)      echo "crop=604:332:0:194" ;;     # x0 = 288 t: x 0..588 -> 0..604
+    L8t_diagonal_tex)   echo "crop=524:524:84:84" ;;     # 300x300 box, x0 = y0 = 100 + 192 t: x and y 100..592 -> 84..608
+    L9b_occlusion_mid)  echo "crop=532:132:284:294" ;;   # 200x100 boxes: A x0 = 300 + 300 t (300..600, right edge to 800), B x0 = 600 - 300 t (300..600): union x 300..800 -> 284..816; y 310..410 -> 294..426
+    R3i_rot_isotropic)  echo "crop=420:420:430:150" ;;   # R3's blob, cx 640 fixed: as R1-R3
     # ---- field scenes in scenes.sh but in neither list (so bench.sh can score one through the table) ----------
     O7_osc_fast_small)  echo "crop=144:132:578:294" ;;   # x0 = 600 + 6 sin: x 594..706 -> 578..722
     O8_osc_fast_tiny)   echo "crop=140:132:580:294" ;;   # x0 = 600 + 4 sin: x 596..704 -> 580..720

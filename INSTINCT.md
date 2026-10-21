@@ -92,6 +92,13 @@ never upgrades a status: nothing here is a measurement, and nothing here changes
   "the guess was wrong, and the fall is exact and small": the witness (P1/P5 against F2/L8 up) fixes where the centre
   is not. -> the switch stays as a documented trade; the question (an aperture gate on the centre) goes to the lane on
   paper. Outcome: right (a refuted candidate is the day's best data).
+- 2026-10-21 23:52, Claude: satisfaction, the prune's eight identity gates on the Arc, high; "closed honestly": the
+  prediction (byte-identical, time down by the dispatch share) held on the host that can judge it, after two refusals
+  that were the instruments'. Outcome: right.
+- 2026-10-21 23:52, Claude: surprise (startle), PHASE_FETCH moving L7 by +19.7 dB while leaving the comb at 12 untouched
+  and costing the period-24 family 2.5 to 6.7, high; first guess: the point-sampled Moire is the lock at one coarse
+  texel and the match at one and a half. -> written into NFRAME-LIMITS as a trade along the period; the gate form goes
+  to the lane on paper. Outcome: open (the mechanism is a reading, not yet a measurement).
 
 ## The set-aside pulls
 
