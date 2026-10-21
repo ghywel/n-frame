@@ -115,3 +115,35 @@ both bases (the prior was the only term there); K1 under 1 dB on the plain base,
 - **Both DOWN:** the prior is not the far-end term; finding 2 is refuted for W3 and the `-global-cage-energy` gain
   came from the candidate. Proposal 2 leads, the doubled first step its cheap precursor; nothing built until
   `leveltap.py` shows which candidate was present and which refused.
+
+## 4. Why P1 and P5 fall (from the design and the record; no build)
+
+Yes to the guess, with one correction. P1 and P5 pan the stairs ALONG their bars (4 and 8 px). At 1/16 the bars'
+24-px period is 1.5 texels, aliased: the coarse descents find the Moire, far and COHERENT. The global seed's frame-wide
+picks on P1 were +1.4, +1.8, +2.0 texels, passed every gate, and P1 fell 4.13 dB. Without the Moire-evidence and
+pair-to-pair gates the same winner passes 5-of-8 everywhere, the fade half open at 1.4. The damage is the aperture:
+along the bars the SAD is flat and the prior decides; the zero centre held the along-bar component at the small true
+flow, the re-centred one slides it toward the Moire's shift and misplaces the speckle (P1 -6.8). P5 adds the record's
+other half: its speckle alias is nearer zero than the truth, and a far centre hands the tie to a farther alias. R3, O5,
+O6, V3: the same coherent Moire winner on isotropic texture, not an aperture.
+
+The limb (corrected columns): the plain base does not move (K1, K2 within 0.1 at 36-48); `-energy` moves K1 +0.85 /
++0.93 and K2 +0.54 / +0.64 at 36-42 / 42-48, K3 within 0.25. The chain model: energy makes the limb's coarse winners
+right and coherent (K1's coarse gain 0.26 -> 0.72), the gate opens, the prior stops refusing, worth half to one decibel;
+on the plain base the winners are scrambled and it never opens. The secondary readout (K2 +1 dB on both) is NOT met.
+
+**Would ALIAS_APERTURE's rule gate it?** Partly. The carry's tensor (the 1/8 level's 5 x 5, 40 px) reads P1/P5's bars
+as stripes (V3's do, M2's does not: build 6). Dropping the centre's component ALONG the stripes removes the slide that
+costs P1/P5 their speckle; a wrong across centre on hard bars is a period alias the picture cannot see. W3 is isotropic,
+so its centre survives. It does NOT gate R3/O5/O6; their cue is `moire_s(uv_a)`, already computed in the 1/8 pass: shut
+the centre above MOIRE_MIN (0.25), free.
+
+**Kill test, aperture-gated form** (one ladder run of `-energy-centre-ap` against `-energy`, then pan.sh W3): P1 within
+0.5 of 44.78 and P5 within 0.5 of 42.08, else the slide is not the mechanism; W3 36-41 at or above 21.2, under 20.7 means
+the gain was itself an along-stripe effect. R3/O5/O6 still down with P1/P5 restored: the Moire gate next, not a retune.
+Both restored and W3 kept: a candidate again. Otherwise the switch stays a documented trade, off.
+
+Felt: pull, the local centre as the cheapest reach (zero dispatches), high; the emulation's 50-70% looked like a door.
+-> Built it, spent the extra block on the gate. Outcome: WRONG as a candidate (W3 +0.7 / +1.5, the limb 0 / +0.5-0.9,
+P1 -6.8, P5 -3.5, R3 -1.45). The record held the prediction (the global seed's P1) and I did not carry it; the switch
+stays in the repository as a documented trade, off.

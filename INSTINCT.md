@@ -83,6 +83,15 @@ never upgrades a status: nothing here is a measurement, and nothing here changes
   file, and read "4 fail" as a compile failure twice over. Its default source did not exist here, so every file failed
   on "Error opening input" (G1.5: a check must first be shown to pass on the known-good). The direct render at
   -loglevel warning showed the files compile. Outcome: missed. Fix: compile_all refuses a missing source (committed).
+- 2026-10-21 23:41, Claude: none felt; read limb.sh's table with its header truncated and assumed the columns followed
+  SHADERS order (the table sorts the log names, the bare recommendation last), and told the reach lane "no change"
+  where the energy base had moved +0.5 to +0.9. Caught by the numbers not adding up against the first run, not by any
+  feeling; corrected within minutes. Outcome: missed. Note: a probe's column order is read from its script, never
+  assumed; print the header untruncated.
+- 2026-10-21 23:41, Claude: disappointment, LOCAL_CENTRE killed on the ladder by the aperture series (P1 -6.8), medium;
+  "the guess was wrong, and the fall is exact and small": the witness (P1/P5 against F2/L8 up) fixes where the centre
+  is not. -> the switch stays as a documented trade; the question (an aperture gate on the centre) goes to the lane on
+  paper. Outcome: right (a refuted candidate is the day's best data).
 
 ## The set-aside pulls
 

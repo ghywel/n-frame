@@ -244,6 +244,9 @@ set is the limit and proposal 2 is needed. Step 0(c) (`leveltap.py` on W3) gives
   ring excludes points within 0.75 of `off_a`, which sits on the truth, so the ring is the OTHER basin by design. Not a bug.
   Outcome: right to check, nothing found.
 
+- Felt: pull, proposal 1 (the local centre) as the cheapest reach, high; built on 2026-10-21 night at the coordinator's
+  request. Outcome: WRONG as a candidate (W3 +0.7 / +1.5; the limb 0 on plain, +0.5-0.9 on -energy; P1 -6.8, P5 -3.5); reach-addendum.md section 4.
+
 ## Verdicts
 
 Reasoned: the cliff is made in two places that the record has measured separately and never named together. The 1/16

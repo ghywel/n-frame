@@ -203,3 +203,30 @@ probe and ended without a hand-back; its files were complete. read_view 10 is dr
   PRUNE=2 4 build. Timing from a file, same build both sides, two samples: rec 18.29/18.66 -> PRUNE=2 13.92/13.08
   (-24 to -30%; predicted -28%); Low 18.46/18.63 -> 13.55/13.34 (-27%); Standard 26.22/26.19 -> 20.23/20.02 (-23%;
   predicted -30%); High 32.91/32.39 -> 27.98/28.48 (-13 to -15%; predicted -17%).
+- THE ARC (23:25 local; the container ran 21:53-22:03 its clock): warm-up L1 differs from itself (L8); control 42/42;
+  PRUNE=2 against shipped 42/42 identical on rec, Low, Standard, High. The prune is proven byte-identical where the
+  instrument is trusted to the bit. Adopt in place (free and never worse, said explicitly); the twin cut's [U] closes.
+
+## item 9's discriminator (23:25): LOCAL_CENTRE on W3
+Plain: 17.60 -> 18.33 at 36-41 (+0.7, between the lines); 28-32 22.81 -> 25.11 (+2.3). Energy: 20.23 -> 21.69 at 36-41
+(+1.46 against +1.5 UP), 28-32 29.13 -> 30.12 (+1.0). The two 28-32 moves exceed the "pure re-centring" bound (0.5):
+the switch does more than re-centre there (the candidate set changes which descent wins? the lane's leveltap step).
+Limb: the shipped baselines failed on a relative path in my command (the probe cd's into its folder); re-rendering.
+K2 (dark wall) energy-centre vs plain-centre at 36-48: 21.99/19.67 vs 16.89/15.91: the prior was the only term there and
+energy+centre carries the limb 12 px further. Judgement: closest to "plain secondary, energy UP"; the ladder decides
+whether -energy-centre is a candidate (it would be a High-tier change, Gareth's call).
+- (23:39) KILLED on the ladder: P1 -6.8, P5 -3.5, R3 -1.45, capped -0.12. Limb columns re-read (limb.sh sorts the
+  log names; the bare recommendation sorts last): plain base unmoved, energy base +0.5 to +0.9 at 36-48. I sent the
+  lane "no change" first and corrected it: the mis-read was mine (a truncated header, columns assumed in SHADERS order).
+  A pull's extra block, spent; the question it ends on (the aperture series) goes back to the lane on paper.
+- Adoption of PRUNE=2 in progress: the four tiers regenerated in place, byte-identical to the Arc-gated twins;
+  scale_shader.py's hand-off assertion needed one count for pruned files (the B->A chain is gone), with the unpruned
+  refusal kept as its control; the -4k twins regenerated. Smoke and lockstep after the GPU frees; the -4k twins get
+  their own identity run on the Arc (720p scenes through the 4K file still test the text).
+
+- The reach lane's section 4 (23:45): P1/P5 fall because at 1/16 the stairs' 24 px period is 1.5 texels, aliased, so the
+  coarse winner is the Moire, far and coherent, and the local centre has neither the Moire-evidence gate nor the
+  pair-to-pair gate the global seed carries (the record's own P1 reading for the global seed, -4.13, was the warning;
+  the lane: "I did not carry it"). R3/O5/O6/V3: the same coherent Moire winner on isotropic texture. A next form (the
+  carry's tensor to drop the along-stripe component, plus moire_s as the gate, free) has its kill test written; it is
+  NOT built tonight: the pull's budget is spent, and the next block on this line must differ in kind.

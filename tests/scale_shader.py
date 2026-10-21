@@ -115,7 +115,12 @@ for coarse, fine in (("S", "E"), ("E", "Q"), ("Q", "H"), ("H", "F")):
     t, n = pat.subn(lambda m: "%s * %.1f * %s" % (m.group(1), ratio, m.group(2)), t)
     n_hand[coarse + fine] = n
     if fine != "F":
-        assert n >= 2, "hand-off %s -> %s: found %d (expected one per direction at least)" % (coarse, fine, n)
+        # A pruned file (PRUNE=2 in its header, 2026-10-21: REPAIRS L7, the dead B->A chain removed) carries only the
+        # A->B hand-off at the levels whose B->A twin was cut, so one is the right count there; an unpruned file still
+        # needs one per direction, and a pruned one still needs at least one.
+        pruned = "PRUNE=" in t[:4000]
+        assert n >= (1 if pruned else 2), "hand-off %s -> %s: found %d (expected %s)" % (
+            coarse, fine, n, "at least one in a pruned file" if pruned else "one per direction at least")
 assert sum(n_hand.values()) == n_total, ("hand-offs in the file: %d, classified: %d" % (n_total, sum(n_hand.values())))
 report.append("hand-offs " + " ".join("%s:%d" % kv for kv in n_hand.items() if kv[1]))
 
