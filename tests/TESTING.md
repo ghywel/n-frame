@@ -2418,3 +2418,42 @@ change it. It is an open lead (below).
 - *Then:* real footage (decimate and reconstruct on a film segment, both builds, the recommendation and linear;
   prediction: SSIM within 0.0005, PSNR within 0.05 dB), time from a file (`probes/cost/timing.sh`, interleaved;
   prediction: within 3 percent), and NFrameDemo's lockstep after adoption (prediction: PASS).
+
+**Results (the same evening, the M5; `probes/build/buildgate.sh`, data in `np-scratch/build-gate-20261021/`).**
+Every must-hold held and every prediction was met.
+
+| mode | cases within 0.01 dB | within 0.10 | capped mean, old -> new | worst B - A |
+|---|---|---|---|---|
+| hold | 41 of 41 (L0 is inf on both) | 41 | 29.325 -> 29.325 | 0.00 |
+| linear | 42 of 42 | 42 | 32.269 -> 32.269 | 0.00 |
+| the recommendation | 42 | 42 | 38.050 -> 38.050 | 0.00 |
+| the plain bidirectional | 42 | 42 | 34.955 -> 34.955 | 0.00 |
+| Cadence High (`-lattice-cut`) | 41 | 42 | 38.331 -> 38.331 | L0_static -0.05, H1 -0.01, P1 -0.01 |
+| the quad field shader | 41 | 42 | 37.799 -> 37.799 | L0_static +0.05 |
+
+The control: the plain bidirectional against the recommendation on the old build differs by more than 0.10 dB on 39
+of 42 cases, so the table can see a difference. The blind question is answered: the chroma location negotiation moves
+nothing (the ladder's inputs and outputs are both unspecified). The rendered outputs are not byte-identical between
+the builds (the real-footage renders below differ as files), so both builds ran; they score the same.
+
+- **The window probe, re-encoded first.** Its first form put the timestamp through the readback's fp16 stage
+  (REPAIRS.md L10) at a scale where the step is 0.004-0.008 of a frame, which is where the "0.0064 error" and
+  "0.9959 apart" above came from: the instrument's floor, not the queue's. With the whole part and the fraction in
+  separate channels (resolution 0.0005), both builds read every timestamp within 0.0005 of i - t_src and the
+  straddling pair 1.0000 apart at every phase. That lead is withdrawn. The fixed build: 63 of 63 windows, the
+  counterfactual rule names a different window at N:N and fits none of the outputs.
+- **Real footage** (Back to the Future, segments at 600, 1200, 1800, 4200 and 5400 s, screened GOOD, 3 s each;
+  hold, linear, the recommendation, High): the passthrough check exact for hold on all five, and every PSNR and SSIM
+  identical on the two builds to the printed digits (recommendation mean 33.09 dB / 0.9549; High 33.82 / 0.9583;
+  linear 29.56 / 0.9279).
+- **Time from a file** (`probes/build/buildtime.sh`, 720p O5, 24 -> 60, 120 frames, interleaved, median of three,
+  the MoltenVK switches off): linear 3.10 -> 3.16 ms per output frame (+1.7%), the recommendation 18.21 -> 18.24
+  (+0.1%), High 32.19 -> 32.01 (-0.6%); the spreads between rounds are larger than the differences.
+
+**Adopted.** The new pins are built in place at `~/np-build` (`ROOT=$HOME/np-build FFMPEG_REF=3a5eb948e7...
+PLACEBO_REF=285d1cc8... build-macos.sh`, fresh clones); the previous build (ff2059a + c42968d) is kept whole in
+`~/np-build/prev-20260930/`, as `prev-20260908/` keeps the one before. The gate's side build in
+`~/np-build/up-20261021/` is deleted once the in-place build passes smoke. NFrameDemo's lockstep against the adopted
+build: **PASS in 3 min 14 s**, every graph matching its GLSL by hash, picture and ladder figures as on 10-04 (its
+register, 2026-10-21, has the detail; its prep scripts use this CLI). Still owed: the Linux witness on the Arc and
+the Windows boot at these pins, and the Homebrew Vulkan toolchain's point release as its own step.

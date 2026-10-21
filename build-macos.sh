@@ -4,9 +4,10 @@
 #   ./build-macos.sh [stage]        deps|placebo|ffmpeg|verify
 #   FORCE=1 ./build-macos.sh        rebuild even where outputs exist
 #
-# VERIFIED 2026-10-01 on an Apple M5 (macOS 27.0.1) and 2026-09-30 on an Intel MacBook Pro (macOS 15.8, RX 6600
-# eGPU), MoltenVK 1.4.2, at ffmpeg ff2059a + libplacebo c42968d (BUILDANDUSAGE.md, "Status and pins"): smoke.sh 17
-# of 17 on the M5, 15 of 15 on the Intel Mac (before two checks were added). First walked 2026-08-30 on the Intel
+# VERIFIED 2026-10-21 on an Apple M5 (macOS 27.0.1, MoltenVK 1.4.2) at ffmpeg 3a5eb94 + libplacebo 285d1cc (7.377):
+# smoke.sh 18 of 18, and the ladder against the previous pins to the hundredth (tests/TESTING.md). Before that:
+# 2026-10-01 on the M5 and 2026-09-30 on an Intel MacBook Pro (macOS 15.8, RX 6600 eGPU) at ffmpeg ff2059a +
+# libplacebo c42968d (BUILDANDUSAGE.md, "Status and pins"): smoke.sh 17 of 17 on the M5, 15 of 15 on the Intel Mac. First walked 2026-08-30 on the Intel
 # Mac; it had been written blind on Windows and took five fixes, each commented at the point it matters.
 #
 # MEASURING HERE: the ground-truth ladder wandered from run to run until two MoltenVK switches were found that end

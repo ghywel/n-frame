@@ -39,7 +39,7 @@ never upgrades a status: nothing here is a measurement, and nothing here changes
 - 2026-10-21 about 20:21, Claude: surprise (startle), on the WORKING build the hook's timestamps away from phase 0 are a few
   thousandths of a frame off, and the pair straddling the output reads 0.9959 apart instead of 1, medium; first
   guess: the queue's own estimate, not our patch. -> measured on both builds: the same. Set aside (pull 2).
-  Outcome: open.
+  Outcome: wrong: the startle was at the instrument, not the queue (the dissonance below found it).
 - 2026-10-21 about 20:23, Claude: none felt; a check that the fixed patch applies to the old pin ran after a checkout that
   had failed (`;` let it run on), so it tested the new pin again and printed "applies to c42968d too". Caught by
   reading the raw output, not by any feeling. Outcome: missed. Note: a check chained after a step that can fail is
@@ -47,15 +47,31 @@ never upgrades a status: nothing here is a measurement, and nothing here changes
 - 2026-10-21 20:29, Claude: unease (dissonance), the timestamp error checks out on both builds and I do not believe
   it: the readings are exact fp16 values (-0.40234 = 1945/4096, +0.59375 = 1100/2048) and REPAIRS L10 names an fp16
   stage on every readback, high; first guess: the probe's own floor. -> the probe re-encoded (whole part and fraction
-  in separate channels), to re-run when the GPU is free. Outcome: open.
+  in separate channels), to re-run when the GPU is free. Outcome: right (20:55): re-encoded, both builds read every
+  timestamp within the 0.0005 resolution and the straddling pair exactly 1.0000; the 0.9959 was the probe's fp16 floor.
+- 2026-10-21 21:01, Claude: none felt; edited build-macos.sh's header while a background run of it was in its ffmpeg
+  stage, and bash, reading the file as it goes, hit "unexpected EOF" at the verify stage (the map's trap G10.2, read
+  this evening). The build itself was complete; the verify stage was re-run alone. Outcome: missed. Note: before
+  editing any script, check `ps` for a run of it.
+- 2026-10-21 21:11, Claude: unease (misgiving), lockstep's painting check read acceleration 32.14 and jerk 43.14 dB
+  where 10-04 read 31.89 and 44.44, medium; first guess: the new build's tail render. -> dug one block: the step runs
+  inside the Metal app alone, no FFmpeg; repeated twice, identical to the hundredth. Found: a stable app-side change
+  since the 10-12 rebuild, not the build, not noise; recorded OPEN in NFrameDemo's register. Outcome: right (something
+  was there), wrong about the suspect.
 
 ## The set-aside pulls
 
-1. **2026-10-21.** **Doing:** reading NFrameDemo's METALPORT.md to refresh on the Metal port. **Pull:** "There is no
-   entry for L2 reaching the Metal side. Where were the graphs regenerated, and who checked them?"
-2. **2026-10-21.** **Doing:** reading the window probe's first output on the working build. **Pull:** "The straddling
+1. ~~**2026-10-21.** **Doing:** reading NFrameDemo's METALPORT.md to refresh on the Metal port. **Pull:** "There is no
+   entry for L2 reaching the Metal side. Where were the graphs regenerated, and who checked them?"~~
+   **Return, 2026-10-21 21:11.** Investigated: the 10-12 lockstep regenerated the stale graphs after L2 (PASS in
+   3 min 19 s) and wrote no register entry; today's hash step shows every graph on the post-L2 GLSL. Closed by the
+   2026-10-21 entry in NFrameDemo's METALPORT.md.
+2. ~~**2026-10-21.** **Doing:** reading the window probe's first output on the working build. **Pull:** "The straddling
    pair is 0.9959 apart. The hook's `mix_t` is then about 0.404 where the output is at 0.400. Where does the queue
-   lose four thousandths, and does the ladder's ceiling feel it?"
+   lose four thousandths, and does the ladder's ceiling feel it?"~~
+   **Return, 2026-10-21 20:56.** Already resolved: by the probe's own repair. Its first encoding put the timestamp
+   through the readback's fp16 stage at a scale where the step is 0.004-0.008 of a frame; split into a whole part and
+   a fraction, both builds read the pair exactly 1.0000 apart. The queue loses nothing.
 
 ## The incubator
 

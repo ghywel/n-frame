@@ -66,31 +66,36 @@ differ a little from each other, so compare a change on one host.
 
 ## Status and pins
 
-*As of 2026-10-01.* Where each build was last verified, at which commits:
+*As of 2026-10-21.* Where each build was last verified, at which commits:
 
 | host | OS | Vulkan | route | last verified | run to run |
 |---|---|---|---|---|---|
-| Apple M5 | macOS 27.0.1, arm64 | MoltenVK 1.4.2 | [build-macos.sh](build-macos.sh) | 2026-10-01, at the pins below: `smoke.sh` 17 of 17 | 40 of 42 ladder cases identical, all within 0.01 dB, with the switches |
-| Intel MacBook Pro, Radeon RX 6600 eGPU (also a Radeon Pro 560X and a UHD 630) | macOS 15.8 | MoltenVK 1.4.2 | [build-macos.sh](build-macos.sh) | 2026-09-30, at the pins below: `smoke.sh` 15 of 15 | 41 of 42 identical with the switches |
-| Intel Arc A310 | Debian trixie in a container | Mesa (ANV) | [linux/](linux/) | 2026-09-30, at the pins below: `smoke.sh` 15 of 15 | 42 of 42 identical |
-| Radeon RX 6600 | Windows, MSYS2 / mingw-w64 | AMD Adrenalin 26.8.1 | [build-windows.ps1](build-windows.ps1) | 2026-09-11, at ffmpeg 5b614ef + libplacebo 3330a51; not yet built at the pins below | exact |
+| Apple M5 | macOS 27.0.1, arm64 | MoltenVK 1.4.2 | [build-macos.sh](build-macos.sh) | 2026-10-21, at the pins below: `smoke.sh` 18 of 18; the full ladder, real footage and timing against the previous pins in [tests/TESTING.md](tests/TESTING.md#the-research-build-updated-2026-10-21) | 40 of 42 ladder cases identical, all within 0.01 dB, with the switches (measured 2026-09-30) |
+| Intel MacBook Pro, Radeon RX 6600 eGPU (also a Radeon Pro 560X and a UHD 630) | macOS 15.8 | MoltenVK 1.4.2 | [build-macos.sh](build-macos.sh) | 2026-09-30, at the previous pins (ff2059a + c42968d): `smoke.sh` 15 of 15; not yet built at the pins below | 41 of 42 identical with the switches |
+| Intel Arc A310 | Debian trixie in a container | Mesa (ANV) | [linux/](linux/) | 2026-09-30, at the previous pins (ff2059a + c42968d): `smoke.sh` 15 of 15; not yet built at the pins below | 42 of 42 identical |
+| Radeon RX 6600 | Windows, MSYS2 / mingw-w64 | AMD Adrenalin 26.8.1 | [build-windows.ps1](build-windows.ps1) | 2026-09-11, at ffmpeg 5b614ef + libplacebo 3330a51; not built at any later pins | exact |
 
 `smoke.sh` gained two checks on 2026-10-01 (17 in all). The Windows script was brought into line with the other two
 the same day (it now applies all three patches and takes pins); that version has not been run on Windows yet.
 
 ### Pins
 
-Numbers recorded from 2026-09-30 on were measured on:
+Numbers recorded from 2026-10-21 on were measured on:
 
-- ffmpeg `ff2059afd90c46d7e1b0f92542b204accb408ffb` (2026-09-30)
-- libplacebo `c42968d8616a1d1c8ad5f4f1a8d6f5a9cb396e56` (2026-09-23)
+- ffmpeg `3a5eb948e76dc6390e4b3cff7becf84bc492b7af` (2026-10-21)
+- libplacebo `285d1cc8af2ab79b72ac662eb09736de8c12392b` (2026-10-19, 7.377)
 
-with the three patches above. By default the scripts clone upstream's master of the day. To build the pinned
+with the three patches above. libplacebo's API 375 (2026-10-10) made the queue's timestamps double; the hook patch's
+window fill broke exact ties toward the earlier frame by a float comparison, which the change flipped at N:N, so the
+patch now compares with a tolerance (tests/TESTING.md, the 2026-10-21 update, and `tests/probes/window/window_live.sh`,
+which reads the window a build hands the hook). The numbers before that date were measured on ffmpeg
+`ff2059afd90c46d7e1b0f92542b204accb408ffb` + libplacebo `c42968d8616a1d1c8ad5f4f1a8d6f5a9cb396e56`, from 2026-09-30;
+the ladder, real footage and time from a file agree between the two to the hundredth. By default the scripts clone upstream's master of the day. To build the pinned
 commits, pass the full hashes:
 
 ```bash
-FFMPEG_REF=ff2059afd90c46d7e1b0f92542b204accb408ffb \
-PLACEBO_REF=c42968d8616a1d1c8ad5f4f1a8d6f5a9cb396e56 ./build-macos.sh
+FFMPEG_REF=3a5eb948e76dc6390e4b3cff7becf84bc492b7af \
+PLACEBO_REF=285d1cc8af2ab79b72ac662eb09736de8c12392b ./build-macos.sh
 ```
 
 The same two variables work for `linux/build-linux.sh` and `build-windows.sh`. A pin applies to a fresh clone; on a
@@ -98,7 +103,7 @@ reused clone the scripts check that it is already at the pin and stop if it is n
 and Windows; on Linux, delete the clone).
 
 Earlier pins: ffmpeg df48dc6 + libplacebo 41ac298 (the 2026-09-04 production build), then ffmpeg 5b614ef +
-libplacebo 3330a51 (verified 2026-09-11).
+libplacebo 3330a51 (verified 2026-09-11), then ffmpeg ff2059a + libplacebo c42968d (2026-09-30 to 2026-10-21).
 
 ---
 
