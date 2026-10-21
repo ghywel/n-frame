@@ -162,6 +162,14 @@ scene() {
   local TEX_V2='18+220*gt(sin(ld(1)/3.8197),0)'            # hard-edged bars (stairs), period 24 px
   local TEX_H1='128+110*sin(ld(0)/3.8197)'                 # the same bars turned vertical, panning horizontally
   local TEX_H2='18+220*gt(sin(ld(0)/3.8197),0)'
+  # EXACT-COVERAGE stairs (2026-10-21, the swarm's ladder-audit lane). gt(sin(..),0) is a hard threshold evaluated at
+  # integer rows, so at the 60 fps truth frames (the box at 100 + 2.4 m) the bar edges SNAP to whole rows while any
+  # correct warp of the 24 fps frame gives partial rows: a ceiling near 30 dB built into V2, V3 and H2's own truth
+  # (the lane's model 30.66, the judge's 28.6; a soft texture under the same warp 52.7). This is the pixel coverage
+  # of the same 24-px square wave (12 on, 12 off), exact at any offset, as _rect's box edges already are; at integer
+  # offsets it equals the frozen bars on every row but u = 0. The frozen three stay as they are (SWARM-2026-10-21.md).
+  local TEX_V2X='18+220*(clip(12-mod(ld(1)\,24)\,0\,1)+clip(mod(ld(1)\,24)-23\,0\,1))'
+  local TEX_H2X='18+220*(clip(12-mod(ld(0)\,24)\,0\,1)+clip(mod(ld(0)\,24)-23\,0\,1))'
   # The aperture series (2026-09-07, from the owner's eyes on the film's stairs under a horizontal pan:
   # "lensing, like a drop of water"). The V2 stairs again, but panning ALONG the bars, the direction the
   # bars cannot see; a weak fine speckle (contrast 12, periods 14 x 11 px) rides on them so that a wrong
@@ -218,6 +226,17 @@ scene() {
     V3_stairs_sq24_v12) _rect '490' '100+288*T' 300 300 0 "$TEX_V2" "$r" ;;  # hard bars at HALF A PERIOD per frame: the alias
     H1_bars_sine24_h6)  _rect '100+144*T' '210' 300 300 0 "$TEX_H1" "$r" ;;  # V1 turned 90 degrees: is it the period or the direction
     H2_stairs_sq24_h6)  _rect '100+144*T' '210' 300 300 0 "$TEX_H2" "$r" ;;  # V2 turned 90 degrees
+    # LADDER2 (2026-10-21): beside the frozen 42, never in ALL_CASES or its mean (SWARM-2026-10-21.md, items 4 and 5).
+    V2x_stairs_cov_v6)  _rect '490' '100+144*T' 300 300 0 "$TEX_V2X" "$r" ;;  # V2 with an exact-coverage truth
+    V3x_stairs_cov_v12) _rect '490' '100+288*T' 300 300 0 "$TEX_V2X" "$r" ;;  # V3 with an exact-coverage truth
+    H2x_stairs_cov_h6)  _rect '100+144*T' '210' 300 300 0 "$TEX_H2X" "$r" ;;  # H2 with an exact-coverage truth
+    # The speed comb: the only textured translation speed in ALL_CASES is 16 px/frame, the point-sampled pyramid's one
+    # immune speed (section 5's recommendation 2, "not done" since 2026-09-03). The same boxes at the speeds footage has.
+    M1c_noise_v6)       _rect '144*T' '210' 300 300 0 "$TEX_M1"  "$r" ;;  # M1 at 6 px/frame
+    M1c_noise_v10)      _rect '240*T' '210' 300 300 0 "$TEX_M1"  "$r" ;;  # M1 at 10
+    M1c_noise_v12)      _rect '288*T' '210' 300 300 0 "$TEX_M1"  "$r" ;;  # M1 at 12
+    M2c_period40_v6)    _rect '144*T' '210' 300 300 0 "$TEX_M2"  "$r" ;;  # M2 at 6
+    M2c_period40_v10)   _rect '240*T' '210' 300 300 0 "$TEX_M2"  "$r" ;;  # M2 at 10
     P1_stairs_along_v4)  _rect '100+96*T'  '210' 600 300 0 "$TEX_P" "$r" ;;  # stairs panning along their bars, 4 px/frame
     P2_stairs_along_v8)  _rect '100+192*T' '210' 600 300 0 "$TEX_PC" "$r" ;;  # 8 px/frame, coarse speckle: the aperture alone
     P3_stairs_along_v12) _rect '100+288*T' '210' 600 300 0 "$TEX_PC" "$r" ;;  # 12 px/frame, the film's fast end
@@ -452,6 +471,11 @@ scene() {
 }
 
 ALL_CASES="L0_static L1_trans_8px L2_trans_16px L3_trans_23px L4_trans_40px L5_lowcontrast L6_flat_large L7_textured_large M1_noise_large M2_period40 M3_period16_trap M4_belowgate L8_diagonal L9_occlusion A1_accel_8mean A2_accel_16mean A3_accel_23mean F1_fourier_edge F2_fourier_accel R1_rot_const R2_rot_accel O1_osc_gentle O2_osc_medium O3_osc_hard O4_osc_flat300 O5_osc_textured A4_accel_tex_a033 A5_accel_tex_a067 A6_accel_tex_a133 A7_accel_tex_a167 O6_osc_tex_gentle R3_rot_tex V1_bars_sine24_v6 V2_stairs_sq24_v6 V3_stairs_sq24_v12 H1_bars_sine24_h6 H2_stairs_sq24_h6 P1_stairs_along_v4 P2_stairs_along_v8 P3_stairs_along_v12 P4_stairs_along_v8_crosser P5_stairs_along_v8_alias"
+
+# LADDER2 (2026-10-21): cases built beside the frozen 42 after the swarm's audit, scored the same way but summarised
+# on their own and never merged into ALL_CASES' mean, so every historical number stays comparable. The three x cases
+# are V2/V3/H2 with an exact-coverage truth; the five c cases are the speed comb.
+LADDER2_CASES="V2x_stairs_cov_v6 V3x_stairs_cov_v12 H2x_stairs_cov_h6 M1c_noise_v6 M1c_noise_v10 M1c_noise_v12 M2c_period40_v6 M2c_period40_v10"
 
 # The six added 2026-08-31 are in ALL_CASES deliberately rather than in a
 # group of their own: a case that is not run by default is a case that rots.

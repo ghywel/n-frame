@@ -350,7 +350,7 @@ GPU.
 
 **Status (2026-10-01).** Builds and runs on an Apple M5 (macOS 27.0.1, arm64) and an Intel MacBook Pro (macOS
 15.8; RX 6600 eGPU, Radeon Pro 560X, UHD 630), with MoltenVK 1.4.2 and vulkan-loader 1.4.357 from Homebrew. At the
-pins above: `smoke.sh` 17 of 17 on the M5 (2026-10-01), 15 of 15 on the Intel Mac (2026-09-30).
+pins above: `smoke.sh` 18 of 18 on the M5 (2026-10-21), 15 of 15 on the Intel Mac (2026-09-30, at the previous pins).
 
 ```bash
 ./build-macos.sh                 # deps | placebo | ffmpeg | verify

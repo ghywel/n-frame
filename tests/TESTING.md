@@ -2457,3 +2457,42 @@ PLACEBO_REF=285d1cc8... build-macos.sh`, fresh clones); the previous build (ff20
 build: **PASS in 3 min 14 s**, every graph matching its GLSL by hash, picture and ladder figures as on 10-04 (its
 register, 2026-10-21, has the detail; its prep scripts use this CLI). Still owed: the Linux witness on the Arc and
 the Windows boot at these pins, and the Homebrew Vulkan toolchain's point release as its own step.
+
+## LADDER2: eight cases built beside the frozen 42 (2026-10-21)
+
+The swarm's ladder audit ([../SWARM-2026-10-21.md](../SWARM-2026-10-21.md), findings 1 and the comb) led to eight
+scenes in `scenes.sh`'s `LADDER2_CASES`, never in `ALL_CASES` or its mean, so every historical number stays comparable.
+`scenecheck.sh` passes on all eight (six bit-identical, two exact to rounding). Scored the same evening on the M5 with
+the adopted build (`mvk-env.sh` set), four shaders, one run each; the whole frame, as the ladder scores:
+
+| case | hold | linear | base | rec | High | quad | the frozen twin, rec |
+|---|---|---|---|---|---|---|---|
+| V2x_stairs_cov_v6 | 19.41 | 22.28 | 16.09 | **41.02** | 45.83 | 37.64 | V2 29.02 |
+| V3x_stairs_cov_v12 | 16.22 | 18.98 | 24.10 | **31.75** | 45.14 | 20.08 | V3 26-29 by phase |
+| H2x_stairs_cov_h6 | 19.41 | 22.28 | 16.09 | **40.19** | 46.14 | 34.91 | H2 28.64 |
+| M1c_noise_v6 | 26.52 | 28.53 | 29.26 | 43.72 | 47.44 | 38.54 | (M1 at 16: 46.9) |
+| M1c_noise_v10 | 25.10 | 26.64 | 27.97 | 45.10 | 46.94 | 38.27 | |
+| M1c_noise_v12 | 24.82 | 26.49 | 27.79 | **28.61** | 31.84 | 28.56 | |
+| M2c_period40_v6 | 30.51 | 36.52 | 32.19 | 57.81 | 58.16 | 52.64 | |
+| M2c_period40_v10 | 26.79 | 31.84 | 29.77 | 53.49 | 53.21 | 51.09 | |
+
+**The stairs' wall was the binding term, and by more than either model said.** The audit predicted V2x near 34, H2x
+near 35 and V3x near 28.5 for the recommendation (its kill test: V2x within 0.5 dB of V2 kills; above 33 confirms).
+Measured: 41.0, 40.2, 31.8. The High tier, which carries the alias carry, reads 45.1 on V3x where the frozen V3 gave
+it 27-29: the carry's gain on the half-period alias was about +13 dB, recorded as +6 against a truth that could not
+show more. Every V2, V3 and H2 number in the record from 2026-09-06 to today is to be read against this. The frozen
+three stay as they are; what the headline mean includes is the owner's decision. The quad reads 20.1 on V3x (it
+aliases at the doubled speed, as the record says of content on twos) and its V2x/H2x phase profile shows the
+asymmetry at its widest (41.3 / 36.4 / 39.3 / 33.6 by phase).
+
+**The comb is open at 12 px/frame on the shipped tiers, closed at 10.** The audit predicted the recommendation within
+3 dB of the blend at both 10 and 12 (its kill test: above 40 at both kills). Measured: 45.10 at 10 (killed there),
+28.61 at 12 (2.1 dB above the blend's 26.49; the High tier 31.84). So the point-sampled pyramid's comb bites at the
+antipode of its 8 px lattice, not across the whole band the 1-D toys drew: the record's "immune within one pixel of 8
+and 16" and the weave's locked speeds (3, 5, 11, 13, 19) are both consistent with a comb whose teeth are narrow on the
+recommendation. M2 at period 40 is above the coarse Nyquist and reads 53-58 at both speeds. These two cases are the
+regression gate the family's best-documented failure never had.
+
+`--min` (the worst scored frame) shows what the means hide: the quad's M2c means are 52.6 and 51.1 with worst frames
+of 22.6 and 21.5. With `SKIP_END=2` (the mixer's end frames dropped) the means rise by 0.5 to 2 dB on every case
+(`np-scratch/swarm-20261021/gpu/ladder2-table-skipend.txt`); the table above is the comparable, unskipped form.

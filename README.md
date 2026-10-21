@@ -31,7 +31,7 @@ Anything not listed is untested rather than known to work.
 
 | GPU | OS and build | Vulkan driver | Status |
 |---|---|---|---|
-| Apple M5 | macOS 27.0.1, arm64 | MoltenVK 1.4.2 | the main development host since 2026-09-11; `smoke.sh` 17 of 17 at the current pins (2026-10-01) |
+| Apple M5 | macOS 27.0.1, arm64 | MoltenVK 1.4.2 | the main development host since 2026-09-11; `smoke.sh` 18 of 18 at the current pins (2026-10-21) |
 | Intel Arc A310 (beside a UHD 630) | Debian: jellyfin-ffmpeg (the 2026-09-04 production build); and since 2026-09-30 a Debian trixie container at the current pins | Mesa | patch and shaders tested; the container is exactly reproducible run to run, so a shader is gated there in one run |
 | AMD Radeon RX 6600 eGPU | Windows, MSYS2 / mingw-w64 | AMD, Adrenalin 26.8.1 | patch and shaders tested; the Windows workhorse from 2026-09-02; reproducible run to run; most of the measurements in [NFRAME-LIMITS.md](NFRAME-LIMITS.md) up to mid-September, and those in [THREEDIMENSIONAL.md](THREEDIMENSIONAL.md), were taken here |
 | AMD Radeon Pro 560X | Windows, MSYS2 / mingw-w64 | AMD (Boot Camp) | patch and shaders tested; the ladder matched Linux to 0.01 dB |

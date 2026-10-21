@@ -733,7 +733,10 @@ Elsewhere, the sampling position on the $A$ side is off by
 \mathbf x_A - \big(\mathbf p - t\, \mathbf f(\mathbf p)\big) = t^2\, (\nabla \mathbf f)\, \mathbf f + O(t^3),
 ```
 
-and by the same expression with $1 - t$ in place of $t$ on the $B$ side.
+and on the $B$ side the corresponding error is $-t(1 - t)\, (\nabla \mathbf f)\, \mathbf f + O(t^3)$, not the
+$(1 - t)^2$ form an earlier revision of this section stated (corrected 2026-10-21 after a numerical check by the
+swarm's mathematics lane, `swarm/2026-10-21/mathematics/warp_error.py`). The two samples are therefore pulled apart
+rather than shifted together: a ghost, not a displacement, of weighted size $2 t^2 (1 - t)$, largest at $t = 2/3$.
 
 ---
 

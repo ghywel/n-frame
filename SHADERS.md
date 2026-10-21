@@ -52,7 +52,7 @@ any two members of this family and is not a picture difference at all.**
 | `bidirectional-interpolation-variational-propagated.glsl` (4K) | General viewing and the velocity field; the reference the science is measured against | **Recommended** since 2026-09-06; the reference for the science | 54 |
 | `…-global-cage-energy-carry-adopt-lattice-cut.glsl` (4K) | A video player: the recommendation plus the global-motion seed, the cage, the texture energy, the half-period alias carry, the outline adoption, the print lattice with its cost cap, and the motion-aware cut gate | **A video player's default**: the Cadence player's High tier from the 1.0.4 rebuild (2026-10-01, evening) | 94 |
 | `…-global-cage-energy-carry-adopt-cut.glsl` (4K) | The same without the print lattice; cheaper where a moving print fills the frame | The Cadence player's Standard tier from the 1.0.4 rebuild | 82 |
-| `bidirectional-interpolation-variational-propagated-cut.glsl` (4K) | The recommendation with the motion-aware cut gate | The Cadence player's Low tier from the 1.0.4 rebuild | 55 |
+| `bidirectional-interpolation-variational-propagated-cut.glsl` (4K) | The recommendation with the motion-aware cut gate | The Cadence player's Low tier from the 1.0.4 rebuild | 53 |
 | `…-global-cage-energy-carry-adopt-lattice.glsl`, `…-adopt.glsl` (4K) | The two upper tiers without the cut gate | The High and Standard tiers of 1.0.4's first build; superseded by their `-cut` forms | 93 / 81 |
 | `bidirectional-interpolation-animation.glsl` | Hand-drawn and cel-shaded content | **Recommended for animation** | 26 |
 | `bidirectional-interpolation-propagated.glsl` | The fast tier, when the cascade does not fit (about +13% over the base) | Variant | 26 |
@@ -123,7 +123,7 @@ branches are alternatives to each other rather than steps in one line. Pass
 counts leave out the seven-pass reading tail:
 
 ```
-bidirectional-interpolation.glsl            24 passes   the base (N = 2)
+bidirectional-interpolation.glsl            22 passes   the base (N = 2)
   |
   +-- -diffuse-coarse.glsl                  31   base + coarse flow diffusion
   |     |                                        (SUPERSEDED)
@@ -228,7 +228,7 @@ all 29 generated files rebuild byte-identical from the recipes below ([REPAIRS.m
 The recipes for the variational line are in `tests/smoke.sh` (sections 3-3e) and in each file's section below.
 [BIDIRECTIONAL-AS-MATHEMATICS.md](BIDIRECTIONAL-AS-MATHEMATICS.md) writes the base out as equations, pass by pass.
 
-### `bidirectional-interpolation.glsl` -- the base, 24 passes
+### `bidirectional-interpolation.glsl` -- the base, 22 passes
 
 The hierarchical block-matching pyramid, and the file every other build in
 the family derives from. Edit this and the stock variational, tri and quad
@@ -248,7 +248,7 @@ does not fit your hardware budget. It is roughly a fifth of the passes and
 visibly worse -- on real footage it produces the edge fraying and
 non-rigid warping that the variational cascade exists to fix.
 
-### `bidirectional-interpolation-seeded.glsl` -- the base with three coarse seeds, 22 passes
+### `bidirectional-interpolation-seeded.glsl` -- the base with three coarse seeds, 20 passes
 
 The same work as the base and byte-identical from the quarter-resolution
 level down (two passes fewer only because its coarse search and its first
@@ -317,7 +317,7 @@ footage, about a percent of time on the quad. `FORESIGHT=0`
 in the environment regenerates without it. NFRAME-LIMITS.md, "The
 foresight seed".
 
-### `bidirectional-interpolation-propagated.glsl` -- the seeded base plus flow propagation, 26 passes
+### `bidirectional-interpolation-propagated.glsl` -- the seeded base plus flow propagation, 24 passes
 
 The seeded base byte for byte, plus four passes at the 1/8 level (eight
 before each was fused with its reverse-direction twin, below). Why:
@@ -362,7 +362,7 @@ less on L4, 0.2-0.3 less on live action; the check without the
 disagreement rule at all is 1.5 dB worse on the ladder mean and 2 on the
 anime. NFRAME-LIMITS.md section 8 has all of it.
 
-### `bidirectional-interpolation-animation.glsl` -- the propagated shader tuned for line art, 26 passes
+### `bidirectional-interpolation-animation.glsl` -- the propagated shader tuned for line art, 24 passes
 
 The propagated shader with one constant changed: the disagreement
 threshold at which a textured texel blends instead of trusting the refine's
@@ -384,7 +384,7 @@ are generated with the base argument:
     ./tests/gen_tridirectional.py  tridirectional-interpolation-animation.glsl  bidirectional-interpolation-animation.glsl
     ./tests/gen_quaddirectional.py quaddirectional-interpolation-animation.glsl bidirectional-interpolation-animation.glsl
 
-### `bidirectional-interpolation-variational.glsl` -- the recommendation from 2026-08-28 to 2026-09-06, 116 passes
+### `bidirectional-interpolation-variational.glsl` -- the recommendation from 2026-08-28 to 2026-09-06, 114 passes
 
 Regenerated on 2026-09-04 when the human-reading tail was added: the
 committed file had predated the sub-pixel refinement block the base gained
@@ -401,7 +401,7 @@ shader, on in every generated one, NFRAME-LIMITS.md section 9), and the
 fresh generation scores the same L1 figure, 54.24 dB, so `tests/smoke.sh`
 step 3 is green again.
 
-A strict superset of the base: every one of its 24 passes, plus 80
+A strict superset of the base: every one of its 22 passes, plus 80
 variational-refinement passes and 12 vector-median passes distributed across
 the pyramid. Two things it adds, both of which turned out to matter more
 than any parameter tuning ever did:
@@ -437,7 +437,7 @@ defaults to `bidirectional-interpolation.glsl`. Every file of the
 recommendation's line passes `bidirectional-interpolation-propagated.glsl`
 there; see the recommendation's section below.
 
-### `bidirectional-interpolation-variational-4k.glsl` -- the variational build for 4K, 116 passes
+### `bidirectional-interpolation-variational-4k.glsl` -- the variational build for 4K, 114 passes
 
 Every rule in the tracker is in pixels: the coarse level is 1/16 of the
 frame, the search reaches about 23 px per frame, the matching windows are
@@ -550,17 +550,17 @@ PSNR left, SSIM right. At twice the ladder's size: V1 19.29 -> 53.52, L1 53.64 -
 A5 42.57 -> 53.72, R3 33.24 -> 38.09. Time at the film's size, 158 output
 frames: 8.73 s against 7.46 s.
 
-### `bidirectional-interpolation-variational-propagated.glsl` -- the recommendation, 54 passes
+### `bidirectional-interpolation-variational-propagated.glsl` -- the recommendation, 52 passes
 
 The variational cascade rebuilt on the propagated base, with the zero seed
-on: the propagated base's 26 passes, plus 24 variational-refinement passes
+on: the propagated base's 24 passes, plus 24 variational-refinement passes
 (8 and 4 iterations per direction at the 1/4 and 1/2 levels) and 4
 vector-median passes at the 1/4 level. The cascade starts at the 1/4 level
 because the propagated base is fused: its reverse coarse flow is saved only
 in a storage image and its reverse 1/8 flow only in the check pass's twin,
 so the generator iterates and takes medians only at the levels where both
-directions are saved textures. Recommended for viewing since 2026-09-06, and
-the Cadence player's Low tier from 1.0.4. `-4k` is its scaled twin, the
+directions are saved textures. Recommended for viewing since 2026-09-06, and,
+in its `-cut` form (the motion-aware cut gate added), the Cadence player's Low tier from 1.0.4. `-4k` is its scaled twin, the
 recommendation for 4K sources, measured at the end of the variational
 build's 4K section above.
 
@@ -642,7 +642,7 @@ close collapse into one, and the rest become tiers (ENERGY-TRANSFER.md,
 2026-09-21, and the carry, in 1.0.3 from 2026-09-28. The recommendation
 stays the science's reference.
 
-### `bidirectional-interpolation-variational-propagated-global.glsl` -- the recommendation with the global-motion seed, 56 passes
+### `bidirectional-interpolation-variational-propagated-global.glsl` -- the recommendation with the global-motion seed, 54 passes
 
 The recommendation regenerated with `GLOBAL_SEED=1` (without the variable it
 regenerates byte-identical). A fast tracking shot -- a subject followed along
@@ -721,7 +721,7 @@ Measured together, on the cage (the player's default from 2026-09-21 to 2026-09-
 On the bare recommendation the carry is a trade: +6 / +8 on V3 and up on films, against 13 ladder cases down
 0.3-0.8, and +15% time. NFRAME-LIMITS.md, "The half-period alias in the shader".
 
-### `bidirectional-interpolation-variational-propagated-energy.glsl` -- the recommendation with the texture energy, 60 passes
+### `bidirectional-interpolation-variational-propagated-energy.glsl` -- the recommendation with the texture energy, 58 passes
 
 `COARSE_ENERGY=1` on the recommendation's generator (from `scripts/`: `COARSE_ENERGY=1 ./tests/gen_variational.py
 "0,0,8,4" 0.3 0.08 <out.glsl> 0 "0,0,2,0" bidirectional-interpolation-propagated.glsl`); `-4k` is its scaled form
@@ -732,7 +732,7 @@ the real use-case overrules the synthetic data tests."* It is the party app's de
 demo's family as a choice. On the Cadence player's default of the time (the cage) it was gated separately:
 `tests/probes/limb/gateset.sh` with the cage as the control.
 
-### `bidirectional-interpolation-variational-propagated-global-cage.glsl` -- the three switches together: the Cadence player's default from 2026-09-21 to 2026-09-28, 57 passes
+### `bidirectional-interpolation-variational-propagated-global-cage.glsl` -- the three switches together: the Cadence player's default from 2026-09-21 to 2026-09-28, 55 passes
 
 `GLOBAL_SEED=1 QZERO_MOIRE=1 COHERENCE_GATE=1` on the same generator: the
 global-motion seed (the fast pan), the quarter level's zero descent under
@@ -752,7 +752,7 @@ real time, trades between content types decided by the rule and not case by
 case. The recommendation above stands as the science's reference and the
 demo's; the two regenerate from one generator with the switches off and on.
 
-### `bidirectional-interpolation-variational-propagated-global-cage-energy.glsl` -- the cage with the texture energy, 63 passes
+### `bidirectional-interpolation-variational-propagated-global-cage-energy.glsl` -- the cage with the texture energy, 61 passes
 
 `GLOBAL_SEED=1 QZERO_MOIRE=1 COHERENCE_GATE=1 COARSE_ENERGY=1` on the same generator; `-4k` is its scaled form. It is
 the player's default with the fourth switch, gated against the cage itself (2026-09-27, three runs each,
@@ -768,7 +768,7 @@ By the owner's rule for the player it qualifies as the default; whether it repla
 2026-09-28: 1.0.3 took the carry below, which includes the texture energy; this file was never the default.)
 NFRAME-LIMITS.md, "COARSE_ENERGY on the player's default".
 
-### `bidirectional-interpolation-variational-propagated-global-cage-energy-carry.glsl` -- the Cadence player's default in 1.0.3 (2026-09-28 to 2026-10-01), 69 passes
+### `bidirectional-interpolation-variational-propagated-global-cage-energy-carry.glsl` -- the Cadence player's default in 1.0.3 (2026-09-28 to 2026-10-01), 67 passes
 
 `GLOBAL_SEED=1 QZERO_MOIRE=1 COHERENCE_GATE=1 COARSE_ENERGY=1 ALIAS_PRIOR=1 ALIAS_CARRY=1` on the same generator
 (ZERO_SEED=1 and the propagated base, as the recommendation). `-4k` is its scaled form (`scale_shader.py 2`, which
@@ -791,7 +791,7 @@ The player bundled it in 1.0.3 by his rule (the best shader for most content wit
 tier rule close candidates collapse into one. The demo offered it as a choice until `-adopt` took its place.
 NFRAME-LIMITS.md, "The aperture in the carry".
 
-### `bidirectional-interpolation-variational-propagated-global-cage-energy-carry-adopt.glsl` -- the Cadence player's Standard tier (1.0.4, 2026-10-01), 81 passes
+### `bidirectional-interpolation-variational-propagated-global-cage-energy-carry-adopt.glsl` -- the Cadence player's Standard tier (1.0.4, 2026-10-01), 79 passes
 
 The same recipe plus `OUTLINE_ADOPT=1` (`tests/outline_adopt.py`), from the propagated base, run from `scripts/`:
 
@@ -827,7 +827,7 @@ Adopted by the owner on 2026-10-01 ("clear benefits without realworld downside i
 offers it in the 1.0.3 file's place. In the player's 1.0.4, the same day, it became the Standard tier, with the lattice
 below as the High tier and the default.
 
-### `bidirectional-interpolation-variational-propagated-global-cage-energy-carry-adopt-lattice.glsl` -- the Cadence player's default, the High tier (1.0.4, 2026-10-01), 93 passes
+### `bidirectional-interpolation-variational-propagated-global-cage-energy-carry-adopt-lattice.glsl` -- the Cadence player's default, the High tier (1.0.4, 2026-10-01), 91 passes
 
 The Standard tier (`-adopt`) plus `PRINT_LATTICE=1` (`tests/print_lattice.py`): a fine periodic print moving FAST, locked one
 period away by the pyramid, re-scored at full resolution among the aliases of its own lattice. The lattice comes from
@@ -880,14 +880,14 @@ records the command. Their design and measurements are in
 [SEXTDIRECTIONAL.md](SEXTDIRECTIONAL.md). The foresight seed that the quad
 and quint carry when built on a seeded base is described under the seeded
 base above. The six-frame shader, `sextdirectional-interpolation-propagated.glsl`
-(127 passes), fits a weighted least-squares quartic and reports its
+(125 passes), fits a weighted least-squares quartic and reports its
 per-texel residual; SEXTDIRECTIONAL.md is its record, and from `scripts/`
 `./tests/gen_sextdirectional.py sextdirectional-interpolation-propagated.glsl bidirectional-interpolation-propagated.glsl`
 regenerates it (checked 2026-10-01: the same code; only ten comment lines
 differ, because the committed file predates the base's 2026-09-06 wording of
 its `ZERO_SEED` comment). Two of the others have sections here.
 
-### `quintdirectional-interpolation-propagated.glsl` -- five frames, for the field, 103 passes
+### `quintdirectional-interpolation-propagated.glsl` -- five frames, for the field, 101 passes
 
 Generated from the propagated two-frame base by `tests/gen_quintdirectional.py`
 (any base works: `./tests/gen_quintdirectional.py <out> <base>`). Everything
@@ -910,7 +910,7 @@ chosen per regime. Needs the host to deliver five-frame windows: the N:N
 patch's queue lookahead, and the hook patch's loud skip. Design,
 pre-registration and results: [QUINTDIRECTIONAL.md](QUINTDIRECTIONAL.md).
 
-### `quaddirectional-interpolation-propagated-cadence.glsl` -- the quad with the cadence branch, 74 passes
+### `quaddirectional-interpolation-propagated-cadence.glsl` -- the quad with the cadence branch, 72 passes
 
 The same file with one branch in its final pass, emitted by the generator with
 `CADENCE=1` in the environment; from `scripts/`,

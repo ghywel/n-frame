@@ -1947,6 +1947,8 @@ switch, gated on the Arc:
 3. **A rigid-region repair** (2.5). 7-28 dB where the family fails, but it needs a per-pixel motion selection that
    is not yet designed.
 4. **The per-level trust gate** (NFRAME-LIMITS section 8, never built). The only candidate for fast prints.
+   (SUPERSEDED the evening of 2026-10-01: built as `TRUST_GATE=1`, gated and HELD; see "Where the per-level trust gate
+   stands" and "The decisions" below. Kept as written.)
 
 The four share one open problem: finding the region (or the block set) that one motion model governs, and drawing it
 only where it beats the family pixel by pixel.
@@ -3391,7 +3393,8 @@ The predictions:
 
 ### Parked by the owner (2026-10-01, morning): the per-level trust gate, to return to within hours
 
-Never built. Lead 4's re-score was built in its place for fast prints. The trust gate stays the candidate for what the
+Never built as of this morning (SUPERSEDED the same evening: built, gated and HELD; the two sections at the end of
+this lead). Lead 4's re-score was built in its place for fast prints. The trust gate stays the candidate for what the
 lattice cannot reach: a print filling the frame at 5 and 19 px/frame, where the default sits below the blend and the
 lattice gains nothing. Its design is in PRIOR-ART.md "Before lead 4", item 2:
 - a per-level, per-texel contrast test (point-sampled against box-filtered);

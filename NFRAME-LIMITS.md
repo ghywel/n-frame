@@ -5026,7 +5026,9 @@ frames, as the pre-registration's "2-24" had assumed.
     the comb open on it.
 - **Next:**
   - the period test (W2, W3, below) to pin the level;
-  - the per-level trust gate, section 8's lead, never built;
+  - the per-level trust gate, section 8's lead, never built (SUPERSEDED 2026-10-01: built, gated and HELD at 8% cost
+    with one run unexplained; ENERGY-TRANSFER.md "Where the per-level trust gate stands (2026-10-01, evening)" and
+    "The decisions (2026-10-01, evening)"; this line kept as written);
   - a real clip of checked cloth moving slowly.
 
 **Pre-registered (before it ran): the period test, which separates the mechanism.** The same sweep with the weave's
@@ -5257,3 +5259,26 @@ in ENERGY-TRANSFER.md (steps 1h onward: the 1/8 rival basins give true lattice v
 directions).
 
 *2026-10-01: lead 4 was carried through in ENERGY-TRANSFER.md: the GLSL form (`PRINT_LATTICE`), its ladder and real-footage gates, fusion and a cost cap. It is the Cadence player's default (High) quality tier, with `OUTLINE_ADOPT` alone as Standard ([SHADERS.md, "Which one to use"](SHADERS.md#which-one-to-use)).*
+
+### The family is not rebuilt: the ruling of 2026-09-10, written into the record on 2026-10-21
+
+This ruling lived in Claude's memory and in no document; the swarm's record-map lane found that a fresh reader of the
+repository would propose a rebuild ([SWARM-2026-10-21.md](SWARM-2026-10-21.md)). It is written here as it was decided.
+The owner asked (2026-09-10) whether the shader family should be rewritten from scratch, proving each line against the
+synthetic tests. The answer was no, for three measured reasons, and he called the pushback excellent ("being grounded
+in measured data prevents unnecessary work").
+1. The premise fails. The recommendation has 61 passes and 35 named constants (as counted then), and every one
+   sampled carries a numeric justification at its point of use, 15 of 35 also in the written record: directed design,
+   not accumulated tuning.
+2. The from-scratch route is blocked by instrument blindness. Proving a line needs a test that can see it, and the
+   case survey of 2026-09-09 found whole-frame PSNR blind to most mechanisms. A from-scratch build justified by the
+   instruments of that day would have deleted the coarse vector medians (+0.02 dB on film, +0.36 on the cartoon by
+   PSNR), whose real value is +7.88 dB on textured acceleration (A4) and +4.5 on the aperture series.
+3. The real defect is stale justification, not wrong code: the medians are justified today for reasons unrelated to
+   why they were added, because the test suite grew underneath them. That is repaired by re-measuring, not rebuilding.
+What was done instead: the ablation ladder (`tests/probes/ablate/ablate.sh`), the recommendation with the zero seed
+off, the variational cascade off and the medians off, each against a control that reproduces the committed file byte
+for byte. The order of work that follows from the ruling: instruments first, since they bind the ablation's resolution
+and any future rewrite; if an ablation ever shows much of the family inert, a rewrite is earned and has a
+specification. The reasoning is not to be relitigated without new evidence of that kind.
+

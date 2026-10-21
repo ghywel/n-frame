@@ -58,6 +58,15 @@ never upgrades a status: nothing here is a measurement, and nothing here changes
   inside the Metal app alone, no FFmpeg; repeated twice, identical to the hundredth. Found: a stable app-side change
   since the 10-12 rebuild, not the build, not noise; recorded OPEN in NFrameDemo's register. Outcome: right (something
   was there), wrong about the suspect.
+- 2026-10-21 21:25, Claude: pull (curiosity), Gareth's swarm proposal, high; first guess: the first fresh-eyes pass
+  over a record only two readers have ever held, and his instinct about the early synthetic cases is the kind of
+  thing a fresh reader sees first. -> designed as nine paper lanes with a shared brief, kill tests required, GPU
+  withheld until the judging (G6.1); the ninth lane is the random-chaos step (an outsider reading only the lay
+  layer). Outcome: right (22:01): nine lanes, six findings that change the story, two of them confirmed by the judge
+  from the gate logs and two by GPU the same evening (the stairs' wall: V2x 41 against V2 29).
+- 2026-10-21 22:01, Claude: pull (delight), the V2x / H2x / V3x numbers, high; "that is clean": a truth repaired by
+  one expression and the alias work's real size appears. -> said plainly in TESTING.md; no extra block taken.
+  Outcome: right (the calibration signal that the ladder line is alive).
 
 ## The set-aside pulls
 

@@ -67,10 +67,12 @@ for CASE in $CASES; do
     # displacement of the whole object is a broken scene. Both show up as
     # "not identical", so the check has to tell them apart or it is useless.
     #
-    # cmp -l prints values in OCTAL, hence strtonum("0"...). Getting that
-    # wrong reads 377 as 377 and quietly understates every delta.
+    # cmp -l prints values in OCTAL, hence oct(). Getting that wrong reads 377 as 377 and quietly understates every
+    # delta. (Until 2026-10-21 this used gawk's strtonum, which macOS awk does not have: the "exact to rounding" row
+    # printed empty fields there, and the verdict still passed. A portable octal parse now.)
     read -r nb mx nf <<<"$(cmp -l "$OUT/$CASE.a.raw" "$OUT/$CASE.b.raw" 2>/dev/null | awk -v fsz="$FSZ" '
-      { d = strtonum("0"$2) - strtonum("0"$3); if (d < 0) d = -d
+      function oct(s,  v, i) { v = 0; for (i = 1; i <= length(s); i++) v = v * 8 + substr(s, i, 1); return v }
+      { d = oct($2) - oct($3); if (d < 0) d = -d
         nb++; if (d > mx) mx = d; fr[int(($1 - 1) / fsz)] = 1 }
       END { nf = 0; for (k in fr) nf++; printf "%d %d %d", nb+0, mx+0, nf }')"
     if [ "${mx:-0}" -le 2 ]; then

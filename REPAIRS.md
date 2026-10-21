@@ -96,7 +96,17 @@ hook at its stage, and the user shader's `hook_hook` (src/shaders/custom_mpv.c) 
 
 ### New leads
 
-**L7. More dead passes than L1 named (`dead_passes.py`, 177 in 49 files before this round).** In every two-frame
+**L7. More dead passes than L1 named (`dead_passes.py`, 177 in 49 files before this round).** CORRECTED 2026-10-21
+by the swarm's cost lane ([SWARM-2026-10-21.md](SWARM-2026-10-21.md), finding 6): `dead_passes.py` follows `//!SAVE`
+and `//!BIND` only, and the project's cross-pass channel is storage images, so it is wrong both ways. It calls
+`ALIAS_E_AB` and `ALIAS_Q_AB` dead when they `imageStore` what the live 1/8 refines `imageLoad` (pruning them per this
+lead would change output), and it misses the whole B->A chain behind the fused first median, which binds `FLOW_H_BA`
+only to write a storage texture whose sole reader is the dead second median. A dataflow liveness over 950 passes in
+13 shipped files (`swarm/2026-10-21/cost/prune_sim.py`) counts, at read_view 0: the recommendation 17 dead whole passes
+of 52 (35% of dispatches), the Low tier 17 of 53, Standard 24 of 80, High 17 of 92, the base 6 of 22, the N-frame
+shaders none; 14 to 15 of the dead passes recompute every output frame. Do not prune from `dead_passes.py`'s list. The
+prune belongs at the end of `gen_variational.py`, gated by the identity check frame by frame on all 42 cases (a
+warm-up render first, L8). The original lead as written on 2026-10-04 follows. In every two-frame
 shader the B->A flow ends unread: the whole chain in the base and its forks (six passes of 31 in the base: four
 searches and two medians), `FLOW_H_BA` alone in the variational line, and in the carry line also `ALIAS_E_AB` and
 `ALIAS_Q_AB` (three of Cadence High's 101 passes). The generators clone the base's B->A chain for the N-frame shaders,

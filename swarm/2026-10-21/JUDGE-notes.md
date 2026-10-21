@@ -141,3 +141,15 @@ doubt, and where it collides with another lane. The ranked list comes after all 
 - The leap (pair_changed as a WHEN variable, skipping cached dispatches on 60% of 24->60 frames) is a patch change
   and bounded-not-identical: DECISION OWED.
 - Hand-off: SHADERS.md pass table stale by two (record-map lane found the same independently).
+
+## GPU item 3 landed (21:52): the shipped tiers on the cage cases (cage.sh, the cage's own rectangle)
+| case | rec | Low (-cut) | Standard (adopt-cut) | High (lattice-cut) | hold | linear | the 09-21 three-switch file |
+| C1 | 24.93 | 24.93 | 34.88 | 34.88 | 30.99 | 43.20 | 34.6 |
+| C2 | 25.47 | 25.47 | 31.78 | 31.78 | 30.01 | 34.06 | 31.6 |
+| C3 | 21.82 | 21.82 | 23.20 | 23.24 | 24.41 | 28.94 | 22.7 |
+Prediction held (every tier within 1 dB of the three-switch file: +0.3 / +0.2 / +0.5): the energy, carry, adoption,
+lattice and cut switches do nothing for 9 px prints, as the gate finding says. Plainly: the Low tier IS the plain
+recommendation on these (the cut gate never fires); on C3 every shipped tier is below hold and 5.7 dB below linear;
+on C1 the best tier is 8.3 dB below the blend. The whole-frame column (High 40.83 on C1) dilutes the rectangle's 34.88
+by 6 dB: the instruments finding, live. (The -global-cage row is missing from cage.sh's table though it rendered ok:
+check the table's label handling.)
