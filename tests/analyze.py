@@ -41,6 +41,13 @@ import sys
 OUTROOT = os.environ.get("OUTROOT") or os.path.join(
     os.environ.get("TMPDIR", "/tmp"), "interp-bench")
 SKIP_STARTUP = 5
+# The window's END (2026-10-21, found by the swarm's mathematics lane and confirmed on the gate logs): the last two
+# outputs of every case fall through to libplacebo's own mixer (the hook has no frame after them: the "two boundary
+# hook-skipped lines" bench.sh allows) and read IDENTICAL for the shader, hold and linear (L1: 36.63 and 31.30), yet
+# were scored under the shader's name, diluting every shader toward hold by about a dB on the clean cases (L1 65.69 as
+# scored, 67.20 without them). SKIP_END=2 drops them. It defaults to 0 so every number in the record stays comparable;
+# a run that sets it says so in its label. The gate reads both forms until the record resets.
+SKIP_END = int(os.environ.get("SKIP_END", "0"))
 BASELINES = ("hold", "linear")
 
 
@@ -63,13 +70,38 @@ def parse(path):
 CAP_DB = float(os.environ.get("CAP_DB", "40"))
 
 
+def scored(d):
+    """The genuinely-interpolated frames: after the start skip, before the end skip, not the passthrough phase.
+    `(n - 1) % 5 != 0` is the passthrough rule for 24 -> 60 exactly (psnr's n is 1-based); any other ratio needs its
+    own rule (the swarm's instruments lane, 2026-10-21)."""
+    last = max(d) if d else 0
+    return [(n, v) for n, v in d.items()
+            if n > SKIP_STARTUP and n <= last - SKIP_END and (n - 1) % 5 != 0 and v != float("inf")]
+
+
 def mean_interp(d):
     """Mean PSNR over genuinely-interpolated frames."""
-    vals = [v for n, v in d.items()
-            if n > SKIP_STARTUP and (n - 1) % 5 != 0 and v != float("inf")]
+    vals = [v for _, v in scored(d)]
     if not vals:
         return float("inf") if d else None
     return sum(vals) / len(vals)
+
+
+def min_interp(d):
+    """The worst scored frame: a dB mean is a geometric mean of MSE, so one bad frame among forty barely moves it
+    (one 15 dB frame among 44 at 45 moves the mean 0.68 dB); the minimum is where a defect shows (2026-10-21)."""
+    vals = [v for _, v in scored(d)]
+    return min(vals) if vals else None
+
+
+def phase_profile(d):
+    """Mean per output phase, keyed by (n - 1) % 5 -> t = 0.4, 0.8, 0.2, 0.6 for phases 1..4 at 24 -> 60. The
+    shaders are not time-symmetric (L1 reads 70.95 / 64.10 / 70.36 / 63.32 by phase; linear is symmetric to 0.01), so
+    a mean hides which phases carry the error (the swarm's mathematics lane, 2026-10-21)."""
+    by = {}
+    for n, v in scored(d):
+        by.setdefault((n - 1) % 5, []).append(v)
+    return {k: sum(v) / len(v) for k, v in sorted(by.items())}
 
 
 def fmt(v):
@@ -82,6 +114,8 @@ def fmt(v):
 
 args = [a for a in sys.argv[1:] if not a.startswith("--")]
 show_variants = "--variants" in sys.argv
+show_min = "--min" in sys.argv          # a worst-frame column per label (2026-10-21)
+show_phase = "--phase" in sys.argv      # a per-phase profile per label, printed under the table (2026-10-21)
 
 if not os.path.isdir(OUTROOT):
     sys.exit(f"no results at {OUTROOT} -- run bench.sh first")
@@ -115,6 +149,8 @@ for c in cases:
     table[c] = vals
     row = f"{c:<{w}}{fmt(vals['hold'])}{fmt(vals['linear'])} |"
     row += "".join(fmt(vals[l]) for l in labels)
+    if show_min:
+        row += " | min" + "".join(fmt(min_interp(parse(os.path.join(d, l + ".log")))) for l in labels)
     if not show_variants and labels:
         s, h, l = vals[labels[0]], vals["hold"], vals["linear"]
         if None in (s, h, l) or float("inf") in (s, h, l):
@@ -145,6 +181,20 @@ if labels:
         print("move the capped mean. The raw mean is kept because the record quotes it,")
         print("but prefer the capped column: it does not average a decibel at 19 dB")
         print("against a decibel at 71 dB as though they were the same quantity.")
+
+if show_phase and labels:
+    print()
+    print("per output phase (t = 0.4, 0.8, 0.2, 0.6), mean dB; a symmetric shader reads the same at t and 1 - t:")
+    for c in cases:
+        for l in labels:
+            pr = phase_profile(parse(os.path.join(OUTROOT, c, l + ".log")))
+            if pr:
+                print(f"  {c:<{w}}{l:>9}  " + "  ".join(f"{pr.get(k, float('nan')):6.2f}" for k in (1, 2, 3, 4)))
+
+if SKIP_END:
+    print()
+    print(f"SKIP_END={SKIP_END}: the last {SKIP_END} outputs (the mixer's, identical for every mode) are not scored.")
+    print("These numbers do not compare with the record's, which score them.")
 
 print()
 print("PSNR of genuinely interpolated frames only, dB, higher is better.")
