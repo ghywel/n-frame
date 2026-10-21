@@ -1,0 +1,34 @@
+PRUNE: 87 passes -> 63 (80 -> 56 at read_view 0); removed 24 by level {'1/2': 6, '1/4': 14, '2663x23': 3, '41x23': 1}; kept by level {'1/16': 3, '1/2': 10, '1/4': 23, '1/64': 1, '1/8': 13, '17x9': 1, '1x1': 4, '2663x23': 3, '320x4': 1, '41x23': 1, '4x180': 1, 'full': 2}
+  - # 24 1/4    [high] refine flow B->A (1/4 res): its save FLOW_Q_BA is bound by no later live pass; its stores (FLOW_Q_BA_CACHE) are loaded by no live pass
+  - # 29 1/4    [alias] each quarter-level cell takes its cheaper hypothesis over the : its save FLOW_Q_BA is bound by no later live pass; its stores (ALIAS_OUT_BA_ST) are loaded by no live pass
+  - # 36 1/4    [adopt] anchors (BA): a moving quarter texel with a still one within 1: its save ADOPT_ANCH_BA is bound by no later live pass
+  - # 37 2663x23 [adopt] histograms (BA): each 32-px cell's anchors' flow components in: its save ADOPT_HIST_BA is bound by no later live pass
+  - # 38 2663x23 [adopt] the wide sum along the rows (BA): each bin over +-8 coarse cel: its save ADOPT_HSUM_BA is bound by no later live pass
+  - # 39 2663x23 [adopt] the wide sum along the columns (BA): its save ADOPT_VSUM_BA is bound by no later live pass
+  - # 40 41x23  [adopt] the reference (BA): the anchors' median within +-256 px of eac: its save ADOPT_REF_BA is bound by no later live pass
+  - # 41 1/4    [adopt] a locked print adopts its outline's motion (BA): its save FLOW_Q_BA is bound by no later live pass; its stores (ADOPT_OUT_BA_ST) are loaded by no live pass
+  - # 50 1/4    [high] variational Q B->A (iter 1): its save FLOW_Q_BA is bound by no later live pass
+  - # 51 1/4    [high] variational Q B->A (iter 2): its save FLOW_Q_BA is bound by no later live pass
+  - # 52 1/4    [high] variational Q B->A (iter 3): its save FLOW_Q_BA is bound by no later live pass
+  - # 53 1/4    [high] variational Q B->A (iter 4): its save FLOW_Q_BA is bound by no later live pass
+  - # 54 1/4    [high] variational Q B->A (iter 5): its save FLOW_Q_BA is bound by no later live pass
+  - # 55 1/4    [high] variational Q B->A (iter 6): its save FLOW_Q_BA is bound by no later live pass
+  - # 56 1/4    [high] variational Q B->A (iter 7): its save FLOW_Q_BA is bound by no later live pass
+  - # 57 1/4    [high] variational Q B->A (iter 8): its save FLOW_Q_BA is bound by no later live pass
+  - # 60 1/4    [high] vector median Q B->A (pass 1): its save FLOW_Q_BA is bound by no later live pass
+  - # 61 1/4    [high] vector median Q B->A (pass 2): its save FLOW_Q_BA is bound by no later live pass
+  - # 65 1/2    [high] refine flow B->A (half res): its save FLOW_H_BA is bound by no later live pass; its stores (FLOW_H_BA_CACHE) are loaded by no live pass
+  - # 70 1/2    [high] variational H B->A (iter 1): its save FLOW_H_BA is bound by no later live pass
+  - # 71 1/2    [high] variational H B->A (iter 2): its save FLOW_H_BA is bound by no later live pass
+  - # 72 1/2    [high] variational H B->A (iter 3): its save FLOW_H_BA is bound by no later live pass
+  - # 73 1/2    [high] variational H B->A (iter 4): its save FLOW_H_BA is bound by no later live pass
+  - # 76 1/2    [high] vector median filter on flow B->A (pass 2): its save FLOW_H_BA is bound by no later live pass; its stores (FLOW_H_BA_MEDIAN_CACHE) are loaded by no live pass
+  fused twins cut from kept passes: 5
+      # 17 binds dropped: FLOW_E_BA_RAW, FLOW_E_BA_PROP_ST1
+      # 18 binds dropped: FLOW_E_BA_PROP_ST1, FLOW_E_BA_PROP_ST2
+      # 19 binds dropped: FLOW_E_BA_PROP_ST2, FLOW_E_BA_PROP_ST3
+      # 20 binds dropped: FLOW_E_BA_RAW, FLOW_E_BA_PROP_ST3, FLOW_E_BA_ST
+      # 74 binds dropped: FLOW_H_BA, FLOW_H_BA_M1_ST
+  storage textures dropped (nothing binds them now): FLOW_E_BA_PROP_ST1, FLOW_E_BA_PROP_ST2, FLOW_E_BA_PROP_ST3, FLOW_E_BA_ST, FLOW_Q_BA_CACHE, ALIAS_OUT_BA_ST, ADOPT_OUT_BA_ST, FLOW_H_BA_CACHE, FLOW_H_BA_M1_ST, FLOW_H_BA_MEDIAN_CACHE
+  directive accounting OK: {'HOOK': 63, 'BIND': 209, 'SAVE': 63, 'WIDTH': 63, 'HEIGHT': 63, 'COMPONENTS': 55, 'DESC': 66, 'TEXTURE': 30, 'SIZE': 30, 'FORMAT': 30, 'STORAGE': 30, 'PARAM': 3, 'TYPE': 3, 'MINIMUM': 3, 'MAXIMUM': 3, 'WHEN': 7}
+  parse check: OK

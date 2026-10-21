@@ -1,0 +1,23 @@
+PRUNE: 99 passes -> 82 (92 -> 75 at read_view 0); removed 17 by level {'1/2': 6, '1/4': 11}; kept by level {'1/16': 3, '1/2': 10, '1/4': 28, '1/64': 1, '1/8': 13, '1280x90': 1, '17x9': 1, '1x1': 4, '2560x90': 1, '2663x23': 6, '2x1': 1, '2x90': 1, '320x4': 1, '320x90': 5, '41x23': 2, '4800x90': 1, '4x180': 1, 'full': 2}
+  - # 53 1/4    [print] apply (BA): each cell's two by two quarter texels take its re-: its save FLOW_Q_BA is bound by no later live pass
+  - # 62 1/4    [high] variational Q B->A (iter 1): its save FLOW_Q_BA is bound by no later live pass
+  - # 63 1/4    [high] variational Q B->A (iter 2): its save FLOW_Q_BA is bound by no later live pass
+  - # 64 1/4    [high] variational Q B->A (iter 3): its save FLOW_Q_BA is bound by no later live pass
+  - # 65 1/4    [high] variational Q B->A (iter 4): its save FLOW_Q_BA is bound by no later live pass
+  - # 66 1/4    [high] variational Q B->A (iter 5): its save FLOW_Q_BA is bound by no later live pass
+  - # 67 1/4    [high] variational Q B->A (iter 6): its save FLOW_Q_BA is bound by no later live pass
+  - # 68 1/4    [high] variational Q B->A (iter 7): its save FLOW_Q_BA is bound by no later live pass
+  - # 69 1/4    [high] variational Q B->A (iter 8): its save FLOW_Q_BA is bound by no later live pass
+  - # 72 1/4    [high] vector median Q B->A (pass 1): its save FLOW_Q_BA is bound by no later live pass
+  - # 73 1/4    [high] vector median Q B->A (pass 2): its save FLOW_Q_BA is bound by no later live pass
+  - # 77 1/2    [high] refine flow B->A (half res): its save FLOW_H_BA is bound by no later live pass; its stores (FLOW_H_BA_CACHE) are loaded by no live pass
+  - # 82 1/2    [high] variational H B->A (iter 1): its save FLOW_H_BA is bound by no later live pass
+  - # 83 1/2    [high] variational H B->A (iter 2): its save FLOW_H_BA is bound by no later live pass
+  - # 84 1/2    [high] variational H B->A (iter 3): its save FLOW_H_BA is bound by no later live pass
+  - # 85 1/2    [high] variational H B->A (iter 4): its save FLOW_H_BA is bound by no later live pass
+  - # 88 1/2    [high] vector median filter on flow B->A (pass 2): its save FLOW_H_BA is bound by no later live pass; its stores (FLOW_H_BA_MEDIAN_CACHE) are loaded by no live pass
+  fused twins cut from kept passes: 1
+      # 86 binds dropped: FLOW_H_BA, FLOW_H_BA_M1_ST
+  storage textures dropped (nothing binds them now): FLOW_H_BA_CACHE, FLOW_H_BA_M1_ST, FLOW_H_BA_MEDIAN_CACHE
+  directive accounting OK: {'HOOK': 82, 'BIND': 321, 'SAVE': 82, 'WIDTH': 82, 'HEIGHT': 82, 'COMPONENTS': 74, 'DESC': 85, 'TEXTURE': 47, 'SIZE': 47, 'FORMAT': 47, 'STORAGE': 47, 'PARAM': 3, 'TYPE': 3, 'MINIMUM': 3, 'MAXIMUM': 3, 'WHEN': 7}
+  parse check: OK

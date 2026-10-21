@@ -117,7 +117,9 @@ certainty per cost.
   (S, E raw, E, Q, H). PREDICTION from finding 7: FLOW_S_AB near-truth falls to under 10% past 32 px; FLOW_E_AB_RAW keeps
   under 20%; FLOW_E_AB (after the check) adds the zeros. If instead E raw is right and E is wrong, the check pass (finding
   3) is the term and proposal 3 moves to the top. If S is right past 32, finding 1 is wrong for W3.
-- (b) `pan.sh` on W3 with `-energy` and `-global-cage-energy` beside the recommendation. PREDICTION: the energy
+- (b) `pan.sh` on W3 with `-energy` and `-global-cage-energy` beside the recommendation. [KILLED 2026-10-21, measured
+  +2.63 at 36-41 and +6.32 at 28-32: see `reach-addendum.md` beside this file for the absorbed diagnosis and the rewritten
+  decision rule.] PREDICTION as written: the energy
   channel moves W3's 36-41 band by under 1 dB (the wall's energy is uniform; the record's own E4 reasoning at
   PREDICTION.md); `-global-cage-energy` reads within 1 dB of `-global`. A W3 gain of 2 dB or more from energy alone
   kills finding 2's claim that the pan's cliff is alias plus prior and not visibility.

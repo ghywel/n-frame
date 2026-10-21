@@ -1,0 +1,27 @@
+PRUNE: 59 passes -> 42 (52 -> 35 at read_view 0); removed 17 by level {'1/2': 6, '1/4': 11}; kept by level {'1/16': 3, '1/2': 9, '1/4': 13, '1/64': 1, '1/8': 12, '1x1': 2, 'full': 2}
+  - # 15 1/4    [high] refine flow B->A (1/4 res): its save FLOW_Q_BA is bound by no later live pass; its stores (FLOW_Q_BA_CACHE) are loaded by no live pass
+  - # 24 1/4    [high] variational Q B->A (iter 1): its save FLOW_Q_BA is bound by no later live pass
+  - # 25 1/4    [high] variational Q B->A (iter 2): its save FLOW_Q_BA is bound by no later live pass
+  - # 26 1/4    [high] variational Q B->A (iter 3): its save FLOW_Q_BA is bound by no later live pass
+  - # 27 1/4    [high] variational Q B->A (iter 4): its save FLOW_Q_BA is bound by no later live pass
+  - # 28 1/4    [high] variational Q B->A (iter 5): its save FLOW_Q_BA is bound by no later live pass
+  - # 29 1/4    [high] variational Q B->A (iter 6): its save FLOW_Q_BA is bound by no later live pass
+  - # 30 1/4    [high] variational Q B->A (iter 7): its save FLOW_Q_BA is bound by no later live pass
+  - # 31 1/4    [high] variational Q B->A (iter 8): its save FLOW_Q_BA is bound by no later live pass
+  - # 34 1/4    [high] vector median Q B->A (pass 1): its save FLOW_Q_BA is bound by no later live pass
+  - # 35 1/4    [high] vector median Q B->A (pass 2): its save FLOW_Q_BA is bound by no later live pass
+  - # 39 1/2    [high] refine flow B->A (half res): its save FLOW_H_BA is bound by no later live pass; its stores (FLOW_H_BA_CACHE) are loaded by no live pass
+  - # 44 1/2    [high] variational H B->A (iter 1): its save FLOW_H_BA is bound by no later live pass
+  - # 45 1/2    [high] variational H B->A (iter 2): its save FLOW_H_BA is bound by no later live pass
+  - # 46 1/2    [high] variational H B->A (iter 3): its save FLOW_H_BA is bound by no later live pass
+  - # 47 1/2    [high] variational H B->A (iter 4): its save FLOW_H_BA is bound by no later live pass
+  - # 50 1/2    [high] vector median filter on flow B->A (pass 2): its save FLOW_H_BA is bound by no later live pass; its stores (FLOW_H_BA_MEDIAN_CACHE) are loaded by no live pass
+  fused twins cut from kept passes: 5
+      #  8 binds dropped: FLOW_E_BA_RAW, FLOW_E_BA_PROP_ST1
+      #  9 binds dropped: FLOW_E_BA_PROP_ST1, FLOW_E_BA_PROP_ST2
+      # 10 binds dropped: FLOW_E_BA_PROP_ST2, FLOW_E_BA_PROP_ST3
+      # 11 binds dropped: FLOW_E_BA_RAW, FLOW_E_BA_PROP_ST3, FLOW_E_BA_ST
+      # 48 binds dropped: FLOW_H_BA, FLOW_H_BA_M1_ST
+  storage textures dropped (nothing binds them now): FLOW_E_BA_PROP_ST1, FLOW_E_BA_PROP_ST2, FLOW_E_BA_PROP_ST3, FLOW_E_BA_ST, FLOW_Q_BA_CACHE, FLOW_H_BA_CACHE, FLOW_H_BA_M1_ST, FLOW_H_BA_MEDIAN_CACHE
+  directive accounting OK: {'HOOK': 42, 'BIND': 120, 'SAVE': 42, 'WIDTH': 42, 'HEIGHT': 42, 'COMPONENTS': 34, 'DESC': 45, 'TEXTURE': 12, 'SIZE': 12, 'FORMAT': 12, 'STORAGE': 12, 'PARAM': 3, 'TYPE': 3, 'MINIMUM': 3, 'MAXIMUM': 3, 'WHEN': 7}
+  parse check: OK

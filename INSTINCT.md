@@ -67,6 +67,22 @@ never upgrades a status: nothing here is a measurement, and nothing here changes
 - 2026-10-21 22:01, Claude: pull (delight), the V2x / H2x / V3x numbers, high; "that is clean": a truth repaired by
   one expression and the alias work's real size appears. -> said plainly in TESTING.md; no extra block taken.
   Outcome: right (the calibration signal that the ladder line is alive).
+- 2026-10-21 22:17, Claude: none felt; a loop over `$ALL_CASES` written in the tool shell (zsh) ran once on the whole
+  string and rendered "UNKNOWN_CASE", the map's G10.4, read this evening and tripped for the second kind of time (after
+  `echo ===`). Caught by reading the log, not by any feeling. Outcome: missed. Note: every loop over a word list goes
+  through `bash -c`; the probes are written `#!/bin/bash` for this reason and must be run with `bash` when not
+  executable.
+- 2026-10-21 22:34, Claude: none felt; typed `cat -A` (GNU) on macOS, where it does not exist (G10.6: `cat -e`), while
+  reading the prune gate's failure. The third shell trap of the evening tripped after reading its rule; the pattern is
+  speed under a GPU result, not ignorance. Outcome: missed. Note: on this Mac, `cat -e`, `printf`, `bash -c` loops.
+- 2026-10-21 22:34, Claude: satisfaction, the prune gate refusing both PRUNE levels on a parse error, medium; "the gate
+  did its job before any number was believed": the lane's own [U] (its CPU check does not exercise libplacebo's
+  preamble) was the exact hole. -> handed the diff back to the lane with the cause located. Outcome: right (the
+  instrument was finer than the fault).
+- 2026-10-21 22:41, Claude: none felt; ran compile_all.sh on the pruned files without first running it on a committed
+  file, and read "4 fail" as a compile failure twice over. Its default source did not exist here, so every file failed
+  on "Error opening input" (G1.5: a check must first be shown to pass on the known-good). The direct render at
+  -loglevel warning showed the files compile. Outcome: missed. Fix: compile_all refuses a missing source (committed).
 
 ## The set-aside pulls
 

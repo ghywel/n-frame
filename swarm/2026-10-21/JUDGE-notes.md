@@ -153,3 +153,53 @@ recommendation on these (the cut gate never fires); on C3 every shipped tier is 
 on C1 the best tier is 8.3 dB below the blend. The whole-frame column (High 40.83 on C1) dilutes the rectangle's 34.88
 by 6 dB: the instruments finding, live. (The -global-cage row is missing from cage.sh's table though it rendered ok:
 check the table's label handling.)
+
+## GPU item 7, second half, landed (22:12): the energy channel on W3's speed bands
+Prediction (reach lane): under 1 dB, the wall's energy being uniform. KILLED: +1.2 / +2.1 / +6.3 / +3.7 / +2.6 dB over
+the recommendation from 20 px/frame up (nothing below 20); the High tier reads 23.14 at 36-41 where the rec reads
+17.60 and the record's global seed alone gave 22.5. So on the pan the energy channel (dense 2 px taps, sigma 12) is
+doing coarse-match work the lane's emulation did not model. The diagnosis (prior > width) may still hold, but item 9's
+decision rule was written against a 17.6 baseline that the shipped tiers do not have. For item 9: run the re-centred
+prior on BOTH the plain recommendation and the -energy file, and read W3 36-41 against 17.6 and 20.2 respectively.
+
+
+## reach addendum (22:30): the kill absorbed
+- The lane's premise ("uniform texture -> a constant energy term") was wrong: emulated, W3's energy image carries the
+  luma's scale mix and W_S 8 makes the terms equal. Mechanism [J + CPU emulation]: the energy is Gaussian-smoothed over
+  sigma 12 (about 3/4 of a coarse texel) BEFORE its 1/16 sample, so that channel is band-limited and honest where the
+  point-sampled luma re-randomises its 4 px cells under any shift that is not a multiple of 4. It is section 8's
+  prefilter in principle, added BESIDE the aliased channel instead of replacing it, which is why it helps where the
+  prefilter was refuted. The same shape as the wildcard's split: fix the sampler comb without touching the aliased
+  contrast. Reach stays a constant (0% past 32 px in the emulation); the measured peak at 28-32 is the temporal chain
+  carrying the truth past the reach once energy gets the previous pair right.
+- Finding 2 (the prior seals) stands with a smaller share; finding 4's "nothing local for the pan" RETRACTED.
+- Item 9's rule is now two-baseline (plain 17.60 -> UP >= 19.6 / DOWN < 18.1; -energy 20.23 -> UP >= 21.7 / DOWN <
+  20.7), with the four outcome combinations read out; 28-32 is the band for set/reach terms, 36-41 for the prior.
+
+## GPU item 6 landed (22:17): the fp16 readback floor, measured
+PASS as predicted in the probe's own header: 4 and 5 distinct readings of 16 (sets A and B), all on the 1/32 grid;
+the split encoding under 1/1024 px with the whole-part wrap at k = 13 decoded exactly. The instruments lane wrote the
+probe and ended without a hand-back; its files were complete. read_view 10 is drafted, not applied (every tail moves).
+
+
+## The prune gate (item 8), evening of 2026-10-21
+- First run: both PRUNE levels refused by libplacebo's parser (an orphaned //!TEXTURE block kept, the next pass's
+  comment preamble read as its hex body); the lane's own [U] (its CPU check does not exercise libplacebo's parser) was
+  the hole. Fixed in prune_passes.py with a parser-level check modelled on custom_mpv.c and positive controls.
+- Second run: compile_all.sh reported 4 fail on both levels; I had not run its control. Its default source did not
+  exist here, so every file failed on "Error opening input": a missing-source guard added (G1.5, my miss).
+- Third run, the M5 (mvk-env set): control 4/4; PRUNE=2 against shipped 39/42, 39/42, 35/42, 37/42 identical, the
+  differing cases NOT overlapping between the recommendation and its -cut twin (O3/A4/A7 vs M1/A5/P4), which points at
+  the host (the record: 40 of 42 repeat bit for bit on the M5 even with the switches), not the prune. Discriminating
+  run queued locally (shipped against itself on those cases; shipped against PRUNE=1).
+- Gareth opened the NAS and the Intel Mac (22:52). The Arc (42 of 42 deterministic) runs the gate in container
+  claude-prune (volume claude-np, the previous pins ff2059a + c42968d, which is fine for shader-against-shader on one
+  build): warm-up render first (L8 seen exactly: the first render differs from itself, the control identical after),
+  control on all 42, then shipped against PRUNE=2 on all 42 per tier. Log at /work/prune-gate.log in the volume.
+- Local discriminating run (22:50-22:55): on the recommendation, -cut and High, the cases that differed under PRUNE=2
+  were identical under the control (shipped against itself) AND under PRUNE=1 this time; on Standard the shipped file
+  did not repeat itself on M3, O3, P4. Intermittent wander on the M5 even with the switches (the record's 40 of 42):
+  this host cannot settle byte-identity; the Arc decides. compile_all with its control: 1 build; PRUNE=1 4 build;
+  PRUNE=2 4 build. Timing from a file, same build both sides, two samples: rec 18.29/18.66 -> PRUNE=2 13.92/13.08
+  (-24 to -30%; predicted -28%); Low 18.46/18.63 -> 13.55/13.34 (-27%); Standard 26.22/26.19 -> 20.23/20.02 (-23%;
+  predicted -30%); High 32.91/32.39 -> 27.98/28.48 (-13 to -15%; predicted -17%).

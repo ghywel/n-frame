@@ -5,6 +5,9 @@
 set -u
 HERE="$(cd "$(dirname "$0")/../.." && pwd)"; . "$HERE/mvk-env.sh"
 FF=${FFMPEG:-ffmpeg}; SRC=${COMPILE_SRC:-/tmp/nframe-identity/L2_trans_16px.mkv}
+# A missing source made every file "FAIL" on "Error opening input" (2026-10-21, the prune gate: four parse-clean files
+# reported as not compiling until the committed control was run). The instrument must not be able to fail that way.
+[ -s "$SRC" ] || { echo "compile_all: no source at $SRC (set COMPILE_SRC to an ffv1 scene, e.g. identity.sh's); nothing was checked"; exit 2; }
 [ $# -gt 0 ] && files=("$@") || files=("$HERE"/../shaders/*.glsl "$HERE"/../shaders/animation/*.glsl)
 ok=0; bad=0
 for f in "${files[@]}"; do

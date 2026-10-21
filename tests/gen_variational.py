@@ -526,6 +526,13 @@ TRUST_GATE = os.environ.get("TRUST_GATE", "0") == "1"
 # frames' difference is over its threshold AND the final flow leaves more than CUT_EXPLAINED of it unexplained.
 CUT_MOTION = os.environ.get("CUT_MOTION", "0") == "1"
 ALIAS_APERTURE = os.environ.get("ALIAS_APERTURE", "1") == "1"    # the carry's aperture rule (build 5); 0 = build 4
+# PRUNE=1 (2026-10-21, the swarm's cost lane; tests/prune_passes.py; REPAIRS.md L7): the very last step, after the
+# reading tail is appended: remove the whole passes whose work no live pass can observe, following //!SAVE/BIND and
+# the storage images' imageStore/imageLoad (dead_passes.py's SAVE/BIND-only view cut live producers). PRUNE=2 also
+# cuts a fused pass's dead B->A twin (its hook_ba) and the chain that fed only it. Both leave the output byte-identical
+# at every read_view by construction; the gate is the frame-by-frame identity check. 0 = the file as before.
+PRUNE = os.environ.get("PRUNE", "0")
+assert PRUNE in ("0", "1", "2"), f"PRUNE={PRUNE}: it is 0 (off), 1 (whole passes) or 2 (whole passes and fused twins)"
 
 
 def add_coarse_energy(t, ws=COARSE_ENERGY_WS, we=COARSE_ENERGY_WE):
@@ -861,12 +868,16 @@ if __name__ == "__main__":
         + ("TRUST_GATE=1 " if TRUST_GATE else "") \
         + ("CUT_MOTION=1 " if CUT_MOTION else "") \
         + ("ALIAS_APERTURE=0 " if ALIAS_CARRY and not ALIAS_APERTURE else "")     # the zero seed is the recommendation's standing state and the line never named it
+    env += f"PRUNE={PRUNE} " if PRUNE != "0" else ""     # recorded so the header can rebuild the file (REPAIRS.md L9)
     text = BANNER.format(env=env, spec=spec, alpha=alpha, sigma=sigma,
                          s=s, e=e, q=q, h=h, cost=cost,
                          ms=ms, me=me, mq=mq, mh=mh,
                          sigma_flow_doc=sigma_flow, medspec_doc=medspec) + text
     ok = text.count("{") == text.count("}") and text.count("(") == text.count(")")
     text = READING.add_tail(text)   # the human-reading tail every shipped shader carries (off by default)
+    if PRUNE != "0":                # the very last step: the tail's passes are liveness roots, so it must already be there
+        import prune_passes
+        text, _ = prune_passes.prune(text, twins=(PRUNE == "2"), report=sys.stderr)
     open(out, "w", newline="\n").write(text)
     print(f"{out}: S={s} E={e} Q={q} H={h} med={medspec}  "
           f"HOOK={text.count('//!HOOK')} "

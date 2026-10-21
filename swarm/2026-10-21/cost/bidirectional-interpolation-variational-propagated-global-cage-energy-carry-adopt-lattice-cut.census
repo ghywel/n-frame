@@ -1,0 +1,5 @@
+PRUNE: 99 passes -> 98 (92 -> 91 at read_view 0); removed 1 by level {'1/2': 1}; kept by level {'1/16': 3, '1/2': 15, '1/4': 39, '1/64': 1, '1/8': 13, '1280x90': 1, '17x9': 1, '1x1': 4, '2560x90': 1, '2663x23': 6, '2x1': 1, '2x90': 1, '320x4': 1, '320x90': 5, '41x23': 2, '4800x90': 1, '4x180': 1, 'full': 2}
+  - # 88 1/2    [high] vector median filter on flow B->A (pass 2): its save FLOW_H_BA is bound by no later live pass; its stores (FLOW_H_BA_MEDIAN_CACHE) are loaded by no live pass
+  storage textures dropped (nothing binds them now): FLOW_H_BA_MEDIAN_CACHE
+  directive accounting OK: {'HOOK': 98, 'BIND': 368, 'SAVE': 98, 'WIDTH': 98, 'HEIGHT': 98, 'COMPONENTS': 90, 'DESC': 101, 'TEXTURE': 49, 'SIZE': 49, 'FORMAT': 49, 'STORAGE': 49, 'PARAM': 3, 'TYPE': 3, 'MINIMUM': 3, 'MAXIMUM': 3, 'WHEN': 7}
+  parse check: OK

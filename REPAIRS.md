@@ -136,7 +136,13 @@ should record their full command.
 1/2048 near 0.5, so a field encoded as 0.5 + f * 0.5/32 (read_view 4, +-32 px) is read to about 1/32 px. Found when
 `l4_coarse_fraction.py`'s units check failed at a +-32 coarse-texel scale. Sub-pixel results read that way (the field
 studies, the turning-point ambiguity) carry that floor. *Cheap step:* read a known sub-pixel translation through
-read_view 4 and look for the 1/32 px steps.
+read_view 4 and look for the 1/32 px steps. MEASURED 2026-10-21 (`tests/probes/fp16/fp16floor.sh`, the swarm's
+instruments lane): a known constant painted through the read_view 4 encoding reads 4 to 5 distinct values for 16
+inputs spaced 1/128 px, all on the 1/32 px grid, residual 0.00043 px: the output stage is fp16 and the floor is as
+stated. A two-channel encoding in the same run (the fraction and the packed whole parts in separate channels, exact
+in fp16) reads every constant within 0.0006 px: the lift costs no pass. The mathematics lane found a second stage one
+hop earlier (SUBPEL_REFINE flows are rounded to 1/64-1/32 px in FLOW_H_AB itself), so lifting the readback alone
+exposes that one next. The read_view 10 patch is drafted in `swarm/2026-10-21/instruments/readview10.md`.
 
 ---
 
