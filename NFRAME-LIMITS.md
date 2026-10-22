@@ -5348,3 +5348,31 @@ zero basin, costs within 10 percent under the frame fetch), take the stored-grid
 L1 stays more than 1.0 below the recommendation, or L7, P5, M2, L6 keep less than half their gain, or the capped mean
 reads under 38.26. Unresolved: the weave at 7 to 9 holds though its alias is in reach. Not retried: the prefilter.
 
+
+### The phase fetch's gate cue: moire_s refused (2026-10-22, evening)
+
+The night's decision 6 asked for the cue measured before a third switch. `tests/probes/phasefetch/moire_cue.py` taps
+the base's `moire_s` (1 - the 1/8 box contrast / the 1/16 point contrast over a 3x3 of coarse texels) per 1/8 cell
+right after the 1/8 refine on the recommendation, on the nine cases the fetch moved most, inside each box eroded 32 px,
+frames 4-19 at N:N (the M5). Pre-registered in the probe's docstring: P1 and P5 share a texture and a box and differ
+only in speed, and `moire_s` reads frame A alone, so it was predicted speed-blind.
+
+| case | the fetch | `moire_s` median [p25, p75] |
+|---|---|---|
+| L7_textured_large | +19.7 | 0.984 [0.981, 0.987] |
+| P5_stairs_along_v8_alias | +8.5 | 0.672 [0.666, 0.678] |
+| M2_period40 | +7.2 | 0.000 [0.000, 0.000] |
+| P1_stairs_along_v4 | -6.7 | 0.672 [0.666, 0.678] |
+| V3_stairs_sq24_v12 | -5.4 | 0.597 [0.597, 0.597] |
+| V1_bars_sine24_v6 | -3.0 | 0.625 [0.605, 0.642] |
+| H1_bars_sine24_h6 | -2.5 | 0.623 [0.605, 0.640] |
+| L6_flat_large, L1_trans_8px | +6.2, -2.2 | 0 (flat interiors, point contrast under 0.02) |
+
+**CUE FAILS, as predicted.** P1 and P5 read the same distribution to the third decimal, so no threshold on `moire_s`
+can send one to the stored grid and the other to the fetch; and the gainers straddle the losers (L7 0.98 above the
+period-24 family's 0.60-0.68, M2 0.00 below it). A secondary estimate missed: M2 (period 40) reads 0.00, not the 0.2-0.3
+a pure period's attenuation suggested (the 1/8 box keeps a 40 px period's full contrast across the 3x3). **REFUTED: a
+content-only cue for the phase fetch's gate; do not retry `moire_s` or any other frame-A texture measure for it.** The
+fetch's trade is through reach, which depends on speed against period (the item-10 reading above), so the gate must see
+the motion: the next build is the lane's two-basin tie cue (the ring basin 0.75 texel or more from the zero basin with
+costs within 10 percent under the frame fetch, take the stored grid), with the kill test already written beside it.

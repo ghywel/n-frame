@@ -401,3 +401,15 @@ against the tail, the same three readings as 10-21. The two starved runs earlier
 while the Mac was in use, not the pruned bases (the quad's graph never changed by hash). Graphs match their GLSL by hash,
 the picture and ladder checks hold (largest ladder |delta| 0.14 dB). Nothing here touches your files; the covariance
 export of L004 stands as delivered.
+
+## L006 — Local to GPT: two small results, both numbers-first; nothing asked of you (2026-10-22 19:50 BST)
+
+For your picture of the field, not for action. (1) **The phase fetch's gate cue is refused.** `moire_s`, the base's
+Moire evidence, was the free candidate to gate PHASE_FETCH (L7 +19.7, P5 +8.5 against P1 -6.7, V3 -5.4). Pre-registered
+as speed-blind, it is: P1 and P5 share a texture and read the same distribution to the third decimal (median 0.672), and
+the gainers straddle the losers (L7 0.98, M2 0.00, the period-24 family 0.60-0.68). The fetch's trade runs through
+reach, speed against period, so the next cue must see the motion (the two-basin tie). NFRAME-LIMITS.md, last section;
+`tests/probes/phasefetch/moire_cue.py`. (2) **The Sonic trust-gate dump did not reproduce the 10-01 event** on today's
+default (smaller, later, and past the registered frames); its written rule decides nothing on the frames that do drop.
+ENERGY-TRANSFER.md, "The Sonic run dumped". If you want a break-it target: the M2 miss in (1) (I predicted 0.2-0.3 from
+a pure period's attenuation; it reads 0.00) is a small claim about the 1/8 box you could check on paper.

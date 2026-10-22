@@ -3882,6 +3882,26 @@ The plain recommendation stays as it was, the reference the science is measured 
 - It stays built behind its switch, gated and recorded. It comes back to the owner if the Sonic run is explained and
   its cost comes down.
 
+### The Sonic run dumped (2026-10-22, evening): the event did not reproduce on today's default
+
+`tests/probes/trust/dump_masks.py run` on the M5 (Sonic the Hedgehog, the 2020 film, the census's choice: the folder's
+largest file; t0 4341 s; the half-rate graph; frames 800-840, the run 815-833). The control is today's High recipe and
+the variant High + trust5, as the tool builds them. **The registered event is not there:** L2 (10-01, the Arc, against
+the then-default) read -2.4 to -3.0 dB on the run; today the run's frames 815-821 read +0.01 to +0.20 and 829-831 level,
+and the drops are smaller and later: 823 -0.76, 825 -1.45, 827 -1.15, 833 -1.24, and on past the run (835 -0.88, 837
+-0.68, 839 -0.55). The default has moved since L2 (CUT_MOTION adopted that evening, the texel snap retired on 10-04),
+and the host is the M5, not the Arc; which of the two moved the event is not separated.
+
+**The decision rule, read honestly.** Over the registered run the tool's verdict is (iii), "not the gate's decisions"
+(23 percent of the pictures' difference lies within 16 px of a decided cell, under 30). But the registered run is no
+longer where the event is. On the frames that do drop (823-839) the decided cells' m / r_h is 0.57-0.65 and 35-44
+percent of the difference lies near decided cells: inside none of the three branches (not (i): m / r_h over 0.5; not
+(ii): under 1; not (iii): over 30 percent), so **it decides nothing**, as the rule says of anything between. What it
+does show: the region is noisy (r_h 6-10/255 against 3/255 outside), the decided margins win by 3.5/255 against a
+1/255 bar, about 0.6 of the block's own residual: near the noise floor but not under the registered line. Open, and
+cheap: the same dump over 800-880, to see where the drop ends, and a run on the 10-01 default to separate the
+default's drift from the host. Numbers only; `np-scratch/trust-sonic/run.log`.
+
 ## Sources
 
 **Checked 2026-09-30** against publisher pages, DOIs, arXiv and ADS: none fabricated. Corrections applied (the
