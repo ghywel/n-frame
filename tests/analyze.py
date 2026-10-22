@@ -120,9 +120,10 @@ show_phase = "--phase" in sys.argv      # a per-phase profile per label, printed
 # case's static crop (tests/regions.sh: the object's swept path plus 16 px) into <mode>.region.log. The frame mean
 # understates a defect confined to the mover by 10 log10(1 / its share): 15-25 dB on 22 of the 42 cases, measured
 # (np-scratch/swarm-20261021/instruments/share.txt), so with the cap a 20 dB fault on L1's box reads 42.5 dB and counts
-# for nothing. --region prints the region reading of every mode beside the whole-frame one, with the same scored-frame
-# rule, and a capped mean of its own. Without --region the output is what it was.
-show_region = "--region" in sys.argv
+# for nothing. The region reading of every mode prints beside the whole-frame one, with the same scored-frame rule and a
+# capped mean of its own, whenever region logs exist (Gareth, 2026-10-22: "My suggestion is that the region-scored column
+# and capped man are retained besides each other"); --no-region suppresses it, and --region is still accepted.
+show_region = "--no-region" not in sys.argv
 
 
 def region_log(d, m):
@@ -143,6 +144,26 @@ for c in cases:
                 labels.add(n)
 labels = sorted(labels) if show_variants else (["shader"] if "shader" in labels
                                                else sorted(labels)[:1])
+if show_region and not any(os.path.exists(region_log(os.path.join(OUTROOT, c), l)) for c in cases for l in labels):
+    show_region = False          # a tree rendered before 2026-10-21 has no region logs: print what it always printed
+
+# THE HEADLINE MEAN (2026-10-22, Gareth: "If V2x, V3x, H2x are improvements over the originals then V2, V3, H2 should not
+# be included in the mean"). With no cases named, the summary is taken over the headline set (tests/ladder_sets.py) when
+# all of it is present, and over the frozen 42 beside it as the record's history; a tree holding only the frozen 42 (any
+# render before 2026-10-22) prints the frozen summary alone, as before, with a line saying the headline needs the three.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import ladder_sets
+if args:
+    summary_sets = [(None, cases)]
+else:
+    h_cases, f_cases, h_full, f_full = ladder_sets.split(cases)
+    summary_sets = []
+    if h_full:
+        summary_sets.append(("HEADLINE (from 2026-10-22: V2x/V3x/H2x in place of V2/V3/H2)", h_cases))
+    if f_full:
+        summary_sets.append(("FROZEN 42 (the record's mean to 2026-10-21)" if h_full else None, f_cases))
+    if not summary_sets:
+        summary_sets = [(None, cases)]       # neither set present: a probe's own tree; summarise what is there
 
 w = 22
 head = f"{'case':<{w}}{'hold':>8}{'linear':>8} |" + "".join(f"{l:>9}" for l in labels)
@@ -183,49 +204,48 @@ for c in cases:
     print(row)
 
 
-if labels:
-    usable = [c for c in cases
-              if all(table[c].get(l) not in (None, float("inf")) for l in labels)]
-    if usable:
-        capped = {l: sum(min(table[c][l], CAP_DB) for c in usable) / len(usable)
-                  for l in labels}
-        raw = {l: sum(table[c][l] for c in usable) / len(usable) for l in labels}
-        binding = [c for c in usable if min(table[c][l] for l in labels) < CAP_DB]
-        ref = labels[0]
-        print()
-        print(f"{'summary over ' + str(len(usable)) + ' scoreable cases':<{w}}"
-              f"{'raw mean':>12}{'capped at ' + str(int(CAP_DB)):>14}"
-              f"{'vs ' + ref:>12}")
-        print("-" * (w + 38))
-        for l in labels:
-            print(f"{l:<{w}}{raw[l]:12.2f}{capped[l]:14.2f}{capped[l] - capped[ref]:+12.2f}")
-        print()
+def summarise(title, over, tab, region=False):
+    usable = [c for c in over if c in tab and all(tab[c].get(l) not in (None, float("inf")) for l in labels)]
+    if not usable:
+        return False
+    capped = {l: sum(min(tab[c][l], CAP_DB) for c in usable) / len(usable) for l in labels}
+    raw = {l: sum(tab[c][l] for c in usable) / len(usable) for l in labels}
+    binding = [c for c in usable if min(tab[c][l] for l in labels) < CAP_DB]
+    ref = labels[0]
+    head = ("REGION, over " if region else "summary over ") + str(len(usable)) + " scoreable cases"
+    print()
+    if title:
+        print(("REGION -- " if region else "") + title)
+    print(f"{head:<{w}}{'raw mean':>12}{'capped at ' + str(int(CAP_DB)):>14}{'vs ' + ref:>12}")
+    print("-" * (w + 38))
+    for l in labels:
+        print(f"{l:<{w}}{raw[l]:12.2f}{capped[l]:14.2f}{capped[l] - capped[ref]:+12.2f}")
+    print()
+    if region:
+        print(f"REGION: {len(binding)} of {len(usable)} cases have any variant below {CAP_DB:g} dB on the object's")
+        print("swept path (tests/regions.sh). The |R columns score the same frames over that crop, so a fault")
+        print("confined to the mover is no longer diluted by the frame's flat majority (10 log10(1 / share)).")
+    else:
         print(f"{len(binding)} of {len(usable)} cases have any variant below {CAP_DB:g} dB; only those can")
         print("move the capped mean. The raw mean is kept because the record quotes it,")
         print("but prefer the capped column: it does not average a decibel at 19 dB")
         print("against a decibel at 71 dB as though they were the same quantity.")
+    return True
+
+
+if labels:
+    for title, over in summary_sets:
+        summarise(title, over, table)
+    if not args and not any(t for t, _ in summary_sets if t and t.startswith("HEADLINE")) \
+            and ladder_sets.split(cases)[3]:
+        print("(the headline mean, from 2026-10-22, needs V2x/V3x/H2x in this tree: bench.sh all renders them)")
 
 if show_region and labels:
-    rusable = [c for c in cases if c in rtable
-               and all(rtable[c].get(l) not in (None, float("inf")) for l in labels)]
-    print()
-    if rusable:
-        rcapped = {l: sum(min(rtable[c][l], CAP_DB) for c in rusable) / len(rusable) for l in labels}
-        rraw = {l: sum(rtable[c][l] for c in rusable) / len(rusable) for l in labels}
-        rbinding = [c for c in rusable if min(rtable[c][l] for l in labels) < CAP_DB]
-        ref = labels[0]
-        print(f"{'REGION, over ' + str(len(rusable)) + ' scoreable cases':<{w}}"
-              f"{'raw mean':>12}{'capped at ' + str(int(CAP_DB)):>14}{'vs ' + ref:>12}")
-        print("-" * (w + 38))
-        for l in labels:
-            print(f"{l:<{w}}{rraw[l]:12.2f}{rcapped[l]:14.2f}{rcapped[l] - rcapped[ref]:+12.2f}")
+    any_r = False
+    for title, over in summary_sets:
+        any_r = summarise(title, over, rtable, region=True) or any_r
+    if not any_r:
         print()
-        print(f"REGION: {len(rbinding)} of {len(rusable)} cases have any variant below {CAP_DB:g} dB on the object's")
-        print("swept path (tests/regions.sh). The |R columns score the same frames over that crop, so a fault")
-        print("confined to the mover is no longer diluted by the frame's flat majority (10 log10(1 / share)).")
-    elif not any(os.path.exists(region_log(os.path.join(OUTROOT, c), l)) for c in cases for l in labels):
-        print("REGION: no <mode>.region.log found for these labels -- bench.sh writes it since 2026-10-21; re-render.")
-    else:
         print("REGION: no case is scoreable on every label (a region reading of inf or a missing log); the |R columns stand.")
 
 if show_phase and labels:

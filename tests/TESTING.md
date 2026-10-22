@@ -51,8 +51,10 @@ from this directory:
 1. **Smoke, on any new machine or build:** `./smoke.sh`. 18 checks over 12 tools; no video needed; exits
    non-zero on any failure. It also regenerates `-variational`, the recommendation, the player's default,
    the lattice candidate and the three `-cut` tiers, with their 4K twins, and checks each against the committed file byte for byte.
-2. **The ladder:** `./bench.sh all ../shaders/<shader>.glsl <label>` (42 cases; hold and linear are cached per
-   case), then `./analyze.py --variants`, and read the CAPPED mean. `./bench.sh <case> ...` runs one case; the
+2. **The ladder:** `./bench.sh all ../shaders/<shader>.glsl <label>` (45 cases since 2026-10-22: the frozen 42 and
+   the headline set's V2x/V3x/H2x; hold and linear are cached per case), then `./analyze.py --variants`, and read the
+   HEADLINE capped mean, whole-frame and region (the object's crop) side by side; the frozen-42 mean prints below it
+   as the record's history (see "The headline set" at the end of this file). `./bench.sh <case> ...` runs one case; the
    cases outside the default ladder (see the ladder table below) run only by name. Results go to `$OUTROOT`
    (default `$TMPDIR/interp-bench`); use a fresh one per experiment. bench.sh's default shader is the plain
    base; the recommendation is `bidirectional-interpolation-variational-propagated.glsl` (../SHADERS.md).
@@ -2565,4 +2567,42 @@ lead on O1-O3 is above 40 whole-frame and below it on the crop), and eleven more
 the path's share (width over width plus distance), least kindly on the P and F cases, as the instruments lane warned;
 it is not the final instrument, it is the honest one the ladder had lacked. Which column the headline mean reads is
 the owner's decision; both are printed from now on.
+
+## The headline set, and the region column beside the capped mean (2026-10-22, Gareth's decisions)
+
+Gareth, the morning after the swarm: "1. If V2x, V3x, H2x are improvements over the originals then V2, V3, H2 should not
+be included in the mean" and "2. My suggestion is that the region-scored column and capped man are retained besides
+each other".
+
+**They are improvements, on the evidence.** The same stairs, the same speeds, the same source frames but one row; the
+truth exact at every offset (scenecheck bit-identical), where the frozen three snap their bar edges to whole rows at
+the 60 fps truth frames and so cap any correct warp near 29 to 31 dB; and they still separate the mechanisms, more
+widely than before (V3x: High 45.1, the recommendation 31.8, the quad 20.1, where V3 put all three between 20 and 30).
+
+**What changed.** `scenes.sh` defines `HEADLINE_CASES`: `ALL_CASES` with V2x_stairs_cov_v6, V3x_stairs_cov_v12 and
+H2x_stairs_cov_h6 in place of V2, V3 and H2. `ALL_CASES` is untouched. `tests/ladder_sets.py` reads both and checks
+that the headline set is the frozen one with exactly those three substitutions (a broken list is refused: checked).
+`bench.sh all` renders the union, 45 cases. `analyze.py`, with no cases named, prints the HEADLINE summary when all of
+its cases are present and the FROZEN 42 summary beside it, the record's mean to 2026-10-21, so every old number still
+has its comparable; a tree rendered before today prints the frozen summary alone with a line saying what the headline
+needs. The region column prints by default wherever region logs exist (`--no-region` suppresses it), with its own
+headline and frozen summaries. `probes/build/buildtable.py` and `probes/limb/gatetable.py` take their capped means over
+the same sets. `gatetable.py` also had a silent fault the new columns would have triggered: it split a whole row on
+whitespace and skipped any row whose count did not match its labels, so the `| min` and `|R` groups (added 2026-10-21)
+made it keep 0 of 45 rows without a word. It now reads the first column group only and says on stderr when a row
+does not fit.
+
+**The headline, on the adopted build** (the four gate shaders, `np-scratch/build-gate-20261021/region`, capped at 40):
+
+| | base | rec | High | quad |
+|---|---|---|---|---|
+| headline, whole frame | 35.02 | 38.71 | **39.08** | 38.22 |
+| frozen 42, whole frame (the record's) | 34.96 | 38.05 | **38.33** | 37.80 |
+| headline, the object's crop | 29.18 | 35.34 | **36.50** | 35.34 |
+| frozen 42, the object's crop | 29.11 | 34.65 | **35.34** | 34.92 |
+
+The High tier leads in every column. The recommendation gains most from the repaired truth (+0.66 whole-frame), since
+its V2 and H2 sat on the wall; on the object's crop the recommendation and the quad are level at 35.34 under the
+headline set, where on the frozen set the quad led by 0.27. Numbers before 2026-10-22 are frozen-42 numbers; compare
+like with like.
 

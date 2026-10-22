@@ -110,6 +110,10 @@ never upgrades a status: nothing here is a measurement, and nothing here changes
 - 2026-10-22 00:18, Claude: satisfaction, D1's field read, medium; "closed honestly": the undecidable case the record
   named on 2026-09-28 is a measured one, the first pair's coin and persistence, and the lane's two-domain guess fell to
   its own kill test within the hour. Outcome: right.
+- 2026-10-22 11:30, Claude: unease (niggle), "who else parses analyze.py's rows?" while making the region column the
+  default, medium; first guess: a gate table splits on whitespace. -> dug: probes/limb/gatetable.py kept 0 of 45 rows of
+  the new output, and would already have done so with last night's `--min`, silently. Found and fixed (first column
+  group only; a stderr line on any mismatch). Outcome: right.
 
 ## The set-aside pulls
 

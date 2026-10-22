@@ -521,6 +521,14 @@ scene() {
 
 ALL_CASES="L0_static L1_trans_8px L2_trans_16px L3_trans_23px L4_trans_40px L5_lowcontrast L6_flat_large L7_textured_large M1_noise_large M2_period40 M3_period16_trap M4_belowgate L8_diagonal L9_occlusion A1_accel_8mean A2_accel_16mean A3_accel_23mean F1_fourier_edge F2_fourier_accel R1_rot_const R2_rot_accel O1_osc_gentle O2_osc_medium O3_osc_hard O4_osc_flat300 O5_osc_textured A4_accel_tex_a033 A5_accel_tex_a067 A6_accel_tex_a133 A7_accel_tex_a167 O6_osc_tex_gentle R3_rot_tex V1_bars_sine24_v6 V2_stairs_sq24_v6 V3_stairs_sq24_v12 H1_bars_sine24_h6 H2_stairs_sq24_h6 P1_stairs_along_v4 P2_stairs_along_v8 P3_stairs_along_v12 P4_stairs_along_v8_crosser P5_stairs_along_v8_alias"
 
+# THE HEADLINE SET (2026-10-22, Gareth: "If V2x, V3x, H2x are improvements over the originals then V2, V3, H2 should
+# not be included in the mean"). They are: the same stairs with an exact-coverage truth (scenecheck bit-identical; the
+# frozen three carry a ceiling near 29-31 dB in their own truth), and they still separate the mechanisms (V3x: High
+# 45.1, rec 31.8, quad 20.1, where the frozen V3 compressed all three under 30). The headline mean is taken over this
+# set; ALL_CASES stays frozen and its mean is printed beside it as the record's history (tests/ladder_sets.py checks
+# that this list is ALL_CASES with exactly those three substitutions). bench.sh all renders the union.
+HEADLINE_CASES="L0_static L1_trans_8px L2_trans_16px L3_trans_23px L4_trans_40px L5_lowcontrast L6_flat_large L7_textured_large M1_noise_large M2_period40 M3_period16_trap M4_belowgate L8_diagonal L9_occlusion A1_accel_8mean A2_accel_16mean A3_accel_23mean F1_fourier_edge F2_fourier_accel R1_rot_const R2_rot_accel O1_osc_gentle O2_osc_medium O3_osc_hard O4_osc_flat300 O5_osc_textured A4_accel_tex_a033 A5_accel_tex_a067 A6_accel_tex_a133 A7_accel_tex_a167 O6_osc_tex_gentle R3_rot_tex V1_bars_sine24_v6 V2x_stairs_cov_v6 V3x_stairs_cov_v12 H1_bars_sine24_h6 H2x_stairs_cov_h6 P1_stairs_along_v4 P2_stairs_along_v8 P3_stairs_along_v12 P4_stairs_along_v8_crosser P5_stairs_along_v8_alias"
+
 # LADDER2 (2026-10-21): cases built beside the frozen 42 after the swarm's audit, scored the same way but summarised
 # on their own and never merged into ALL_CASES' mean, so every historical number stays comparable. The three x cases
 # are V2/V3/H2 with an exact-coverage truth; the five c cases are the speed comb; the last three (added later the

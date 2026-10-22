@@ -42,6 +42,13 @@ root, A, B = sys.argv[1:4]
 tags = sys.argv[4:]
 cases = sorted(c for c in os.listdir(os.path.join(root, A))
                if os.path.isdir(os.path.join(root, A, c)) and not c.startswith("._"))
+# Since 2026-10-22 bench.sh all renders 45 cases (the frozen 42 and the headline set's V2x/V3x/H2x): the capped means
+# here are over the headline set when all of it is present, else the frozen 42, else every case (tests/ladder_sets.py).
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
+import ladder_sets
+_h, _f, _hfull, _ffull = ladder_sets.split(cases)
+MEAN_SET = _h if _hfull else (_f if _ffull else cases)
+MEAN_NAME = "headline" if _hfull else ("frozen 42" if _ffull else "all cases")
 
 
 def score(build, case, label):
@@ -52,7 +59,7 @@ def finite(v):
     return v is not None and v != float("inf")
 
 
-print("build A = %s, build B = %s, %d cases" % (A, B, len(cases)))
+print("build A = %s, build B = %s, %d cases; capped means over the %s set (%d)" % (A, B, len(cases), MEAN_NAME, len(MEAN_SET)))
 print("%-10s %6s %6s %6s %9s %9s   %s" % ("mode", "cases", "<=0.01", "<=0.10", "capped A", "capped B", "worst B - A (losses first)"))
 for label in ["hold", "linear"] + tags:
     rows = []
@@ -65,8 +72,9 @@ for label in ["hold", "linear"] + tags:
         continue
     n01 = sum(abs(d) <= 0.01 for d, *_ in rows)
     n10 = sum(abs(d) <= 0.10 for d, *_ in rows)
-    capA = sum(min(a, CAP_DB) for _, _, a, _ in rows) / len(rows)
-    capB = sum(min(b, CAP_DB) for _, _, _, b in rows) / len(rows)
+    mrows = [r for r in rows if r[1] in MEAN_SET] or rows
+    capA = sum(min(a, CAP_DB) for _, _, a, _ in mrows) / len(mrows)
+    capB = sum(min(b, CAP_DB) for _, _, _, b in mrows) / len(mrows)
     rows.sort()
     worst = ", ".join("%s %+.2f" % (c, d) for d, c, _, _ in rows[:3])
     best = ", ".join("%s %+.2f" % (c, d) for d, c, _, _ in rows[-2:])

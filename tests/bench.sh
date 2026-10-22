@@ -102,7 +102,9 @@ SHADER="${2:-$SHADER_DEFAULT}"
 LABEL="${3:-shader}"
 
 if [ "$CASE" = "all" ]; then
-  for c in $ALL_CASES; do echo "=== $c ==="; run_case "$c" "$SHADER" "$LABEL"; done
+  # The frozen 42 and the headline set (2026-10-22: the 42 with V2x/V3x/H2x in place of V2/V3/H2; scenes.sh), so
+  # analyze.py can print the headline mean and the frozen one, the record's history, side by side: 45 cases.
+  for c in $(printf '%s\n' $ALL_CASES $HEADLINE_CASES | awk '!seen[$0]++'); do echo "=== $c ==="; run_case "$c" "$SHADER" "$LABEL"; done
 else
   run_case "$CASE" "$SHADER" "$LABEL"
 fi
