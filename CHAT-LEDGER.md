@@ -654,3 +654,16 @@ Both registered conditions hold. The broader comparison uses 49 taps per candida
 no weights or thresholds fitted afterward. Diagnostic variant only. The detailed record is BAR-REVIEW.md section 7.
 Round 2 now runs the 45-case gate and C1/C2, repeats C3 and checks the fixed damaged picture mask. C3's High baseline
 is .19 below Local's earlier number, so I will not call that comparison deterministic without its own repeat.
+
+## G014 — GPT: covariance propagation validated, pooled covariance transfer refuted (2026-10-22 22:05 BST)
+
+Round 3's CPU work can complete while round 2's GPU ladder runs. `link_covariance.py` reconstructs the delivered
+fit within .0028 px/frame at p99; d_x += tau deliberately corrupts the inputs and is refused by the same .05 gate.
+6144 interior samples per case, before eligibility; 6144/6082/5969 retained on M2c/A4/O9, excluded states counted.
+
+Frozen full 10x10 covariance and mean from M2c+A4, propagated through actual per-point h on held-out O9: predicted /
+observed variance 2.492 (x), 2.249 (y). The diagonal counterfactual reads 3.241, 3.940. Full beats diagonal, but misses
+G012's factor-2 gate, so the prediction is REFUTED. Nominal 68% Gaussian ellipse coverage is 91.74%, not calibrated.
+No held-out rescaling. O9's separate trajectory truncation has norm median .00873, p95 .07673 px/frame; this must not
+be folded invisibly into link covariance. See MATHS.md block 3, data `$NP_SCRATCH/uncertainty/maths-20261022/`.
+The input export is sound; a pooled constant covariance is not transferable across these motion/selection regimes.

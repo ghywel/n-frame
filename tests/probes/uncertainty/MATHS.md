@@ -367,3 +367,63 @@ these final-field dumps. Before more cues are built, Local can choose whether to
 the independent fit-state/refusal readout. The latter already has direct evidence in the recorded sample. The
 proposed 0.4 px floor in the original design belongs to the external skeleton benchmark's truth path; it must not be
 silently adopted as this dense estimator's per-axis noise floor. A truth comparison measures both error sources.
+
+## Block 3: exported joint link covariance, frozen transfer test (2026-10-22)
+
+Local delivered the Arc export in L004; G012 fixed this protocol before reading its errors. The instrument is
+`link_covariance.py`. It samples 1024 pixels per exported frame uniformly inside the object's four-pixel-eroded
+interior, seed 20261022, then retains fitted five-link points. Frames are 12,18,24,30,42,54. CFR taus must decode
+within .0001 of integers before being rounded; live order is asserted -3,-2,-1,+1,+2. The exact zero anchor is
+included separately with weight one. These are sampled pixels from six captures, not independent repeated trials.
+
+**Instrument holds:** the float64 weighted fit reconstructed from those inputs agrees with the exported fitted
+velocity at the 99th-percentile vector difference .002542 (M2c), .002760 (A4), .002603 (O9) px/frame; the registered
+limit was .05. A coherent fault d_x += tau changes that difference to about 1.002 on every case and fails the same
+gate. This checks physical units, timestamp interpretation, link ordering and fit propagation together. It does
+not make the original per-pixel GLSL arithmetic exactly float64.
+
+Training: pool M2c and A4 link errors against the scene laws, estimate their 10-vector mean and full 10x10 covariance
+once. Freeze both; O9 is held out. At each query use its actual weighted-fit h to propagate full covariance or its
+diagonal. Input error covariance is not assumed to be the inverse of the heuristic trust weights. The comparison
+concerns **link-induced** output error h(d-d_true); fit truncation h d_true-v_true is reported separately.
+
+| case | retained / drawn | full / observed variance, x,y | diagonal / observed variance, x,y | nominal 68% ellipse coverage |
+|---|---:|---|---|---:|
+| M2c (training) | 6144 / 6144 | .873, .796 | 1.135, 1.395 | 78.24% |
+| A4 (training) | 6082 / 6144 | 1.173, 1.356 | 1.526, 2.376 | 82.09% |
+| O9 (holdout) | 5969 / 6144 | **2.492, 2.249** | 3.241, 3.940 | **91.74%** |
+
+**Registered prediction REFUTED:** both full-covariance variance ratios had to lie within [.5,2], and have smaller
+absolute log error than the diagonal counterfactual. The latter holds, but both held-out variance ratios exceed 2.
+No covariance rescaling or new thresholds were fitted to O9. Exit 3 records a valid refutation, not an invalid run.
+The ellipse is centred using the propagated frozen training mean; its covariance is propagated per point. Its
+coverage describes this selected link-error population, not total physical velocity error or a calibrated map.
+
+Held-out link-induced variances are (.0076713,.0119152), against full predictions (.0191184,.0267927) and diagonal
+predictions (.0248631,.0469412) in (px/frame)^2. Thus discarding cross-covariances substantially inflates the predicted
+variance here. This is an observed covariance effect, not proof that adjacent primitive link errors are independent.
+The exported displacements are composed; their covariance contains both shared links and other estimator effects.
+
+The projected link-error biases are small in this selected population (O9 mean approximately -.000493,-.001481
+px/frame). This does not imply every individual link is unbiased: the sampled per-link means are retained in the
+JSON, and can differ from the earlier reported medians. For example M2c's far-backward y mean is .04030 px.
+Truncation is essentially zero for constant velocity/acceleration, as expected. O9's truncation norm has median
+.008733 and p95 .07673 px/frame. A link-only covariance must not quietly absorb that deterministic trajectory error.
+
+Refusal accounting precedes eligibility: A4 has 60 not-fitted samples and 62 not-five-link samples; O9 has 154 and
+175 respectively (overlapping categories, not additive). Those points are excluded and counted, never assigned zero
+uncertainty. A fitted five-link criterion is narrower than the entire field.
+
+The fixed-covariance approximation ignores conditioning on adaptive weights and selection, and pools textures/phases
+from only two cases. Its failure does not refute h Sigma h^T; it refutes treating this pooled input-error population
+as transferable covariance at every query. Even training cases miss Gaussian coverage, consistent with non-Gaussian
+errors and heterogeneous support. More diverse/held-out data and conditioning are needed before choosing a confidence
+radius; a new global multiplier on O9 would be a fit to the test set.
+
+    PYTHONDONTWRITEBYTECODE=1 python3 tests/probes/uncertainty/link_covariance.py \
+        "$NP_SCRATCH/uncertainty/export_links" --out "$NP_SCRATCH/uncertainty/maths-20261022/link-covariance.json"
+
+The output retains input hashes, the mean/covariance, all reconstruction/fault controls, refusal counts and results.
+No GPU job or shader change was needed for this round. Reasoned verdict: the export permits validated covariance
+propagation; the frozen constant covariance fails transfer. Gut verdict: cross-covariance matters, but the regime
+and selection matter at least as much; a single scalar sigma would conceal both.
