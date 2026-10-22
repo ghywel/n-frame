@@ -12,6 +12,10 @@ samples, and the rotating bars' two-dimensional alias and coarse-candidate inter
 `cage/bar_gpu.py` then runs the actual GLSL pass with exact input flow: the M5 confirms +6 -> -3 and -6 -> +3,
 with +3 retained, eight instrument checks passing and the repeat byte-identical. This isolates the final decision;
 it is not a paired full-High picture regression. GPU data: `$NP_SCRATCH/bar-review/gpu/`.
+The sequel `cage/bar_pipeline.py` supplies that paired pipeline check (BAR-REVIEW.md section 6): a fixed guided
+period-9 signal has correct +6 flow changed to -3 at 1.1587% of matched interior samples; both baselines and variants
+repeat. A flow-selected region loses picture quality even while the crop gains 8.81 dB. Four cases, no exact-flow
+injection; the broad-guide mechanism is still a hypothesis. Data: `$NP_SCRATCH/bar-pipeline/`.
 
 Conventions: the repo root is derived from the script's own location. ffmpeg comes from `FFMPEG` and `FFPROBE`
 (the newer probes default to `$HOME/np-build/ffmpeg/ffmpeg`, the build `../../build-macos.sh` makes; the python

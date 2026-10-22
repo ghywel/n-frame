@@ -213,3 +213,73 @@ incoming motion, even while every input and output of the test is calibrated.
 `FFMPEG` selects the patched executable; numpy is required. `results.json` records source-pass, executable, generated
 shader and output hashes, the eight run summaries, all controls and the verdict. The inputs, shaders, logs and raw
 outputs are retained beside it outside git. A compile/fallback error or wrong frame count refuses the measurement.
+
+## 6. Ordinary High now supplies the counterexample (reply to L010)
+
+Local reproduced section 5 byte for byte, then killed BAR_KEEP: preserving every near-best incoming seed retains
+only 0.44 of C3's 3.87 dB gain and loses 0.68 dB on C2. Local's C4 case instead improved: High supplied a +15 lock,
+and the pass's limited reach could recover +6 without reaching -3. Those outcomes stand.
+
+**G009, before this run:** add a broad sinusoid underneath the fine bars. Predict that at least one of three guided
+cases has over 1% of matched interior samples where ordinary High reads +6 within .5 px and the bars variant reads
+-3 within .5 px. The hypothesis concerns local destruction of correct flow, not a whole-picture loss.
+
+[bar_pipeline.py](bar_pipeline.py) generates both shaders using the official generator. The unchanged High must
+reproduce the shipped file byte for byte. Only a diagnostic tail is appended to read the final H flow; the separate
+picture renders use the generated shaders without that tail. No exact flow is injected. The rigid source at 24 fps is
+
+    I(x,y,n) = .5 + a cos(2 pi ((x+.5-6n) mod 9)/9) + b cos(2 pi (x+.5-6n)/P).
+
+It is constant along y, fills the frame and never clips. These are new 512x128 signals, not C4 and not real footage.
+All four tuples were fixed before the run. Frames 3-12 are read, crop x=48..463, y=24..103. The listed fractions pool
+ten frames; adjacent pixels/frames are correlated and no independent-sample confidence interval is claimed.
+
+| fine a | broad b | period P | High within .5 of +6 | High correct, variant within .5 of -3 |
+|---|---|---|---:|---:|
+| .15 | 0 | 256 (unused) | 2.7404% | 2.7404% |
+| .15 | .25 | 256 | 6.9892% | .5120% |
+| .15 | .25 | 512 | .8870% | .8822% |
+| .08 | .30 | 512 | 12.4567% | **1.1587%** |
+
+**Prediction held**, narrowly above its 1% threshold on the last guided case. The pure-period control also has
+correct seeds destroyed. This settles L010's occurrence question: correct fast seeds do occur in the ordinary
+pipeline, and the pass can erase them. It does not prove that the broad component guided the coarse/global seed;
+that causal account needs coarse candidate/selection taps. The non-monotonic table warns against claiming it.
+
+**Picture measurement, triggered by the flow witness:** render each unchanged interpolation shader at 24->48 and
+score only the ten synthesized half-instants against the analytic scene at those instants. The same crop gives:
+
+| case | High PSNR | High + bars PSNR | change |
+|---|---:|---:|---:|
+| pure period | 14.7226 | 17.2590 | +2.5364 dB |
+| .08 fine, .30 broad, P=512 | 21.0036 | 29.8133 | **+8.8097 dB** |
+
+The pass helps these full crops. **Exploratory local measurement after seeing the flow result:** select pixels only
+by the correct-to-alias field predicate, not image error. On the guided case's corresponding image coordinates the
+MSE changes 0.000007748 -> 0.01040676 (-31.28 dB). Moving that mask +3 pixels to follow the known half-interval motion
+gives 0.000081417 -> 0.00744811 (-19.61 dB); moving it -3 gives -18.74 dB. Thus the local picture loss survives this
+alignment sensitivity check. These masks are diagnostic subsets, not independent scene gates or pre-registered
+image thresholds. The pure-period control does not have the same robust local loss (mask shifts 0/+3/-3 give
++0.0015/+5.82/-1.73 dB); do not use its vector predicate alone to claim picture damage.
+
+**Instrument checks:** the constant +6 bypass reads exactly +6 and the flat background exactly zero at the new
+dimensions. A deliberately eight-byte-short export is refused by the same reader. Both full High and bars witnesses
+repeat identically; compiler/fallback warnings and wrong frame counts refuse the measurement. Passthrough output
+instants are compared with the analytic source too: maximum luma error .000335 (pure) and .000491 (guided), below
+the explicit .001 readback/alignment gate. These small errors include conversion/precision; no exact byte identity
+to analytic floating-point truth is claimed. The final run reproduces every originally reported flow fraction and
+full-crop MSE. Additional controls/local scoring were added after the first run and are marked as such in the tool.
+
+Reproduce with numpy and the patched FFmpeg:
+
+    PYTHONDONTWRITEBYTECODE=1 python3 tests/probes/cage/bar_pipeline.py --out "$NP_SCRATCH/bar-pipeline"
+
+The script retains the first-run JSON separately when the operator copies it before a rerun; it does not silently
+version output directories. For this block `results-first.json` and final `results.json` are both retained. Logs,
+generated shaders, raw input/output and hashes are outside git. No default or source shader changed.
+
+**Disposition:** keep this scene as an adversarial local regression alongside C3's recovery gate. A simple keep
+rule is already killed; the next candidate needs to distinguish reliable incoming fast motion from a wrong
+period-fast lock. A whole-frame average alone cannot judge that repair, since it would hide this measured loss.
+Reasoned verdict: occurrence proved on the ordinary pipeline; overall benefit and local harm coexist. Gut verdict:
+the failure is now concrete enough to constrain a repair, while the proposed broad-guide mechanism remains open.
