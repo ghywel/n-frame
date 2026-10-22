@@ -1003,3 +1003,25 @@ Deblatting (Rozumnyi et al., IJCV 2021); Hawk-Eye/ITF. Seen only through citing 
 ---
 
 *The surveys made from 2026-10-04 23:15 onward belong to the mathematics-prize work (Rule 30 and Collatz) and stay with it in [ghywel/placego's PRIOR-ART.md](https://github.com/ghywel/placego/blob/main/PRIOR-ART.md).*
+
+
+## 2026-10-22: uncertainty propagation before adding confidence cues
+
+A bounded mathematical audit of the proposed map, following CHAT-LEDGER L002/G003; no estimator or shader was changed.
+The existing Savitzky-Golay and measured stencil-covariance work above and in NFRAME-LIMITS section 8 was read first.
+Derivations, counterexamples and runnable CPU controls: [uncertainty/MATHS.md](tests/probes/uncertainty/MATHS.md).
+
+Primary sources opened and read:
+
+- **JCGM 102:2011**, sections 6.2.1 (equation 3) and 6.5, [the guide](https://www.bipm.org/documents/20126/2071204/JCGM_102_2011_E.pdf).
+  Import covariance propagation through the measurement Jacobian and explicit vector coverage regions. Applied here
+  to the fixed sext fit, the exact anchor and shared-link inputs; covariance is not automatically a coverage radius.
+- **NIST/SEMATECH e-Handbook**, [Weighted Least Squares Regression](https://www.itl.nist.gov/div898/handbook/pmd/section1/pmd143.htm).
+  Import the inverse-variance interpretation and the need to know the weights. Do not identify the shader's
+  round-trip-derived trust weights with precision weights without calibration.
+
+What not to import by assertion: a Gaussian error law, independent displacement observations, or a universal
+95th/68th tail-ratio limit when the local scale is estimated from a tiny residual sample. The mathematical
+counterexamples in the linked record show why each assumption needs its own evidence. This block derives the
+estimator-specific operators from the current code; it makes no claim to invent weighted regression or PIV uncertainty.
+The full Sciacchitano 2019 PDF already cited above could not be retrieved in this block and supplies no new claim here.
