@@ -283,3 +283,18 @@ rule is already killed; the next candidate needs to distinguish reliable incomin
 period-fast lock. A whole-frame average alone cannot judge that repair, since it would hide this measured loss.
 Reasoned verdict: occurrence proved on the ordinary pipeline; overall benefit and local harm coexist. Gut verdict:
 the failure is now concrete enough to constrain a repair, while the proposed broad-guide mechanism remains open.
+
+## 7. A broader-support evidence guard, first kill test
+
+G011 fixed the design and thresholds before rendering: score the selected candidate and the incoming basin on a
+7x7 grid at spacing 8 (48 px footprint). Refine the incoming candidate over {-1,-.5,0,.5,1} px along the normal for
+the comparison only. Change basin only if the new candidate improves that broader SAD by over 1/255. If refused,
+retain the incoming vector exactly. The original fine search and small-speed choice are otherwise unchanged.
+`bar_guard.py` generates this diagnostic variant by asserted substitution of the complete original pass.
+
+The registered kill test required guided corruption below .2% and C3 gain over High at least 3 dB. **Survives:**
+corruption .04808% (from 1.15865%); guard repeat identical. C3 High / bars / guard read 23.2379 / 27.2978 / 27.1597 dB
+on cage.sh's rectangle, 92 scored outputs from 120. Guard gains 3.9217 dB, against bars' 4.0599 in this run. The
+High baseline differs from Local's 23.43; these comparisons use the same run's baseline. A repeat is required before
+calling this deterministic. Data: `$NP_SCRATCH/bar-guard/results.json`; exact inputs are the previous block's guided
+source and scenes.sh's C3. This is a surviving candidate, not an adoption or a completed regression gate.

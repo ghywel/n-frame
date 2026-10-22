@@ -616,3 +616,41 @@ raw outputs, variants, hashes and logs: `$NP_SCRATCH/bar-pipeline/`. Full condit
 This is now a paired-pipeline local regression to preserve alongside C3's gain. The killed keep repair remains killed;
 a next repair must distinguish reliable +6 input from the period-fast +15 lock, and its gate must include this local
 loss because the whole-crop average rewards the variant. No shader default changed. This block is being merged to main.
+
+## G011 — GPT to Local: batching three further rounds (2026-10-22 22:00 BST)
+
+The owner asks GPT to continue several rounds while Local sleeps. New files reserved: `tests/probes/cage/bar_guard.py`,
+`tests/probes/uncertainty/link_covariance.py`, with append-only results in my BAR-REVIEW.md and MATHS.md.
+Round 1: test a broader-support evidence guard on the actual GLSL bars pass. Compare the proposed basin with the
+incoming basin using a 7x7 block at spacing 8 (48 px footprint); permit the change only if the proposed SAD beats
+the incoming SAD by more than 1/255. Incoming motion is refined along the normal over {-1,-.5,0,.5,1} px solely for
+this fair cost comparison; its vector is retained unchanged when refused. This is a new diagnostic variant, not
+BAR_KEEP or a changed default. Prediction: the guided case's +6-to--3 fraction falls below .2%; C3 retains at least
+3 dB over High. Kill if either fails. No threshold tuning after the result. Full regression gate only if it survives.
+Round 2: an adversarial/control follow-up determined by that result, then checkpoint. Round 3: the delivered joint
+link errors, with fixed-fit reconstruction checked before covariance claims; full covariance against its diagonal
+counterfactual on held-out O9. All maths/science results and refutations will be batched here, each block merged.
+
+## G012 — GPT: covariance round's fixed protocol, before reading errors (2026-10-22 22:02 BST)
+
+For `link_covariance.py`, sample 1024 interior pixels uniformly per exported frame, seed 20261022; record exclusions
+before retaining fitted five-link points. Round CFR taus to integers only after checking the export error <.0001.
+Reconstruct d'(0) with the exported weights and exact zero anchor. Instrument gate: 99th percentile vector difference
+from the exported fit <.05 px/frame; refuse covariance interpretation if it misses. Corrupt a known point's d to
+show that reconstruction check can reject it. Canonical link order is -3,-2,-1,+1,+2, no inferred independent links.
+
+Freeze a pooled 10x10 covariance and mean of link errors on M2c+A4; O9 is the holdout, not a tuning set. Propagate
+through each point's actual h and report full versus diagonal variances, observed projected-error variance and
+Gaussian ellipse coverage. Prediction: full covariance predicts O9 link-induced variance within a factor 2 per
+axis, and its log variance error beats the diagonal model. Refuted otherwise. Report polynomial truncation error
+separately from propagated link error. This is a constant population covariance model despite adaptive weights;
+its held-out result decides whether that approximation works, not whether h Sigma h^T is algebraically correct.
+
+## G013 — GPT: broad-support guard survives its first kill test (2026-10-22 22:02 BST)
+
+G011's fixed candidate, `tests/probes/cage/bar_guard.py`, reduces guided corruption 1.1587% -> .04808%; repeats
+identically there. Same-run C3 High/bars/guard: 23.2379/27.2978/27.1597 dB, so the guard retains +3.9217 (bar +4.0599).
+Both registered conditions hold. The broader comparison uses 49 taps per candidate, with incoming-basin refinement;
+no weights or thresholds fitted afterward. Diagnostic variant only. The detailed record is BAR-REVIEW.md section 7.
+Round 2 now runs the 45-case gate and C1/C2, repeats C3 and checks the fixed damaged picture mask. C3's High baseline
+is .19 below Local's earlier number, so I will not call that comparison deterministic without its own repeat.
