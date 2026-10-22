@@ -34,7 +34,26 @@ sitting):
   PREDICTED: C3's disc 27 to 33 dB (the fast half's period locks undone; some of the smear remains where the 13 px
   block cannot tell basins apart); C1, C2 within 0.2; the ladder unmoved but for the bar cases (V1, V2, V2x, H1, H2,
   H2x, V3, V3x, the P family), each within +-0.5, V3/V3x a coin at their exact half-period tie.
-    bar_redecide.add(t) -> t      every anchor asserted exactly once
+
+GPT'S COUNTEREXAMPLE (CHAT-LEDGER.md G007/G008; tests/probes/cage/bar_gpu.py, reproduced byte for byte by Local the
+same evening): fed a known-correct +6 px/frame on period-9 bars, this pass returns -3 (and -6 -> +3): on an exact
+period every basin ties, and the smallest-speed prior erases valid incoming motion. BAR_KEEP=1 (with BAR_REDECIDE=1):
+the incoming basin is kept whenever it is itself near-best (any 1-D cost within BAR_SWITCH of s = 0 inside the tie
+set); the prior then only replaces an incoming flow that the full-resolution cost has already shown to be worse.
+PRE-REGISTERED (before any render): the counterexample is FIXED if bar_gpu.py's +6 and -6 seeds come back within 0.2
+px of themselves and +3 stays +3. On C3, against High: if the disc keeps 3.0 dB or more, C3's gain never needed the
+prior; under 1.5, the prior was load-bearing (C3's locks are near-ties the full-resolution block cannot rank); between,
+partial. Ladder as before (none of the 45 down over 1.0, capped means within 0.05), C1, C2 not down 0.5. Predicted:
+fixed; C3 under 1.5 (load-bearing), because the measured locks sit one period out on a print whose wall grain rarely
+reaches the 13 px block.
+MEASURED the same night: BAR_KEEP fixes the counterexample exactly (+6, -6, +3 kept) but C3 keeps +0.44 of +3.87 and
+C2 falls 0.68: the prior is load-bearing, and the keep form is killed.
+THE PAIRED FULL-PIPELINE TEST (pre-registered before its render): C4_bars_fast_pan (scenes.sh: C1's bars and wall
+panning rigidly across the bars at +6 px/frame, so -3 is the slowest basin), cage.sh's swept rectangle, High against
+High + BAR_REDECIDE (and + BAR_KEEP). If High's own flow carries +6 into the last pass, BAR_REDECIDE erases it and
+reads 3 dB or more under High; if High already fails there, the two read within 0.5. Predicted: the former (the wall's
+grain and the global seed carry the pan), so BAR_REDECIDE is not adoptable as it stands.
+    bar_redecide.add(t, keep=False) -> t      every anchor asserted exactly once
 """
 
 BAR_ONE_D = 0.15
@@ -44,7 +63,8 @@ BAR_TIE_REL = 0.25
 BAR_TIE_ABS = 1.0 / 255.0
 BAR_SWITCH = 2.0          # px: the across change that counts as a different basin
 
-PASS = f"""
+def pass_text(keep=False):
+    return f"""
 // ---------------------------------------------------------------------
 // BAR_REDECIDE (tests/bar_redecide.py, 2026-10-22): on a one-dimensional print the coarse levels read the bars' Moire
 // and the finer levels lock the nearest basin of the true bars, a period or two out (C3). Where the half-res patch is
@@ -116,7 +136,7 @@ vec4 hook() {{
         cmin = min(cmin, sad / 49.0);
     }}
     float tie = cmin * (1.0 + BAR_TIE_REL) + BAR_TIE_ABS;
-    int best = -1;
+{KEEP_BLOCK if keep else ""}    int best = -1;
     float best_mag = 1.0e30;
     for (int i = 1; i < 2 * BAR_REACH; i++) {{
         if (cost[i] > cost[i - 1] || cost[i] > cost[i + 1] || cost[i] > tie)
@@ -145,7 +165,19 @@ vec4 hook() {{
 """
 
 
-def add(t):
+KEEP_BLOCK = """    // BAR_KEEP: the incoming basin stays whenever it is itself near-best (GPT's counterexample, G008)
+    for (int i = BAR_REACH - int(BAR_SWITCH); i <= BAR_REACH + int(BAR_SWITCH); i++) {
+        if (cost[i] <= tie) {
+            imageStore(FLOW_H_AB_BARS_CACHE, coord, keep);
+            return keep;
+        }
+    }
+"""
+PASS = pass_text(False)
+PASS_KEEP = pass_text(True)
+
+
+def add(t, keep=False):
     d = "//!DESC [high] vector median filter on flow A->B (pass 2)\n"
     k = t.count(d)
     assert k == 1, f"bar_redecide: the half-res chain's last median found {k} times"
@@ -154,4 +186,4 @@ def add(t):
     assert "//!HOOK" not in t[i:j], "bar_redecide: the median pass's body runs into another pass"
     for need in ("//!SAVE LUMA_A_H\n", "//!BIND NEXT\n"):
         assert need in t, f"bar_redecide: the shader has no {need.strip()}"
-    return t[:j] + PASS + t[j:]
+    return t[:j] + (PASS_KEEP if keep else PASS) + t[j:]

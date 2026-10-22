@@ -642,7 +642,7 @@ output is the recommendation.
 | `EDGE_PROP=1`, with `EDGE_PROP_TAU` | Flow-agreement weighting in the 1/8 propagation | 2026-09-27 | none: REFUTED the same evening (capped ladder mean -0.36 dB, 21 of 42 cases down) |
 | `ZERO_SEED=1` | Switches a base's zero seed on in the output | 2026-09-06 | redundant on the propagated base, which has the seed on |
 | `PHASE_FETCH=1`, with `PHASE_GATE=1` or `PHASE_FETCH_E=1` | The coarse (and with `_E` the 1/8) matcher's target taps read from the frame at the candidate's exact phase (`tests/phase_fetch.py`) | 2026-10-21/22 | none: trades along the texture period (L7 +19.7 to +22, P1 -6.7 or +13.6, M1c_v10 -12.8 with `_E`); the gate KILLED |
-| `BAR_REDECIDE=1` | On a one-dimensional patch, the across component re-decided at full resolution along the bars' normal after the half-res chain (`tests/bar_redecide.py`) | 2026-10-22 | none yet: a variant that passed its kill test on High (C3 +3.9, C1 +2.2, ladder and real film level, +5-10% time); adoption is the owner's call |
+| `BAR_REDECIDE=1` | On a one-dimensional patch, the across component re-decided at full resolution along the bars' normal after the half-res chain (`tests/bar_redecide.py`) | 2026-10-22 | none yet: a variant that passed its kill test on High (C3 +3.9, C1 +2.2, C4 +2.25, ladder and real film level, +5-10% time); GPT's counterexample (a correct fast seed on a fine period is erased) stands for the pass, unobserved in the pipeline; adoption is the owner's call |
 
 Other generators' switches: `tests/gen_quaddirectional.py` takes `CADENCE=1`
 (the cadence branch, below) and `FORESIGHT=0` (regenerates without the

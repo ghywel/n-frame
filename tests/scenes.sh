@@ -687,6 +687,13 @@ scene_edge() {
       DUR=2
       echo "nullsrc=s=${W}x${H}:r=$r:d=$DUR,format=gray,geq=lum='st(0\,(X-640-24*T)*cos(0.15*T)+(Y-360-12*T)*sin(0.15*T));st(1\,(Y-360-12*T)*cos(0.15*T)-(X-640-24*T)*sin(0.15*T));70+0.25*mod(floor(abs(sin(floor(ld(0)/32)*39.3468+floor(ld(1)/32)*11.135))*24634.6345),256)+lt(ld(0)*ld(0)+ld(1)*ld(1)\,90000)*100*pow(max(cos(2*PI*ld(0)/9)\,0)\,3)',format=yuv420p" ;;
 
+    # C4: C1's bars and wall panning rigidly ACROSS the bars at 6 px per source frame (2026-10-22, GPT's review of
+    # BAR_REDECIDE, CHAT-LEDGER.md G007/G008: on a 9 px period the truth +6 is not the slowest basin, -3 is). The paired
+    # full-pipeline test of that counterexample: does the pyramid hand the last pass the correct +6, and does it keep it.
+    C4_bars_fast_pan)
+      DUR=2
+      echo "nullsrc=s=${W}x${H}:r=$r:d=$DUR,format=gray,geq=lum='70+0.25*mod(floor(abs(sin(floor((X-144*T)/32)*39.3468+floor(Y/32)*11.135))*24634.6345),256)+(gt(X-144*T\,400)*lt(X-144*T\,900)*gt(Y\,150)*lt(Y\,500))*100*pow(max(cos(2*PI*(X-144*T)/9)\,0)\,3)',format=yuv420p" ;;
+
     *) echo UNKNOWN_CASE; return 1 ;;
   esac
 }

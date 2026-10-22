@@ -19,8 +19,8 @@ NP_SCRATCH="${NP_SCRATCH:-$HOME/Developer/np-scratch}"
 OUTROOT="${OUTROOT:-$NP_SCRATCH/cage}"
 CASES=("$@"); [ ${#CASES[@]} -gt 0 ] || CASES=(C1_cage_drift C2_cage_drift_occluded C3_bars_spin_drift)
 SHADERS="${SHADERS:-$TESTS/../shaders/bidirectional-interpolation-variational-propagated.glsl $TESTS/../shaders/bidirectional-interpolation-variational-propagated-global.glsl}"
-region() {   # the case's own rectangle: the cage (it drifts 24 px over the two seconds; the box has room), or C3's disc
-  case "$1" in C3_*) echo "crop=650:630:340:60" ;; *) echo "crop=520:360:390:145" ;; esac
+region() {   # the case's own rectangle: the cage (it drifts 24 px over the two seconds; the box has room), C3's disc, or C4's swept cage (288 px)
+  case "$1" in C3_*) echo "crop=650:630:340:60" ;; C4_*) echo "crop=800:360:390:145" ;; *) echo "crop=520:360:390:145" ;; esac
 }
 sc() { local s; s="$(scene "$1" "$2")"; [ "$s" != UNKNOWN_CASE ] || s="$(scene_edge "$1" "$2")"; echo "$s"; }
 run() {   # <out> <mode> <chain> <vk?>

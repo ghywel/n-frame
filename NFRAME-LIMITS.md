@@ -5463,7 +5463,13 @@ and the finer levels recover one period of the two, leaving -9 at H; where v_a l
 level mostly reads the truth (mode -1) and H is mostly right; near zero (28 percent) it is right throughout. So H's -9
 is mostly the fast half of the disc, a two-period Moire error half undone, and its side is the side of v_a, positive on
 96 percent of the disc (the +1 px translation). The reversal is real where the Moire dominates the coarse block and
-absent where the wall's grain does; the slope is the mixture.
+absent where the wall's grain does; the slope is the mixture. **Qualified by GPT's review the same night (G007,
+`tests/probes/cage/BAR-REVIEW.md` section 3), and the qualification stands:** the -8 factor is the axis-aligned
+idealisation; on rotating bars the reciprocal alias is a vector with an aperture freedom, so a scalar slope cannot
+give a mixture fraction; and the S tap is the zero descent's candidate only, while the 1/8 level picks among three, so
+"the finer levels undo one period" follows no single candidate from S to H. Both readings ("the mixture", "one period
+undone") are interpretations until angle-conditioned phase residuals and candidate identity are measured; the
+registered refutation and the band table stand as measured.
 
 ### Which coarse basin is the truth on P1 and P5 (2026-10-22, late evening)
 
@@ -5497,7 +5503,7 @@ touched. Pre-registered in the module before any render; the High tier with and 
 | region capped (headline) | 36.50 | 36.55 | |
 
 **PASSED.** The first change since 2026-09-21 to move C3, and the first to move C1 since the cage switch; it recovers
-about 30 percent of C3's gap to the oracle (36.47), so the disc is still under the blend (28.94). What remains is the
+29.7 percent of C3's dB gap to the oracle (36.47; a fraction of the dB gap, not of the squared error, GPT G007), so the disc is still under the blend (28.94). What remains is the
 smear the 13 px block cannot rank: where the wall's grain does not reach into the block, true and alias basins tie and
 the smallest-speed rule is right only when the truth is the slowest basin. A variant by the rule in any case (one pass,
 up to 1225 full-resolution fetches per one-dimensional half-res texel per source pair; its time below); adoption into a
@@ -5536,3 +5542,30 @@ falls 12.8 where the stored grid had escaped it; L1 and L2, plain translations o
 together with item 10, every grid the matcher reads on a fixed lattice protects some speeds by its comb and loses
 others, and fetching at the exact phase trades which. Not built tonight: the per-case reading of v10's new failure
 (the same basins tap at the 1/8 level), which is the next instrument on this line. A switch, off, byte-identical.
+
+### GPT's review of BAR_REDECIDE, the keep form, and the paired pipeline test on C4 (2026-10-22, night)
+
+**The counterexample (GPT, CHAT-LEDGER.md G007/G008; `tests/probes/cage/bar_gpu.py`, `BAR-REVIEW.md`), reproduced by
+Local byte for byte (all eight output hashes equal):** the actual bars pass, fed a known-correct +6 px/frame on
+period-9 bars, returns -3.000; -6 returns +3.000; +3 stays. On an exact period every basin ties and the smallest-speed
+prior erases valid incoming motion. GPT's three qualifications to the C3 reading are adopted above (the vector alias,
+candidate identity, the dB-gap fraction 29.7 percent).
+
+**BAR_KEEP=1** (keep the incoming basin whenever it is itself near-best; pre-registered in `tests/bar_redecide.py`):
+the counterexample is fixed exactly (+6, -6, +3 and the marker run all kept), but C3's disc keeps only +0.44 of the
++3.87 (23.87 against High's 23.43, under the registered 1.5: **the prior is load-bearing**, as predicted) and C2's
+cage falls 0.68 (past the 0.5 line): **killed**. C1 +0.46; the ladder level (capped means equal).
+
+**The paired full-pipeline test: C4_bars_fast_pan** (new in scenes.sh: C1's bars and wall panning rigidly across the
+bars at +6 px/frame, where -3 is the slowest basin; cage.sh's swept rectangle). Pre-registered: if High carries +6
+into the last pass, BAR_REDECIDE reads 3 dB or more under High. **KILLED, the other way:** the cage rectangle reads
+hold 17.37, linear 18.73, the recommendation 18.12, High 18.13, **High + BAR_REDECIDE 20.38 (+2.25)**, + BAR_KEEP
+19.17. Taps of the flow in the swept box (frames 4-43): the 1/16 level reads +16.5 (median), the 1/8 +20.2, and High's
+final flow sits one period too FAST, on +15 = 6 + 9 (35 percent; the truth +6 on 1 percent). The bars pass searches
++-12 px about +15, so -3 is out of its reach, and the slowest near-best basin in reach is the truth: 43 percent of the
+box moves to +6 (-3 on 1 percent). So the pipeline does not hand the last pass a correct fast seed here, and the pass
+corrects rather than erases. **Standing:** BAR_REDECIDE stays a variant. GPT's counterexample is a property of the
+pass, not yet observed in the pipeline: it needs a correct seed whose slower alias lies within the 12 px reach (a
+period under about 24 px with a speed over half the period), and in the ladder every such 1-D case is either slow
+(C1, C3) or wrongly seeded (C4); V1 and H1 (period 24 at 6 px/frame, High right at 54 dB) are safe because their
+alias, at -18, is beyond the reach. A case where the pyramid is right on fast fine bars is the test that remains.
