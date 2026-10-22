@@ -114,6 +114,15 @@ never upgrades a status: nothing here is a measurement, and nothing here changes
   default, medium; first guess: a gate table splits on whitespace. -> dug: probes/limb/gatetable.py kept 0 of 45 rows of
   the new output, and would already have done so with last night's `--min`, silently. Found and fixed (first column
   group only; a stderr line on any mismatch). Outcome: right.
+- 2026-10-22 11:41, Claude: none felt; the sticky probe's first run reported "identical on all 240 outputs" for a shader
+  that had never compiled (a blank line inside a pass header ends the header; libplacebo then mixed with its own mixer,
+  and compared the fallback with itself). Caught only because the counterfactual (the skip without STICKY) also came
+  back identical. Outcome: missed. Note: the bench guards against a silent fallback, a new probe must too; it now
+  refuses any render whose hook did not run. The counterfactual earned its place.
+- 2026-10-22 11:45, Claude: unease (niggle), the cost lane's mirror comparison: three propagation twins that do not match
+  their mirrors, in a family whose other eleven twins all do, high; first guess: a shared helper read the wrong frame's
+  luma since the fusion. -> confirmed by the lane (`prop_conf()` reads LUMA_A_E for both directions); REPAIRS L11, a
+  variant and a ladder gate next. Outcome: open (whether it costs picture is the gate's question).
 
 ## The set-aside pulls
 

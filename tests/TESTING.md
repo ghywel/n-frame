@@ -2606,3 +2606,32 @@ its V2 and H2 sat on the wall; on the object's crop the recommendation and the q
 headline set, where on the frozen set the quad led by 0.27. Numbers before 2026-10-22 are frozen-42 numbers; compare
 like with like.
 
+## The patch gains `pair_changed` in `//!WHEN` and `//!STICKY` (2026-10-22, Gareth's decision 4)
+
+Gareth: "The patch change seems like a good idea but is beyond my decision making ability. Proceed with this one as you
+see fit." The swarm's cost lane had proposed letting `//!WHEN` see `pair_changed`, so the passes whose work depends only
+on the window of source frames (every pass that begins `if (!pair_changed) return imageLoad(cache)`) are not dispatched
+on the outputs that reuse it, and estimated it bounded rather than byte-identical, because a skipped pass's `//!SAVE`
+texture vanishes from the frame (libplacebo forgets saved names every frame) and the passes reading it would need to read
+the storage cache instead. A different design keeps it byte-identical: `//!STICKY`. A sticky pass renders into a texture
+of its own, created with exactly the parameters of the texture the renderer would have given it, and when its
+`//!WHEN` is false the texture is offered again under its name, so a reader sees the last bits the pass wrote, which for
+a pass that only returns its cache on a reused window are the bits it would have written. Stage 1, the patch, is in
+`frame-mix-hook.patch` (regenerated from the patched tree; it reproduces the tree byte for byte from a clean 285d1cc8):
+
+- `tests/probes/sticky/sticky_live.sh`, 24 -> 60, 240 outputs: the hook with its first pass `//!WHEN pair_changed` +
+  `//!STICKY` against the same hook without them, **identical on every output**; the skip without `//!STICKY`
+  breaks the hook (the reading pass finds no texture and libplacebo disables the hook), the counterfactual; a frame
+  counter written by the skipped pass stays frozen on **145 of 239** outputs (61%, the windows reused at 24 -> 60).
+  The probe's first run compared a shader that had failed to compile (a blank line inside its header ended the header,
+  and libplacebo mixed with its own mixer): it now refuses any render that did not run its hook.
+- The shipped shaders use neither feature: smoke 18 of 18; the window probe 63 of 63; the recommendation's means on L1,
+  L2, O5 and P1 equal to the hundredth against last night's renders. Their per-frame logs are not byte-identical, but
+  neither are two runs of the same build on the M5 (run 1 against run 2 differs, run 2 against run 3 matches), so on
+  this host byte identity has no working control and the magnitude bound is the test; byte identity is the Arc's to
+  read when its container is rebuilt at the new pins (owed).
+
+Stage 2 is a generator switch that marks the pair-cached passes with both directives, gated like the prune (the Arc,
+42 of 42, every tier); stage 3 the same semantics in the Metal engine (its own `//!WHEN` evaluation), through lockstep.
+Shipping it in Cadence is the owner's.
+

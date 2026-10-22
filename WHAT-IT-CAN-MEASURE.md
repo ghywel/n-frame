@@ -117,3 +117,18 @@ scenes did not show:
 - divergence at about 0.6.
 Acceleration and jerk on real content are still unmeasured. The answer key (a 30 fps skeleton, 0.4 px floor) cannot
 resolve them yet.
+
+**The per-texel uncertainty map, chosen 2026-10-22.** Gareth, on the swarm's proposal: "sounds interesting, but I have
+no knowledge what this would be useful for. It sounds like a useful tool to have regardless." What it is for: the
+field reports one number per texel and nothing about whether to trust it, so a confident wrong reading (the cage, the
+railing, the print behind a still window, where the recommendation locks one wrong alias with no doubt at all) and a
+right one look the same. A puppet driven by the field could hold its last trusted pose instead of snapping; the player
+could warp where the field is trusted and blend where it is not, the gate the record has wanted since the cage; a mean
+could be weighted and a gross reading flagged; and any downstream user (a filter, a tracker) needs an error bar with
+each reading. The design (`swarm/2026-10-21/uncertainty.md`) separates NOISE (how far off a right reading is) from
+AMBIGUITY (whether a different reading fits as well), because the lock that matters reads low noise and must be caught
+by the second; most of its inputs exist already (the carry's stored margins, the sext's least-squares residual, the
+forward-backward agreement the N-frame shaders compute, the cage's coherence support). It becomes an instrument only
+when calibrated: predicted against measured per-texel error on the ladder's exact truth, monotone and right in scale,
+with a counterfactual that must fail. Not built yet; the first step is reading out the cues that exist and scoring them.
+

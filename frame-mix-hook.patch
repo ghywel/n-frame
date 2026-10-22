@@ -113,7 +113,7 @@ index a4eec69..d092c0c 100644
      // updated at any time by the user, to influence the behavior of the hook.
      // Contents are arbitrary and subject to the method of hook construction.
 diff --git a/src/renderer.c b/src/renderer.c
-index df206b2..0273336 100644
+index 809b2ee..a600da0 100644
 --- a/src/renderer.c
 +++ b/src/renderer.c
 @@ -16,6 +16,7 @@
@@ -164,7 +164,7 @@ index df206b2..0273336 100644
      {0}
  };
  
-@@ -3793,6 +3820,89 @@ static struct params_info render_params_info(const struct pl_render_params *para
+@@ -3885,6 +3912,89 @@ static struct params_info render_params_info(const struct pl_render_params *para
  
  #define MAX_MIX_FRAMES 16
  
@@ -254,7 +254,7 @@ index df206b2..0273336 100644
  bool pl_render_image_mix(pl_renderer rr, const struct pl_frame_mix *images,
                           const struct pl_frame *ptarget,
                           const struct pl_render_params *params)
-@@ -3834,8 +3944,72 @@ bool pl_render_image_mix(pl_renderer rr, const struct pl_frame_mix *images,
+@@ -3926,8 +4036,72 @@ bool pl_render_image_mix(pl_renderer rr, const struct pl_frame_mix *images,
      int fidx = 0;
      struct cached_frame frames[MAX_MIX_FRAMES];
      float weights[MAX_MIX_FRAMES];
@@ -327,7 +327,7 @@ index df206b2..0273336 100644
      // Garbage collect the cache by evicting all frames from the cache that are
      // not determined to still be required
      for (int i = 0; i < rr->frames.num; i++)
-@@ -3884,6 +4058,21 @@ retry:
+@@ -3976,6 +4150,21 @@ retry:
                  continue;
              }
  
@@ -349,7 +349,7 @@ index df206b2..0273336 100644
          // For backwards compatibility, treat !kernel as oversample
          } else if (!mixer.kernel || mixer.kernel == &pl_filter_function_oversample) {
  
-@@ -4078,6 +4267,7 @@ inter_pass_error:
+@@ -4170,6 +4359,7 @@ inter_pass_error:
          pl_assert(fidx < MAX_MIX_FRAMES);
          frames[fidx] = *f;
          weights[fidx] = weight;
@@ -357,7 +357,7 @@ index df206b2..0273336 100644
          wsum += weight;
          fidx++;
      }
-@@ -4102,6 +4292,105 @@ inter_pass_error:
+@@ -4194,6 +4384,105 @@ inter_pass_error:
          goto retry;
      }
  
@@ -464,10 +464,34 @@ index df206b2..0273336 100644
      pass_begin_frame(&pass);
      pass.info.count = fidx;
 diff --git a/src/shaders/custom_mpv.c b/src/shaders/custom_mpv.c
-index 1c93da5..ddc5df3 100644
+index 1c93da5..1525b7e 100644
 --- a/src/shaders/custom_mpv.c
 +++ b/src/shaders/custom_mpv.c
-@@ -870,6 +870,9 @@ static enum pl_hook_stage mp_stage_to_pl(pl_str stage)
+@@ -73,6 +73,11 @@ struct custom_shader_hook {
+     bool offset_align;
+     int comps;
+ 
++    // N-frame (2026-10-22): `//!STICKY`. The pass renders into a texture of its own that persists across output
++    // frames, and when its `//!WHEN` condition is false the texture is offered again under the pass's `//!SAVE` name,
++    // so the passes that read it see the last value it rendered instead of no texture at all.
++    bool sticky;
++
+     // Special expressions governing the output size and execution conditions
+     struct shexp width[MAX_SHEXP_SIZE];
+     struct shexp height[MAX_SHEXP_SIZE];
+@@ -254,6 +259,11 @@ static bool parse_hook(pl_log log, pl_str *body, struct custom_shader_hook *out)
+             continue;
+         }
+ 
++        if (pl_str_eatstart0(&line, "STICKY")) {
++            out->sticky = true;
++            continue;
++        }
++
+         if (pl_str_eatstart0(&line, "COMPONENTS")) {
+             if (!pl_str_parse_int(pl_str_strip(line), &out->comps)) {
+                 pl_err(log, "Error parsing COMPONENTS: '%.*s'", PL_STR_FMT(line));
+@@ -870,6 +880,9 @@ static enum pl_hook_stage mp_stage_to_pl(pl_str stage)
      if (pl_str_equals0(stage, "OUTPUT"))
          return PL_HOOK_OUTPUT;
  
@@ -477,7 +501,7 @@ index 1c93da5..ddc5df3 100644
      return 0;
  }
  
-@@ -896,6 +899,7 @@ static pl_str pl_stage_to_mp(enum pl_hook_stage stage)
+@@ -896,6 +909,7 @@ static pl_str pl_stage_to_mp(enum pl_hook_stage stage)
      case PL_HOOK_SCALED:        return pl_str0("SCALED");
      case PL_HOOK_PRE_OUTPUT:    return pl_str0("PREOUTPUT");
      case PL_HOOK_OUTPUT:        return pl_str0("OUTPUT");
@@ -485,7 +509,37 @@ index 1c93da5..ddc5df3 100644
      };
  
      pl_unreachable();
-@@ -1230,6 +1234,28 @@ static void save_pass_tex(struct hook_priv *p, struct pass_tex ptex)
+@@ -904,6 +918,14 @@ static pl_str pl_stage_to_mp(enum pl_hook_stage stage)
+ struct hook_pass {
+     enum pl_hook_stage exec_stages;
+     struct custom_shader_hook hook;
++
++    // `//!STICKY` state (see custom_shader_hook.sticky): the pass's own texture and the metadata it was saved with
++    pl_tex sticky_tex;
++    pl_rect2df sticky_rect;
++    struct pl_color_repr sticky_repr;
++    struct pl_color_space sticky_color;
++    int sticky_comps;
++    bool sticky_valid;
+ };
+ 
+ struct pass_tex {
+@@ -993,6 +1015,14 @@ static bool lookup_tex(struct hook_ctx *ctx, pl_str var, float size[2])
+ static bool lookup_var(struct hook_ctx *ctx, pl_str var, float *val)
+ {
+     struct hook_priv *p = ctx->priv;
++
++    // N-frame (2026-10-22): the FRAME_MIX hook's `pair_changed` (whether the window of source frames differs from the
++    // previous output's) as a `//!WHEN` variable, so a pass whose work depends only on the window can be skipped on the
++    // outputs that reuse it; with `//!STICKY` its result stays bound for the passes that read it.
++    if (pl_str_equals0(var, "pair_changed") && ctx->params->stage == PL_HOOK_FRAME_MIX) {
++        *val = ctx->params->pair_changed ? 1.0f : 0.0f;
++        return true;
++    }
+     for (int i = 0; i < p->hook_params.num; i++) {
+         const struct pl_hook_par *hp = &p->hook_params.elem[i];
+         if (pl_str_equals0(var, hp->name)) {
+@@ -1230,6 +1260,28 @@ static void save_pass_tex(struct hook_priv *p, struct pass_tex ptex)
      PL_ARRAY_APPEND(p->alloc, p->pass_textures, ptex);
  }
  
@@ -514,7 +568,37 @@ index 1c93da5..ddc5df3 100644
  static struct pl_hook_res hook_hook(void *priv, const struct pl_hook_params *params)
  {
      struct hook_priv *p = priv;
-@@ -1279,6 +1305,64 @@ static struct pl_hook_res hook_hook(void *priv, const struct pl_hook_params *par
+@@ -1258,7 +1310,7 @@ static struct pl_hook_res hook_hook(void *priv, const struct pl_hook_params *par
+     }
+ 
+     for (int n = 0; n < p->hook_passes.num; n++) {
+-        const struct hook_pass *pass = &p->hook_passes.elem[n];
++        struct hook_pass *pass = &p->hook_passes.elem[n];
+         if (!(pass->exec_stages & params->stage))
+             continue;
+ 
+@@ -1272,13 +1324,84 @@ static struct pl_hook_res hook_hook(void *priv, const struct pl_hook_params *par
+             goto error;
+ 
+         if (!run) {
+-            PL_TRACE(p, "Skipping hook due to condition");
++            if (hook->sticky && hook->save_tex.len && pass->sticky_valid) {
++                save_pass_tex(p, (struct pass_tex) {
++                    .name  = hook->save_tex,
++                    .tex   = pass->sticky_tex,
++                    .rect  = pass->sticky_rect,
++                    .repr  = pass->sticky_repr,
++                    .color = pass->sticky_color,
++                    .comps = pass->sticky_comps,
++                });
++                PL_TRACE(p, "Skipping hook due to condition; its sticky texture stays bound as '%.*s'",
++                         PL_STR_FMT(hook->save_tex));
++            } else {
++                PL_TRACE(p, "Skipping hook due to condition");
++            }
+             continue;
+         }
+ 
          // Generate a new shader object
          sh = pl_dispatch_begin(params->dispatch);
  
@@ -579,7 +663,7 @@ index 1c93da5..ddc5df3 100644
          // Bind all necessary input textures
          for (int i = 0; i < PL_ARRAY_SIZE(hook->bind_tex); i++) {
              pl_str texname = hook->bind_tex[i];
-@@ -1305,6 +1389,33 @@ static struct pl_hook_res hook_hook(void *priv, const struct pl_hook_params *par
+@@ -1305,6 +1428,33 @@ static struct pl_hook_res hook_hook(void *priv, const struct pl_hook_params *par
                  mainpresub = true;
              }
  
@@ -613,7 +697,40 @@ index 1c93da5..ddc5df3 100644
              for (int j = 0; j < p->descriptors.num; j++) {
                  if (pl_str_equals0(texname, p->descriptors.elem[j].desc.name)) {
                      // Directly bind this, no need to bother with all the
-@@ -1633,6 +1744,11 @@ const struct pl_hook *pl_mpv_user_shader_parse(pl_gpu gpu,
+@@ -1478,6 +1628,17 @@ static struct pl_hook_res hook_hook(void *priv, const struct pl_hook_params *par
+             goto error;
+         }
+ 
++        if (hook->sticky && hook->save_tex.len) {
++            // The same parameters as the texture the renderer would have used (format, size, usage), so the pass
++            // writes the same bits; only the owner differs, and the texture outlives the frame.
++            struct pl_tex_params tp = fbo->params;
++            if (!pl_tex_recreate(p->gpu, &pass->sticky_tex, &tp)) {
++                PL_ERR(p, "Failed creating the texture for sticky pass '%.*s'", PL_STR_FMT(hook->save_tex));
++                goto error;
++            }
++            fbo = pass->sticky_tex;
++        }
++
+         bool ok;
+         if (hook->is_compute) {
+ 
+@@ -1568,6 +1729,14 @@ static struct pl_hook_res hook_hook(void *priv, const struct pl_hook_params *par
+ 
+         save_pass_tex(p, ptex);
+ 
++        if (hook->sticky && hook->save_tex.len) {
++            pass->sticky_rect  = ptex.rect;
++            pass->sticky_repr  = ptex.repr;
++            pass->sticky_color = ptex.color;
++            pass->sticky_comps = ptex.comps;
++            pass->sticky_valid = true;
++        }
++
+         // Update the result object, unless we saved to a different name
+         if (pl_str_equals(ptex.name, stage)) {
+             ctx.hooked = ptex;
+@@ -1633,6 +1802,11 @@ const struct pl_hook *pl_mpv_user_shader_parse(pl_gpu gpu,
      }
      shader = pl_str_drop(shader, pos);
  
@@ -625,7 +742,7 @@ index 1c93da5..ddc5df3 100644
      // Loop over the file
      while (shader.len > 0)
      {
-@@ -1682,6 +1798,9 @@ const struct pl_hook *pl_mpv_user_shader_parse(pl_gpu gpu,
+@@ -1682,6 +1856,9 @@ const struct pl_hook *pl_mpv_user_shader_parse(pl_gpu gpu,
              p->save_stages |= mp_stage_to_pl(h.bind_tex[i]);
              if (pl_str_equals0(h.bind_tex[i], "HOOKED"))
                  p->save_stages |= pass.exec_stages;
@@ -635,7 +752,7 @@ index 1c93da5..ddc5df3 100644
          }
  
          // As an extra precaution, this avoids errors when trying to run
-@@ -1718,6 +1837,14 @@ const struct pl_hook *pl_mpv_user_shader_parse(pl_gpu gpu,
+@@ -1718,6 +1895,14 @@ const struct pl_hook *pl_mpv_user_shader_parse(pl_gpu gpu,
      hook->parameters = p->hook_params.elem;
      hook->num_parameters = p->hook_params.num;
  
@@ -650,3 +767,12 @@ index 1c93da5..ddc5df3 100644
      PL_MSG(gpu, PL_LOG_DEBUG, "Loaded user shader:");
      pl_msg_source(gpu->log, PL_LOG_DEBUG, shader_text);
  
+@@ -1738,6 +1923,8 @@ void pl_mpv_user_shader_destroy(const struct pl_hook **hookp)
+         return;
+ 
+     struct hook_priv *p = PL_PRIV(hook);
++    for (int i = 0; i < p->hook_passes.num; i++)
++        pl_tex_destroy(p->gpu, &p->hook_passes.elem[i].sticky_tex);
+     for (int i = 0; i < p->descriptors.num; i++) {
+         switch (p->descriptors.elem[i].desc.type) {
+             case PL_DESC_BUF_UNIFORM:

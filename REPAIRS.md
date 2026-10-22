@@ -149,6 +149,27 @@ in fp16) reads every constant within 0.0006 px: the lift costs no pass. The math
 hop earlier (SUBPEL_REFINE flows are rounded to 1/64-1/32 px in FLOW_H_AB itself), so lifting the readback alone
 exposes that one next. The read_view 10 patch is drafted in `swarm/2026-10-21/instruments/readview10.md`.
 
+
+**L11 (2026-10-22). The propagation's B->A twins read the wrong frame's contrast, in the bases every N-frame shader is
+built on.** Gareth, on pruning the bases: "The bases are probably the most critical shaders, since problems in the base
+are iterated to the procedurally generated." The census before any build (the swarm's cost lane, CPU;
+`swarm/2026-10-21/cost.md`, `swarm/2026-10-21/cost/bases/mirror.py`): the base has 6 dead passes of 22 at read_view 0
+(27%), -seeded 1 of 20, -propagated and -animation 1 of 24 whole (more with their fused twins). To see whether the
+N-frame generators could synthesise the B->A chain from the A->B one (so the bases could be pruned in place), every dead
+twin was compared with the mirror of its A->B pass: identical in the base and -seeded, and in -propagated and -animation
+for the refines, the second median, the three-way check's twin and the first median's twin; but **the three propagation
+twins differ**. Both directions share one `prop_conf()` that reads `LUMA_A_E`, frame A's contrast at frame B's texel,
+where the mirror (and the neighbouring three-way check's own `prop_conf_ba`) reads `LUMA_B_E`. It predates the pass
+fusion, no comment explains it, and it reaches the picture wherever B->A is live: the High tier (the print lattice's
+B->A inputs) and every N-frame shader (the tri, quad, quint and sext inherit it per pair). It is dead in the
+recommendation and the Low tier. *Prediction:* the corrected read (one line per pass) moves the High tier and the quad
+on textured cases with asymmetric contrast between frames (accelerating or occluding content) and leaves the rest
+within noise. *Refuted by:* no case moving more than the host's noise. *Next:* the corrected bases as a variant, the
+ladder (headline and region) on High and the quad, then the owner's call on the shipped files. The pruning itself:
+route A (synthesis by mirror) would have to reproduce this drift to stay byte-identical, so it is closed; route B moves
+the editable bases to `shaders/src/` and generates the shipped bases from them pruned (about twelve edits); it follows
+the drift's fix, so the fix is made once, in the source.
+
 ---
 
 ## 2026-10-04: wrong comments across the family, one stale generated file, one generator anchor

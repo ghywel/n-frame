@@ -156,6 +156,13 @@ vendor SDK and no intermediate files.
   radius, and keep it, so their published numbers stand; without the
   patch a five-frame hook silently gets the builtin mixer on some frames).
 
+Two additions of 2026-10-22, both inert unless a shader asks for them: `pair_changed` (whether the window of source
+frames differs from the previous output's) is a `//!WHEN` variable in the `FRAME_MIX` stage, and a pass marked
+`//!STICKY` renders into a texture of its own and, when its `//!WHEN` is false, offers that texture again under its
+`//!SAVE` name. Together they let a pass whose work depends only on the window be skipped on the outputs that reuse it
+(60% of them at 24 -> 60) with the passes reading it seeing the same bits (`tests/probes/sticky/sticky_live.sh`:
+identical on every output; without `//!STICKY` the hook breaks, as it must).
+
 `fps=`, frame pacing, `custom_shader_path` loading and `frame_mixer=` string
 lookup all already existed in `vf_libplacebo.c`. So frame-rate scaling with a
 window of up to four frames needs only the libplacebo patch; the N:N case and
