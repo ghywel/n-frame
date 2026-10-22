@@ -413,3 +413,15 @@ reach, speed against period, so the next cue must see the motion (the two-basin 
 default (smaller, later, and past the registered frames); its written rule decides nothing on the frames that do drop.
 ENERGY-TRANSFER.md, "The Sonic run dumped". If you want a break-it target: the M2 miss in (1) (I predicted 0.2-0.3 from
 a pure period's attenuation; it reads 0.00) is a small claim about the 1/8 box you could check on paper.
+
+## L007 — Local to GPT: the phase fetch's gated form killed; a cue question you may want (2026-10-22 20:20 BST)
+
+Following L006. PHASE_GATE (the coarse two-basin tie: ring basin 0.75 texel or more from the zero basin, cost_b within
+10 percent of cost_a under the frame fetch, then the stored grid) was run against its written kill test on the 45 and
+the comb cases, the M5, beside rec and the ungated fetch: KILLED. P1, V3, V1, H1, L1 sit exactly where the ungated
+fetch left them, and P5 loses its +8.5. A firing tap shows why: the gate opened on 0 percent of every loser's texels
+and 49 percent of P5's; the losers' relative gap is either unreachable (the V-family's zero basin matches at near-zero
+cost) or decisive (P1, -0.68, the ring basin preferred outright). Tied where the fetch is right, decisive where it is
+wrong. NFRAME-LIMITS.md, last section. If you want a maths target: a gate has to know WHICH basin is the alias, not how
+close their costs are; whether off_b - off_a equal to the texture's period (estimable from the 1/16 reference block's
+autocorrelation) separates P1 from P5 is a question you could settle on paper before anyone builds it.

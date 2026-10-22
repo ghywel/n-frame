@@ -5376,3 +5376,39 @@ content-only cue for the phase fetch's gate; do not retry `moire_s` or any other
 fetch's trade is through reach, which depends on speed against period (the item-10 reading above), so the gate must see
 the motion: the next build is the lane's two-basin tie cue (the ring basin 0.75 texel or more from the zero basin with
 costs within 10 percent under the frame fetch, take the stored grid), with the kill test already written beside it.
+
+### The phase fetch gated by the two-basin tie: KILLED, and the tie is not where the alias is (2026-10-22, evening)
+
+`PHASE_GATE=1` (with `PHASE_FETCH=1`; `tests/phase_fetch.py`): after the coarse pass's three descents under the frame
+fetch, where the ring basin lies 0.75 coarse texel or more from the zero basin and cost_b is within 10 percent of
+cost_a, the descents run again on the stored grid and the texel keeps that result. The wildcard lane's design and kill
+test, verbatim, pre-registered with a timestamp before any render (`np-scratch/phasegate-20261022/PREREG.md`), with
+one risk named: on exact periods both basins can match at near-zero SAD, so a relative tie may never fire. The M5, one
+sitting, rec, phase and gate side by side (rec and phase reproduced the night's numbers to the hundredth).
+
+| case | rec | phase | gate | the test |
+|---|---|---|---|---|
+| P1_stairs_along_v4 | 45.25 | 38.58 | 38.58 | -6.67, over 1.0 below: KILL |
+| V3_stairs_sq24_v12 | 26.46 | 21.08 | 21.08 | -5.38: KILL |
+| V1_bars_sine24_v6 | 55.72 | 52.74 | 52.74 | -2.98: KILL |
+| H1_bars_sine24_h6 | 55.64 | 53.16 | 53.15 | -2.49: KILL |
+| L1_trans_8px | 65.69 | 63.49 | 63.49 | -2.20: KILL |
+| L7_textured_large | 23.57 | 43.29 | 41.30 | keeps 90% of the gain |
+| P5_stairs_along_v8_alias | 41.88 | 50.38 | 42.08 | keeps 2%: KILL |
+| M2_period40, L6_flat_large | 52.02, 48.75 | 59.19, 54.92 | 59.18, 54.92 | keep all |
+| capped mean (frozen 42) | 38.05 | 38.36 | 38.36 | over 38.26: holds |
+| M1c_noise_v12 | 28.61 | 28.71 | 28.71 | unchanged |
+
+**Why, read from the gate's own inputs** (`tests/probes/phasefetch/gate_fire.py`: the A->B decision, its separation
+and its relative gap (cost_b - cost_a) / cost_a per coarse texel, in each box, frames 4-19). The gate opened on 0.0
+percent of every loser's texels and on 48.8 percent of P5's. Two basins were found almost everywhere (P1 98%, V3 96%,
+V1 and H1 50%), so the separation is not the problem; the tie is. On V3, V1, H1 (and M1c) the gap is at the tap's +3.1
+ceiling: the zero basin matches the exact period at a cost near zero, so any relative test is unreachable (the named
+risk, confirmed). On P1 the ring basin wins outright (gap -0.68, every quartile): the frame fetch prefers the second
+basin decisively, which is no tie. On P5 the two basins genuinely tie (median +0.03), and there the fetch's answer was
+the right one, so the gate removed it. **REFUTED: the coarse two-basin cost tie as the phase fetch's gate; do not retry
+a relative cost tie between the zero and ring descents for it.** The cue's sign is backwards on these cases: where the
+fetch loses, its preference is decisive (or the zero basin is exact), and where it is tied, the fetch is right. A
+working gate would have to know which basin is the alias, not how close they are: the separation against the texture's
+own period (off_b - off_a equal to a period), or the 1/8 level's alias basins (ALIAS_CARRY's), are the candidates, on
+paper first. The switch stays in the repository, off, byte-identical when off (smoke 19/19).

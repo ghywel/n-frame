@@ -548,6 +548,12 @@ LOCAL_CENTRE = os.environ.get("LOCAL_CENTRE", "0") == "1"
 # reference taps, gates, descents and ring are unchanged; no new pass, no new candidate; the pass binds the two frames.
 # Without the variable the output is byte-identical.
 PHASE_FETCH = os.environ.get("PHASE_FETCH", "0") == "1"
+# PHASE_GATE=1 (2026-10-22; with PHASE_FETCH=1; tests/phase_fetch.py's docstring): the fetch only where no period alias
+# is in reach. Where the coarse pass's ring basin lies 0.75 texel or more from its zero basin with cost_b within 10
+# percent of cost_a under the frame fetch, the three descents run again on the stored grid and that result is kept.
+# KILLED 2026-10-22 by its pre-registered test (NFRAME-LIMITS.md): a documented switch, off. Without the variable the
+# output is byte-identical.
+PHASE_GATE = os.environ.get("PHASE_GATE", "0") == "1"
 # PRUNE=1 (2026-10-21, the swarm's cost lane; tests/prune_passes.py; REPAIRS.md L7): the very last step, after the
 # reading tail is appended: remove the whole passes whose work no live pass can observe, following //!SAVE/BIND and
 # the storage images' imageStore/imageLoad (dead_passes.py's SAVE/BIND-only view cut live producers). PRUNE=2 also
@@ -866,9 +872,10 @@ if __name__ == "__main__":
     if LOCAL_CENTRE:
         import local_centre
         text = local_centre.add(text, global_seed=GLOBAL_SEED)
+    assert PHASE_FETCH or not PHASE_GATE, "PHASE_GATE gates the phase fetch: it needs PHASE_FETCH=1"
     if PHASE_FETCH:                 # after COARSE_ENERGY, whose rewrite of the SAD lines it recognises
         import phase_fetch
-        text = phase_fetch.add(text)
+        text = phase_fetch.add(text, gate=PHASE_GATE)
     if ALIAS_PRIOR or ALIAS_CARRY:
         import alias_carry
         if ALIAS_PRIOR:
@@ -896,7 +903,7 @@ if __name__ == "__main__":
         + (f"EDGE_PROP=1 EDGE_PROP_TAU={EDGE_PROP_TAU:g} " if EDGE_PROP else "") \
         + (f"COARSE_ENERGY=1 COARSE_ENERGY_WS={COARSE_ENERGY_WS:g} COARSE_ENERGY_WE={COARSE_ENERGY_WE:g} " if COARSE_ENERGY else "") \
         + ("LOCAL_CENTRE=1 " if LOCAL_CENTRE else "") \
-        + ("PHASE_FETCH=1 " if PHASE_FETCH else "") \
+        + ("PHASE_FETCH=1 " if PHASE_FETCH else "") + ("PHASE_GATE=1 " if PHASE_GATE else "") \
         + ("ALIAS_PRIOR=1 " if ALIAS_PRIOR else "") + ("ALIAS_CARRY=1 " if ALIAS_CARRY else "") \
         + ("OUTLINE_ADOPT=1 " if OUTLINE_ADOPT else "") \
         + ("PRINT_LATTICE=1 " if PRINT_LATTICE else "") \

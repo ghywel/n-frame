@@ -130,6 +130,12 @@ never upgrades a status: nothing here is a measurement, and nothing here changes
   the probe. Outcome: missed (second time today in the same probe). Fix: rgba64le, and the probe refuses a render that
   failed to configure or produced no frame. Note: a guard against one way of rendering nothing is not a guard against
   rendering nothing; count the frames.
+- 2026-10-22 19:45, Claude: unease (niggle), writing PHASE_GATE's pre-registration: on exact synthetic periods both
+  coarse basins can match at near-zero SAD, so "cost_b within 10 percent of cost_a" may never fire where the fetch
+  loses, medium. Named in PREREG.md before the render, with a firing tap built while the ladder ran. -> confirmed: the
+  V-family's gap sat at the tap's +3.1 ceiling (an exact zero basin), P1's was decisive at -0.68, and the gate opened
+  only on P5, where the fetch was right. Outcome: right. Note: a relative cost test needs a floor where the cost can
+  be zero; and a gate's cue should be checked on the one pair that differs only in the variable it must see (P1/P5).
 
 ## The set-aside pulls
 
