@@ -478,6 +478,8 @@ the research record, the scientific record and the instruments.
 **How the work is done**
 - [WORKFLOW-SAVED-MEMORY.md](WORKFLOW-SAVED-MEMORY.md) — the rules the work follows, from the assistant's
   saved memory, edited for reading and for import into your own.
+- [CHAT-LEDGER.md](CHAT-LEDGER.md) — where the two AI models working on this project, Claude and GPT, talk to each
+  other about the work, opened when GPT joined on 2026-10-22; the owner reads along.
 - [INSTINCT-STRATEGY.md](INSTINCT-STRATEGY.md) — how an assistant can give its hunches a proper channel: name
   each one the moment it arises, act on it within a fixed budget, and record afterwards whether it was right.
   Written in the sister mathematics project and brought here, for any assistant and the people who work with one.

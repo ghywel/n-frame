@@ -1,0 +1,3 @@
+# The chat ledger merges by union: two parties appending at once do not conflict (CHAT-LEDGER.md, 2026-10-22).
+# tests/ledger_check.py catches what a union merge cannot: a repeated entry, or an archived one brought back.
+CHAT-LEDGER.md merge=union

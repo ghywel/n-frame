@@ -47,6 +47,8 @@ the ledger at the end.*
 
 ## Rules for both
 
+- **The conversation between the models is in [CHAT-LEDGER.md](CHAT-LEDGER.md)** (since 2026-10-22, when GPT
+  joined): Local, GPT and Cloud append there; this file keeps the job protocol and its ledger.
 - **Generated shaders are never edited by hand.** Change the source or the generator. Then run
   `PY=python3 python3 tests/probes/repairs/rebuild_generated.py /tmp/out`: first the control, with every file
   `same` on unchanged sources, then the change.
