@@ -57,6 +57,10 @@ are Gaussian, equicorrelated or small enough to linearize everywhere.
 For a vector derivative estimate q, at a specified anchor pixel, timestamp, source-interval duration and derivative
 order, define error e = q_hat - q_true. Three quantities have different meanings:
 
+The error population must be stated: different texture locations, phases, scenes or independent captures. Repeating
+an identical deterministic GPU render measures reproducibility, not the estimator's error covariance. A stable,
+repeatable wrong answer can have zero run-to-run variance and substantial error against truth.
+
 - **Covariance C**, a 2x2 matrix of centred errors, with units squared. A filter needs this together with an estimate
   of systematic bias. In an aperture case the uncertainty can be large along one direction and small along the other.
 - **Per-axis sigma**, meaningful as one scalar only under an isotropic covariance model C = sigma^2 I.
@@ -179,7 +183,8 @@ scale: a single residual direction is intrinsically sparse information.
 does not change; the reported derivative changes by `l delta_beta`. In particular, `e_i=b tau_i` respects the exact
 anchor, leaves the residual unchanged, and biases velocity by b. Similarly, adding covariance `lambda g g^T`, with
 `g_i=tau_i`, leaves expected SSE unchanged while adding lambda to anchor velocity variance. No residual-only rule
-can supply a universally valid finite derivative bound over this class of errors. A prior/model or independent cues
+can supply a universally valid finite derivative bound over this class without an external bound on that error.
+A prior/model or independent cues
 can constrain it. The existing empirical ranking remains valuable within its measured population.
 
 For an efficient fixed Gaussian fit, coefficient noise and residual noise can even be independent. A spatial ranking
@@ -256,3 +261,109 @@ uncertainty propagation to this estimator, not a novelty claim.
   by a calibration, so the general sandwich propagation is retained.
 - Sciacchitano's 2019 PIV uncertainty review is already cited in PRIOR-ART.md. Retrieval of its full PDF failed during
   this block; no new theorem or quantitative claim here is attributed to that unread PDF.
+
+
+## Block 2: a frozen scalar calibration on the existing dumps
+
+**Pre-registration:** CHAT-LEDGER G004, merged before the samples were read. Train on M2c_period40_v10,
+A4_accel_tex_a033 and O6_osc_tex_gentle; freeze one multiplier k; hold out O5_osc_textured, O9_osc_tex_fast and
+O10_osc_tex_tiny. Every held-out case must have 68-percent-radius coverage in [0.63,0.73]. This is a fidelity gate,
+not a one-sided minimum-coverage gate. The held-out cases use the same texture and rendering path: they test motion
+regime transfer, not independent texture or real-camera transfer.
+
+**Reproducer:** [saved_calibration.py](saved_calibration.py), CPU only:
+
+```sh
+python3 tests/probes/uncertainty/saved_calibration.py "$NP_SCRATCH/uncertainty/sext_resid" \
+    --out "$NP_SCRATCH/uncertainty/maths-20261022/saved-calibration.json"
+```
+
+The truncated-input counterfactual is also reproducible:
+
+```sh
+python3 tests/probes/uncertainty/saved_calibration.py "$NP_SCRATCH/uncertainty/sext_resid" \
+    --check-short-input --out "$NP_SCRATCH/uncertainty/maths-20261022/input-control.json"
+```
+
+It supplies a one-frame m10 beside two complete 60-frame files to the full scoring CLI. Measured: exit 1 with the
+expected frame-count error, and no calibration JSON written. The tracked control passes only on that refusal.
+
+The completed existing dumps were rendered by Local on 2026-10-22. The probe verifies all three raw modes have
+60 frames, inspects their error logs and saved shader source, records source hashes and input sizes/timestamps,
+checks the split encoding and flags, and rechecks 10 px/frame translation and zero background. It reads mode 11's
+**green true-pixel residual**, not the legacy red channel's old units. Source and data are not modified.
+
+**Instrument outcome:** all checks pass. Translation median fitted velocity (9.99612,-0.00195), forward chord
+(10.00003,0), background median zero in every case. Anchor alignment beats neighboring instants on every nonconstant
+case. For each case, 4,096 uniformly selected interior pixels per frame over frames 6-59 give **221,184 requested
+samples**, or 1,327,104 across six cases. Sampling precedes fit-state filtering; a fixed seed is recorded. This is
+not a claim of that many independent errors.
+
+The scalar baseline uses only accepted **five-link** fits with positive readable residual: `r68=k*rho`. Exact fits,
+failed fits and five-link zero residuals stay in the refusal accounting. Fit k as the training 68th percentile of
+`||error||/rho`; the competing constant radius is the training 68th percentile of `||error||` on the same support.
+No held-out multiplier or floor is fitted. The frozen values are **k=4.482802** and **constant radius 0.133856 px/frame**.
+The multiplier is empirical; it converts displacement residual to a velocity radius for this sampled population.
+
+| Case | Split | Eligible fraction | Residual radius coverage | Constant radius coverage |
+|---|---|---:|---:|---:|
+| M2c | train | 99.656% | 69.320% | 71.333% |
+| A4 | train | 99.240% | 63.784% | 63.108% |
+| O6 | train | 99.516% | 70.882% | 69.541% |
+| O5 | held out | 99.435% | 72.161% | 53.725% |
+| O9 | held out | 95.942% | **75.134%** | 62.274% |
+| O10 | held out | 99.675% | 66.686% | 36.634% |
+
+**Verdict: the specified one-factor transfer hypothesis is refuted.** O9 exceeds the upper coverage limit by 2.134
+percentage points. That is excess coverage, not an undercoverage failure. Do not inflate this modest miss into a
+claim that residual scaling is useless: it improves the constant-radius baseline substantially on O5 and O10.
+The frozen gate was not changed and k was not refitted after seeing the holdout. The program exits **3** for a
+completed, instrument-valid scientific refutation (exit 1 is an input/instrument failure).
+
+**Status matters more than that miss for the gross tail.** At the pre-existing gross threshold >2 px/frame,
+2,655 of the requested samples are gross. Of these, 2,640 (**99.44%**) are outside this residual-based baseline's
+eligible support: 2,631 no fit and 9 exact four-link fits. The other 15 are eligible. Every sampled gross error on O9
+is outside eligible support (1,862 no fit, 9 exact fits). This is a result on these six sampled synthetic interiors,
+not a guarantee that a refusal flag catches all gross errors in another family. It does establish why coverage on
+accepted residuals must not be presented as coverage of the complete field. Zero residuals in five-link fits also
+occur (44 to 761 samples per case) and are counted rather than assigned zero uncertainty.
+
+**One diagnostic within-frame shuffle:** eligible residuals are permuted only among the same frame's eligible pixels.
+On O10, texel rank correlation changes from 0.2342 to 0.2279; coverage changes from 66.686% to 65.361%. This comparison
+suggests much of that case's association is between frames/phase rather than local ranking within one frame. It is
+one descriptive shuffle, not a permutation significance claim or proof of no local information. Its other cases and
+all tail quantiles are in the JSON. O10's frozen-radius normalized 95th percentile is 13.57, another reason to measure
+r95 independently and inspect low-residual/truncation cases rather than assume a Gaussian shape.
+
+After the first result, a reread added the gross-error breakdown by state and stricter flag checks. **Every original
+metric reproduced exactly**, including the frozen k and all coverage values; no new random draws or gate changes
+were introduced. Initial and final JSON files are preserved as `saved-calibration-first.json` and
+`saved-calibration.json` under the maths scratch directory.
+
+## The smallest next export for a covariance check
+
+Existing m10/m11/m12 data contain the final fitted velocity, a scalar residual and fit status; they do not identify
+joint displacement covariance. Re-rendering those same modes cannot supply what is missing. Proposed bounded next
+job, for Local to schedule after its current gate, **not run by this audit**:
+
+- Existing synthetic M2c, A4 and O9, N:N at 24 fps; frames 12,18,24,30,42,54. Keep a known interior support mask and a
+  far-background control. This spans constant velocity, constant acceleration and a richer motion law before a wider
+  validation set. Reserve a new driver/variant builder only; no shipped shader or existing generator edit is needed.
+- At the same pixel in the same source window, export the **five live composed displacement vectors** (two image
+  axes), their five trust weights, actual tc, fit/solve/snap/cut state, and the existing fitted anchor velocity and
+  true-pixel residual. CFR timestamps are global metadata, so they need not consume a channel per pixel; record
+  the actual selected source slots and durations. Snapshot the array values after construction, before the fit.
+- Preserve the proven split encoding. Use a supported high-precision host format and calibrate it first; Local's L002
+  established that an assumed `rgb48le` output fails on Mesa. Never count an empty export as a successful control.
+  If separate diagnostic passes are needed, retain identical estimator passes, hash them, and run repeat controls on
+  the warmed deterministic host so fields at different modes belong to the same estimate.
+- Compute each displacement's exact truth from the scene law at its timestamp. Fit per-group bias and the full
+  displacement-error covariance on training groups, including the exact zero anchor, then propagate through the
+  actual W-dependent h and test on held-out frames/groups. Compare the diagonal counterfactual. Log gradient/selection
+  limits; the translation composition model does not warrant a deformation claim.
+
+That is a **specification**, not an executable GPU job yet. There is no claim that covariance has been fitted from
+these final-field dumps. Before more cues are built, Local can choose whether to implement this export or first ship
+the independent fit-state/refusal readout. The latter already has direct evidence in the recorded sample. The
+proposed 0.4 px floor in the original design belongs to the external skeleton benchmark's truth path; it must not be
+silently adopted as this dense estimator's per-axis noise floor. A truth comparison measures both error sources.
