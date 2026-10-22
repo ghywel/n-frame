@@ -554,6 +554,11 @@ PHASE_FETCH = os.environ.get("PHASE_FETCH", "0") == "1"
 # cuts a fused pass's dead B->A twin (its hook_ba) and the chain that fed only it. Both leave the output byte-identical
 # at every read_view by construction; the gate is the frame-by-frame identity check. 0 = the file as before.
 PRUNE = os.environ.get("PRUNE", "0")
+# STICKY_CACHE=1 (2026-10-22, patch stage 2; tests/sticky_cache.py): every pair-cached pass also gets //!WHEN
+# pair_changed and //!STICKY, so it is not dispatched on a reused window and its readers see its last result. NEEDS the
+# 2026-10-22 patch (a libplacebo without it rejects the file and mixes with its own mixer): a variant, never the shipped
+# default. Applied after PRUNE. Without the variable the output is byte-identical.
+STICKY_CACHE = os.environ.get("STICKY_CACHE", "0") == "1"
 assert PRUNE in ("0", "1", "2"), f"PRUNE={PRUNE}: it is 0 (off), 1 (whole passes) or 2 (whole passes and fused twins)"
 
 
@@ -899,6 +904,7 @@ if __name__ == "__main__":
         + ("CUT_MOTION=1 " if CUT_MOTION else "") \
         + ("ALIAS_APERTURE=0 " if ALIAS_CARRY and not ALIAS_APERTURE else "")     # the zero seed is the recommendation's standing state and the line never named it
     env += f"PRUNE={PRUNE} " if PRUNE != "0" else ""     # recorded so the header can rebuild the file (REPAIRS.md L9)
+    env += "STICKY_CACHE=1 " if STICKY_CACHE else ""
     text = BANNER.format(env=env, spec=spec, alpha=alpha, sigma=sigma,
                          s=s, e=e, q=q, h=h, cost=cost,
                          ms=ms, me=me, mq=mq, mh=mh,
@@ -908,6 +914,10 @@ if __name__ == "__main__":
     if PRUNE != "0":                # the very last step: the tail's passes are liveness roots, so it must already be there
         import prune_passes
         text, _ = prune_passes.prune(text, twins=(PRUNE == "2"), report=sys.stderr)
+    if STICKY_CACHE:                # after the prune, which takes every //!WHEN pass for a liveness root
+        import sticky_cache
+        text, n = sticky_cache.add(text)
+        assert n > 0, "STICKY_CACHE=1 found no pair-cached pass"
     open(out, "w", newline="\n").write(text)
     print(f"{out}: S={s} E={e} Q={q} H={h} med={medspec}  "
           f"HOOK={text.count('//!HOOK')} "

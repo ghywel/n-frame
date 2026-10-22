@@ -471,7 +471,13 @@ def main():
     # which, followed, overwrites the stock quad.
     if CADENCE_BRANCH:
         header = header.replace("//   ./tests/gen_quaddirectional.py", "//   CADENCE=1 ./tests/gen_quaddirectional.py", 1)
-    DST.write_text(READING.add_tail(header + result), newline="\n")
+    text = READING.add_tail(header + result)
+    if os.environ.get("STICKY_CACHE", "0") == "1":   # patch stage 2 (tests/sticky_cache.py): needs the 2026-10-22 patch
+        import sticky_cache
+        text, n = sticky_cache.add(text)
+        assert n > 0, "STICKY_CACHE=1 found no pair-cached pass"
+        text = text.replace("./tests/gen_", "STICKY_CACHE=1 ./tests/gen_", 1)
+    DST.write_text(text, newline="\n")
     print(f"  {DST.name}: {hooks} passes "
           f"({22 + extra} base + 8 slot-2/3 lumas + 2 cut stats + {24 + 2 * extra} pair flow "
           f"+ 4 full-res lumas + 6 full-res refines), braces/parens balanced  OK")

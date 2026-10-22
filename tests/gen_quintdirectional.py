@@ -19,6 +19,7 @@ pre-registered targets: QUINTDIRECTIONAL.md.
 Slot letters are data (SLOTS below); a sixth frame is a list change plus
 the packing arithmetic, not a rewrite.
 """
+import os
 import pathlib
 import re
 import sys
@@ -268,7 +269,13 @@ def main():
         header = header.replace("bidirectional-interpolation.glsl", SRC.name)
         header = header.replace("//   ./tests/gen_quintdirectional.py\n",
                                 f"//   ./tests/gen_quintdirectional.py {DST.name} {SRC.name}\n")
-    DST.write_text(READING.add_tail(header + result), newline="\n")
+    text = READING.add_tail(header + result)
+    if os.environ.get("STICKY_CACHE", "0") == "1":   # patch stage 2 (tests/sticky_cache.py): needs the 2026-10-22 patch
+        import sticky_cache
+        text, n = sticky_cache.add(text)
+        assert n > 0, "STICKY_CACHE=1 found no pair-cached pass"
+        text = text.replace("./tests/gen_", "STICKY_CACHE=1 ./tests/gen_", 1)
+    DST.write_text(text, newline="\n")
     print(f"  {DST.name}: {hooks} passes ({22 + extra} base + 12 slot-2/3/4 lumas + 3 cut stats + "
           f"{36 + 3 * extra} pair flow + 5 full-res lumas + 8 full-res refines + 7 packing), "
           f"final pass binds {fp_binds}, braces/parens balanced  OK")

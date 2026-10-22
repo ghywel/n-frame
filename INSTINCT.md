@@ -124,6 +124,12 @@ never upgrades a status: nothing here is a measurement, and nothing here changes
   luma since the fusion. -> confirmed by the lane (`prop_conf()` reads LUMA_A_E for both directions); REPAIRS L11, a
   variant and a ladder gate next. Outcome: right that it was a defect in form; the gate (same day) found no effect on
   High and a trade on the quad, so it stays a variant, and why the wrong read helps L2 and M2 is a new question.
+- 2026-10-22 16:12, Claude: none felt; the sticky probe's first Arc run printed "DIFFERENT (0 frames)" and "the
+  counterfactual failed", a verdict over nothing: Mesa cannot configure libplacebo's rgb48le output, every render
+  failed, and the guard I added at 11:41 looked only for compile errors. Caught because the line read absurd, not by
+  the probe. Outcome: missed (second time today in the same probe). Fix: rgba64le, and the probe refuses a render that
+  failed to configure or produced no frame. Note: a guard against one way of rendering nothing is not a guard against
+  rendering nothing; count the frames.
 
 ## The set-aside pulls
 

@@ -161,7 +161,9 @@ frames differs from the previous output's) is a `//!WHEN` variable in the `FRAME
 `//!STICKY` renders into a texture of its own and, when its `//!WHEN` is false, offers that texture again under its
 `//!SAVE` name. Together they let a pass whose work depends only on the window be skipped on the outputs that reuse it
 (60% of them at 24 -> 60) with the passes reading it seeing the same bits (`tests/probes/sticky/sticky_live.sh`:
-identical on every output; without `//!STICKY` the hook breaks, as it must).
+identical on every output; without `//!STICKY` the hook breaks, as it must; the same on the M5, the NAS's Arc and the
+Intel Mac). The generators' `STICKY_CACHE=1` marks every such pass in a shader (`tests/sticky_cache.py`): byte-identical
+output on the Arc, fewer dispatches. Its files need this patch, so they are variants until every host carries it.
 
 `fps=`, frame pacing, `custom_shader_path` loading and `frame_mixer=` string
 lookup all already existed in `vf_libplacebo.c`. So frame-rate scaling with a

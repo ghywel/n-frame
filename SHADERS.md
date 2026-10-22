@@ -216,7 +216,9 @@ all 29 generated files rebuild byte-identical from the recipes below ([REPAIRS.m
 **Since 2026-10-22 the four bases the generators read are edited in `shaders/src/`**: the base, `-seeded`,
 `-propagated` and `-animation`. Every generator reads them there (a bare base name means `shaders/src/` first, then
 `shaders/` for a variant base). The shipped files of the same names in `shaders/` are `tests/gen_bases.py`'s output,
-an exact copy until the pruned form (their dead passes removed, `PRUNE=1`) is proven on the Arc. So **an edit to a
+pruned (`PRUNE=2`: the passes nothing reads removed, the base 22 -> 16 at read_view 0, `-seeded` 20 -> 17,
+`-propagated` and `-animation` 24 -> 21), proven byte-identical in output to their sources on the Arc, 45 of 45 cases
+each. So **an edit to a
 base goes to its source, then `tests/gen_bases.py`, then the generators**; `smoke.sh` step 2b fails on a shipped base
 that differs from its source. Gareth's reason, 2026-10-22: "The bases are probably the most critical shaders, since
 problems in the base are iterated to the procedurally generated." The two diffusion forks, the examples and

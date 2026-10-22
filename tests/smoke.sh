@@ -86,7 +86,7 @@ fi
 # ---------------------------------------------------------------------------
 head2 "2b. gen_bases.py -- the shipped bases are what their sources in shaders/src/ make"
 # Since 2026-10-22 the four hand-written bases are edited in shaders/src/ and every generator reads them there; the
-# shipped files are gen_bases.py's output (a copy until the pruned form is proven on the Arc). An edit made to a
+# shipped files are gen_bases.py's output (pruned, PRUNE=2, proven identical on the Arc 2026-10-22). An edit made to a
 # shipped base instead of its source would be lost at the next regeneration and silently absent from every generated
 # shader: this says so.
 if $PY "$HERE/gen_bases.py" --check >"$W/bases.log" 2>&1; then

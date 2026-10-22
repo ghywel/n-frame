@@ -57,18 +57,21 @@ hook "$(printf '//!WHEN pair_changed\n//!STICKY')" "fract(float(frame) / 256.0)"
 SRC="testsrc2=s=320x180:r=24:d=4"
 md5() {   # md5 <shader> -> one hash per output frame
   ( cd "$OUT" && "$FFMPEG" -nostdin -hide_banner -loglevel error -init_hw_device vulkan=vk -filter_hw_device vk \
-      -f lavfi -i "$SRC" -vf "libplacebo=fps=60:frame_mixer=custom_n:custom_shader_path=$1:format=rgb48le" \
+      -f lavfi -i "$SRC" -vf "libplacebo=fps=60:frame_mixer=custom_n:custom_shader_path=$1:format=rgba64le" \
       -f framemd5 - 2>"$OUT/${1%.glsl}.err" | grep -v '^#' | awk -F, '{print $NF}' )
 }
 md5 plain.glsl > "$OUT/plain.md5"; md5 sticky.glsl > "$OUT/sticky.md5"; md5 skiponly.glsl > "$OUT/skiponly.md5"
 ( cd "$OUT" && "$FFMPEG" -nostdin -hide_banner -loglevel error -init_hw_device vulkan=vk -filter_hw_device vk \
-    -f lavfi -i "$SRC" -vf "libplacebo=fps=60:frame_mixer=custom_n:custom_shader_path=counter.glsl:format=rgb48le" \
-    -f rawvideo -pix_fmt rgb48le counter.raw ) 2>"$OUT/counter.err"
+    -f lavfi -i "$SRC" -vf "libplacebo=fps=60:frame_mixer=custom_n:custom_shader_path=counter.glsl:format=rgba64le" \
+    -f rawvideo -pix_fmt rgba64le counter.raw ) 2>"$OUT/counter.err"
 
 # Every render must have compiled and run the hook: a compile error means libplacebo fell back to its own mixer and
 # every comparison below would compare that fallback with itself.
+# The output is rgba64le, not rgb48le: libplacebo on Mesa (the NAS's Arc) cannot configure an rgb48le output pad and
+# rendered nothing, and the first Arc run printed a verdict over zero frames (2026-10-22). Any render that produced no
+# frame, or failed to configure, is refused here.
 for e in "$OUT"/plain.err "$OUT"/sticky.err "$OUT"/counter.err; do   # skiponly is the counterfactual: it may break
-  if grep -q -i -E "compile status .error|Failed executing|disabling" "$e"; then
+  if grep -q -i -E "compile status .error|Failed executing|disabling|Failed to configure|Error reinitializing" "$e"; then
     echo "sticky_live: FAIL: $(basename "$e") shows a shader that did not run:"; grep -i -m3 -E "error|Failed" "$e"; exit 1
   fi
 done
@@ -84,10 +87,12 @@ disabled = "Disabling" in open(os.path.join(out, "skiponly.err")).read()
 b = n > 0 and (skip != plain or disabled)
 diff_b = sum(x != y for x, y in zip(plain, skip))
 raw = open(os.path.join(out, "counter.raw"), "rb").read()
-W, H = 320, 180; size = W * H * 6
+if n == 0 or not raw:
+    print("sticky_live: FAIL: no frames were rendered (see the .err files); no verdict"); sys.exit(1)
+W, H = 320, 180; size = W * H * 8
 counters = []
 for f in range(len(raw) // size):
-    g = struct.unpack_from("<3H", raw, f * size + (90 * W + 160) * 6)
+    g = struct.unpack_from("<4H", raw, f * size + (90 * W + 160) * 8)
     counters.append(round(g[1] / 65535 * 256))
 same = sum(1 for i in range(1, len(counters)) if counters[i] == counters[i - 1])
 print("outputs: %d" % n)

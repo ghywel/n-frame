@@ -2630,8 +2630,40 @@ a pass that only returns its cache on a reused window are the bits it would have
   neither are two runs of the same build on the M5 (run 1 against run 2 differs, run 2 against run 3 matches), so on
   this host byte identity has no working control and the magnitude bound is the test; byte identity is the Arc's to
   read when its container is rebuilt at the new pins (owed).
+- *The Arc, the same evening (rebuilt at the new pins; the 10-21 libplacebo built beside the 10-22 one at the same
+  commit, the same ffmpeg run against each through `LD_LIBRARY_PATH`).* After a warm-up and a control (the
+  recommendation against itself, 45 of 45), the recommendation, the Low, Standard and High tiers, the quad, the Cadence
+  quad and the propagated base each render **byte-identical through both libraries on all 45 cases**: the patch
+  changes nothing for a shader that does not use it. `sticky_live.sh` passes on the Arc and on the Intel Mac
+  (MoltenVK on AMD) with the M5's numbers. Its first Arc run had rendered nothing (Mesa cannot configure libplacebo's
+  `rgb48le` output) and printed a verdict anyway; it now reads `rgba64le` and refuses an empty render.
 
-Stage 2 is a generator switch that marks the pair-cached passes with both directives, gated like the prune (the Arc,
-42 of 42, every tier); stage 3 the same semantics in the Metal engine (its own `//!WHEN` evaluation), through lockstep.
-Shipping it in Cadence is the owner's.
+### Stage 2: the pair-cached passes skipped outright (2026-10-22)
+
+`tests/sticky_cache.py`, and `STICKY_CACHE=1` in every generator: each pass that begins
+`ivec2 coord = ...; if (!pair_changed) return imageLoad(cache, coord);` (nothing before the test, asserted) gains
+`//!WHEN pair_changed` and `//!STICKY`, so on a reused window it is not dispatched and its readers see the texture it
+last rendered. That equals what it would have returned from its cache only if the pass returns what it stores, which
+is the gate's question. 6 passes of 42 in the recommendation and the Low tier, 10 in Standard, 13 of 82 in High, 33 of
+79 in the quad (the full-resolution refines among them), 22 in the tri.
+
+- **Identity (the Arc):** each marked file against its shipped twin, 45 of 45 cases byte-identical for the
+  recommendation, Low, Standard, High, the quad, the Cadence quad and the tri.
+- **Time from a file** (`probes/build/buildtime.sh`, 720p, 24 -> 60, three interleaved rounds per column, two columns
+  of the same build as the noise control; median of the six):
+
+| shader | M5 shipped | M5 marked | change | Arc shipped | Arc marked | change |
+|---|---|---|---|---|---|---|
+| the recommendation | 5.83 ms | 5.62 ms | -3.7% | 9.69 ms | 9.44 ms | -2.6% |
+| High | 13.19 ms | 12.59 ms | -4.5% | 24.39 ms | 23.74 ms | -2.7% (inside the Arc's spread) |
+| the quad | 38.42 ms | 37.52 ms | -2.3% | 48.60 ms | 45.82 ms | -5.7% |
+
+On the M5 the two columns of one build agree within 1.2% and every marked median is below every shipped one but one
+(High's slowest marked run, 13.03, against its fastest shipped, 13.02); on the Arc the columns differ by up to 5%, so
+only the recommendation and the quad separate cleanly there. A small, real saving at no cost in picture.
+
+**Not shipped.** A file with `//!STICKY` needs the 2026-10-22 patch: a libplacebo without it rejects the unknown
+directive, and libplacebo then mixes with its own mixer without a word. So the marked files are variants until every
+host they would ship to carries the patch: Cadence's bundled libplacebo (the owner's), and the Metal engine, which
+evaluates `//!WHEN` itself (stage 3, through lockstep). Adoption is the owner's call.
 

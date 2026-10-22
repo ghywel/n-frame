@@ -21,6 +21,7 @@ the interpolation ladder must equal the quad's.
 The final pass is the quint's, transformed by asserted substitutions (the slot list, the packs, the roles,
 the estimator block), so the two cannot drift apart silently. Slot letters are data (SLOTS below).
 """
+import os
 import pathlib
 import re
 import sys
@@ -380,7 +381,13 @@ def main():
     if SRC.name != "bidirectional-interpolation.glsl":
         header = header.replace("bidirectional-interpolation.glsl", SRC.name)
         header = header.replace("//   ./tests/gen_sextdirectional.py\n", f"//   ./tests/gen_sextdirectional.py {DST.name} {SRC.name}\n")
-    DST.write_text(READING.add_tail(header + result), newline="\n")
+    text = READING.add_tail(header + result)
+    if os.environ.get("STICKY_CACHE", "0") == "1":   # patch stage 2 (tests/sticky_cache.py): needs the 2026-10-22 patch
+        import sticky_cache
+        text, n = sticky_cache.add(text)
+        assert n > 0, "STICKY_CACHE=1 found no pair-cached pass"
+        text = text.replace("./tests/gen_", "STICKY_CACHE=1 ./tests/gen_", 1)
+    DST.write_text(text, newline="\n")
     print(f"  {DST.name}: {hooks} passes ({22 + extra} base + 16 slot-2..5 lumas + 4 cut stats + "
           f"{48 + 4 * extra} pair flow + 6 full-res lumas + 10 full-res refines + 9 packing), "
           f"final pass binds {fp_binds}, braces/parens balanced  OK")

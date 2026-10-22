@@ -190,7 +190,17 @@ the sources with identical bodies (the 11 4K twins differ only in the date `scal
 as before); a marker written into the sources reaches the quad, the tri and both variational lines, and with
 `shaders/src/` hidden `gen_aperture.py` refuses to run, so the generators read the sources and not the shipped copies.
 `PRUNE=1 gen_bases.py --check` already runs: the base 22 -> 16 passes at read_view 0, the three forks one fewer each,
-every one parse-checked. Owed: those pruned files proven byte-identical in output on the Arc, then shipped.
+every one parse-checked. *Shipped the same evening:* on the Arc, rebuilt at the new pins, every pruned base rendered
+byte-identical to its unpruned source on 45 of 45 cases, at `PRUNE=1` and at `PRUNE=2` (eight pairs, after a warm-up
+and a control of 45 of 45), and the shipped bases are now `gen_bases.py`'s `PRUNE=2` output, byte for byte the files
+gated.
+
+*A correction, from GPT (CHAT-LEDGER.md G001, 2026-10-22), adopted.* The prediction above expected no effect on a rigid
+translation, and its premise was wrong: if B(x) = A(x - d), frame B's contrast at x is frame A's at x - d, not at x, and
+a normalised weighted average leaves a spatially constant field unchanged whichever contrast weighs it. So the effect
+lives wherever the estimated reverse field varies (the object's boundary, contaminated or false matches, then the
+three-way check), and a rigid translation is no exemption. Why the sign favours the shared read on L2 and M2 is still
+open; GPT proposed a per-pass audit of where the difference arises.
 
 ---
 

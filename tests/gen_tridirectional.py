@@ -74,6 +74,7 @@ solve, VFR-safe, is in the generated final pass. At a = 0 the tridirectional
 shader degenerates to the bidirectional one EXACTLY -- which is both the
 safety property and the null hypothesis.
 """
+import os
 import pathlib
 import re
 import sys
@@ -381,7 +382,13 @@ vec4 hook() {
         header = header.replace("bidirectional-interpolation.glsl", SRC.name)
         header = header.replace("//   ./tests/gen_tridirectional.py\n",
                                 f"//   ./tests/gen_tridirectional.py {DST.name} {SRC.name}\n")
-    DST.write_text(READING.add_tail(header + result), newline="\n")
+    text = READING.add_tail(header + result)
+    if os.environ.get("STICKY_CACHE", "0") == "1":   # patch stage 2 (tests/sticky_cache.py): needs the 2026-10-22 patch
+        import sticky_cache
+        text, n = sticky_cache.add(text)
+        assert n > 0, "STICKY_CACHE=1 found no pair-cached pass"
+        text = text.replace("./tests/gen_", "STICKY_CACHE=1 ./tests/gen_", 1)
+    DST.write_text(text, newline="\n")
     print(f"  {DST.name}: {hooks} passes "
           f"({22 + extra} base + 4 slot-2 lumas + 1 cut stat + {12 + extra} slot1<->slot2 flow "
           f"+ 3 full-res lumas + 4 full-res refines), braces/parens balanced  OK")

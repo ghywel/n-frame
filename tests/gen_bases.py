@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """THE SHIPPED BASES, MADE FROM THEIR SOURCES (2026-10-22, route B of the bases census; REPAIRS.md L11).
 
-    gen_bases.py            write shaders/<base>.glsl from shaders/src/<base>.glsl for the four bases
+    gen_bases.py            write shaders/<base>.glsl from shaders/src/<base>.glsl for the four bases (PRUNE=2)
     gen_bases.py --check    write nothing; exit 1 and name every shipped base that differs from what would be written
-    PRUNE=1|2 gen_bases.py  the same through prune_passes.py (whole dead passes; 2 also the dead fused B->A twins)
+    PRUNE=0|1 gen_bases.py  an exact copy (0), or whole dead passes only (1); the default 2 also cuts dead fused twins
 
 Gareth (2026-10-22): "The bases are probably the most critical shaders, since problems in the base are iterated to the
 procedurally generated." The four hand-written bases are the one source every generated shader in the family is built
@@ -15,9 +15,10 @@ reads (the base 6 of 22 at read_view 0, the census in swarm/2026-10-21/cost.md).
 shaders/src/, every generator reads it there (a bare base name means shaders/src/ first), and the shipped file is this
 tool's output.
 
-PRUNE defaults to 0, an exact copy, until the pruned bases are proven byte-identical in output frame for frame on the
-deterministic host (the NAS's Arc; the M5 does not repeat itself byte for byte), as the tiers' prune was (TESTING.md).
-With PRUNE set, the shipped file gains one header line naming the source and the setting, so it can be rebuilt.
+PRUNE defaults to 2 since 2026-10-22: on the deterministic host (the NAS's Arc; the M5 does not repeat itself byte for
+byte) every pruned base, at PRUNE=1 and at PRUNE=2, rendered byte-identical to its unpruned source on all 45 ladder
+cases, frame for frame (tests/TESTING.md). The shipped file carries one header line naming its source and the setting,
+so it can be rebuilt; PRUNE=0 still makes the exact copy.
 """
 import os
 import pathlib
@@ -28,7 +29,7 @@ SHADERS = HERE.parent / "shaders"
 SRC_DIR = SHADERS / "src"
 BASES = ["bidirectional-interpolation", "bidirectional-interpolation-seeded",
          "bidirectional-interpolation-propagated", "bidirectional-interpolation-animation"]
-PRUNE = os.environ.get("PRUNE", "0")
+PRUNE = os.environ.get("PRUNE", "2")
 assert PRUNE in ("0", "1", "2"), f"PRUNE={PRUNE}: it is 0 (a copy), 1 (whole passes) or 2 (whole passes and fused twins)"
 
 
