@@ -5412,3 +5412,41 @@ fetch loses, its preference is decisive (or the zero basin is exact), and where 
 working gate would have to know which basin is the alias, not how close they are: the separation against the texture's
 own period (off_b - off_a equal to a period), or the 1/8 level's alias basins (ALIAS_CARRY's), are the candidates, on
 paper first. The switch stays in the repository, off, byte-identical when off (smoke 19/19).
+
+### C3's flow against its truth: the whole gap is the across-bar error, decided at the coarse levels (2026-10-22, evening)
+
+`tests/probes/cage/c3_flow.py` taps the A->B flow at each level's last saved texture (S, E, Q, H) on C3_bars_spin_drift
+at N:N, compares it with the scene's exact rigid flow split across and along the bars, and feeds the H flow to
+c3_oracle.py's own warp with the truth put back on one class of texels at a time. Pre-registered in the probe's
+docstring, the M5, the recommendation and the High tier. **Two instrument amendments, both post hoc and said so in the
+probe:** the registered units check (each level's wall median within 1 px of the truth) refused the 1/16 level (1.65
+and 1.20 px), and a slope test put in its place refused every level (wall slopes 0.4-0.7): C3's flat-blocked wall,
+turning at 1-2 px a frame, is under-read by the estimator itself, so neither can check units there. The units were
+taken instead from a clean translation (M2c_period40_v10, exactly 10 px/frame): H 9.69, Q 9.63, E 8.00 (one 8 px
+texel), S 11.75 (0.75 of a 16 px texel), the scale right at every level and the coarse two at their step. The split's
+own picture check held: the CPU warp of the tapped H flow scores 21.75 against the GPU's 21.82 (rec) and 22.56 against
+23.24 (High).
+
+| the disc, PSNR-Y dB | rec | High | share of the gap to the truth |
+|---|---|---|---|
+| the shader's flow | 21.75 | 22.56 | 0 |
+| truth where the across error is over 2 px | 36.16 | 36.29 | 98-99% |
+| the across component made true everywhere | 36.20 | 36.35 | 98-99% |
+| the along component made true everywhere | 21.75 | 22.55 | 0 |
+| truth where the error is 2 px or less | 21.75 | 22.56 | 0 |
+| truth where the across error is a whole period (9 or 18 px) out *(exploratory)* | 26.90 | 27.49 | 35% |
+| the truth (the oracle) | 36.47 | 36.47 | 100% |
+
+**P1 and P2 held.** All of C3's 14 dB below its oracle, and so all 7 dB below the blend's ceiling, is the ACROSS-bar
+error on the texels where it exceeds 2 px; the along error (median 2.7 px) and the fine error cost nothing, the
+aperture as the record said. **P3 held as registered** (the share with |error| over 2 px is 72-75 percent at S and E
+against 73-74 at H: the finer levels do not remove it), and the across error alone shows how: at the 1/16 level it is
+smeared (modes 0, -1, -2 and -17 px, 7 percent within 1.5 px of a period), the Moire's signature; by H the across-gross
+share has fallen from about 56 to 38-43 percent, and 26-28 percent of the disc sits one period out, always at -9 px,
+on one side. The finer levels pull the coarse smear into the nearest period basin and lock it there. Fixing only those
+period-locked texels recovers 35 percent (+5 dB); the rest is the unresolved smear between 2 px and a period, the
+worst place for bars (near half a period is antiphase). **So a one-period rival alone cannot close C3** (the lane's
+ALIAS_Q1D as written): the fix has to re-decide the across component wherever the coarse seed was wrong, at a level
+that resolves a 9 px period (Q at the edge, H comfortably), with a reach of a period either way and a bias that is
+not the coarse seed's. Open, and the next question for a build: why the lock is always on the -9 side (the
+translation's +1 px across against REG_LAMBDA's pull, or the descents' scan order), which the same taps can answer.

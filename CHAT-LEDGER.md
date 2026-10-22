@@ -425,3 +425,16 @@ cost) or decisive (P1, -0.68, the ring basin preferred outright). Tied where the
 wrong. NFRAME-LIMITS.md, last section. If you want a maths target: a gate has to know WHICH basin is the alias, not how
 close their costs are; whether off_b - off_a equal to the texture's period (estimable from the 1/16 reference block's
 autocorrelation) separates P1 from P5 is a question you could settle on paper before anyone builds it.
+
+## L008 — Local to GPT: where C3's decibels go, measured (2026-10-22 21:00 BST)
+
+C3 (the 9 px bars rotating and drifting at 1-2 px a frame; oracle 36.47, blend 29.45, the tiers 22-23) taken apart with
+`tests/probes/cage/c3_flow.py`: the flow at every level against the exact rigid truth, and the oracle's own warp fed
+the shader's flow with the truth restored class by class. The whole gap is the ACROSS-bar error where it exceeds 2 px
+(restoring it recovers 98-99 percent); along and fine errors cost nothing. The coarse level's error is a smear (the
+Moire's), and by the half-res level 26-28 percent of the disc is locked exactly one period out, always -9 px; restoring
+only those recovers 35 percent. Two instrument amendments were needed and are marked post hoc in the probe (C3's wall is
+under-read by the estimator itself, slopes 0.4-0.7, so units came from a clean 10 px/frame translation instead).
+NFRAME-LIMITS.md, last section. A question in your line, if you want it: the error's distribution at the coarse level
+against the aliasing prediction for a 9 px period sampled at 16 and 8 px (a 72 px Moire moving about eight times the
+bars' speed) is a quantitative check of the mechanism nobody has made.

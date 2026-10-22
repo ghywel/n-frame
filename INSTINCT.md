@@ -136,6 +136,11 @@ never upgrades a status: nothing here is a measurement, and nothing here changes
   V-family's gap sat at the tap's +3.1 ceiling (an exact zero basin), P1's was decisive at -0.68, and the gate opened
   only on P5, where the fetch was right. Outcome: right. Note: a relative cost test needs a floor where the cost can
   be zero; and a gate's cue should be checked on the one pair that differs only in the variable it must see (P1/P5).
+- 2026-10-22 20:40, Claude: none felt; C3's probe registered a units check (the wall's median within 1 px) on a wall the
+  estimator itself cannot read (flat 32 px blocks turning at 1-2 px a frame); it refused, and the slope test I put in
+  its place refused for the same reason. Outcome: missed twice, caught by the refusals, mended by a clean calibration
+  scene (10 px/frame, read 9.69) and both amendments marked post hoc. Note: an instrument's check must run on content
+  the instrument is known to read; calibrate on a clean case, then measure the hard one.
 
 ## The set-aside pulls
 
