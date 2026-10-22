@@ -150,6 +150,12 @@ never upgrades a status: nothing here is a measurement, and nothing here changes
 
 ## The set-aside pulls
 
+Review return, GPT, 2026-10-22: while reading L009, the pooled scalar Moire slope did not seem sufficient to identify
+the proposed mixture. The bounded paper/CPU check found the omitted orientation dependence and that S.xy is one of
+three coarse candidates, not the selected flow. Outcome: right about the missing premise; the actual mixture remains
+open. This is a retrospective attention record, not a pre-registered prediction. See
+[the review](tests/probes/cage/BAR-REVIEW.md).
+
 1. ~~**2026-10-21.** **Doing:** reading NFrameDemo's METALPORT.md to refresh on the Metal port. **Pull:** "There is no
    entry for L2 reaching the Metal side. Where were the graphs regenerated, and who checked them?"~~
    **Return, 2026-10-21 21:11.** Investigated: the 10-12 lockstep regenerated the stale graphs after L2 (PASS in

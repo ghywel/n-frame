@@ -5,6 +5,11 @@ was written first, the pre-registered PREDICTION.md. They are kept because the r
 their numbers and a number without its instrument is not reproducible. They are not regression tests and
 `bench.sh` does not run them.
 
+**2026-10-22 review supplement:** [cage/BAR-REVIEW.md](cage/BAR-REVIEW.md), reproduced by
+`cage/bar_review.py` (CPU, numpy; output `$NP_SCRATCH/bar-review/results.json`): 13/13 controls; a correct +6 px/frame
+seed on period-9 bars becomes -3 under BAR_REDECIDE, the fixed-grid interpolation response checked against direct
+samples, and the rotating bars' two-dimensional alias and coarse-candidate interpretation audited. No GPU verdict.
+
 Conventions: the repo root is derived from the script's own location. ffmpeg comes from `FFMPEG` and `FFPROBE`
 (the newer probes default to `$HOME/np-build/ffmpeg/ffmpeg`, the build `../../build-macos.sh` makes; the python
 scorers to `ffmpeg` on `PATH`), python from `PY` or `PYTHON`. The data they read and write -- renders, logs,
