@@ -84,6 +84,18 @@ else
 fi
 
 # ---------------------------------------------------------------------------
+head2 "2b. gen_bases.py -- the shipped bases are what their sources in shaders/src/ make"
+# Since 2026-10-22 the four hand-written bases are edited in shaders/src/ and every generator reads them there; the
+# shipped files are gen_bases.py's output (a copy until the pruned form is proven on the Arc). An edit made to a
+# shipped base instead of its source would be lost at the next regeneration and silently absent from every generated
+# shader: this says so.
+if $PY "$HERE/gen_bases.py" --check >"$W/bases.log" 2>&1; then
+  ok "the four shipped bases are gen_bases.py's output from shaders/src/"
+else
+  bad "a shipped base differs from its source (edit shaders/src/, then run tests/gen_bases.py)"; note "$(grep differs "$W/bases.log" | head -2)"
+fi
+
+# ---------------------------------------------------------------------------
 head2 "3. gen_variational.py -- generated shader is byte-identical here"
 # A strong portability check: the production shader is generated, so if this
 # platform produces the same bytes, the generator and its inputs agree.

@@ -54,7 +54,16 @@ def shader_arg(s):
     return p if p.parent != pathlib.Path(".") else SHADERS / p
 
 
-SRC = str(SHADERS / "bidirectional-interpolation.glsl")
+def base_arg(s):
+    """A bare base name means its source in shaders/src/ (the hand-edited bases, 2026-10-22; tests/gen_bases.py makes
+    the shipped copies), else a shader in shaders/ (a variant base); a path with a directory is used as given."""
+    p = pathlib.Path(s)
+    if p.parent != pathlib.Path("."):
+        return p
+    return SHADERS / "src" / p if (SHADERS / "src" / p).exists() else SHADERS / p
+
+
+SRC = str(base_arg("bidirectional-interpolation.glsl"))
 
 # level key -> (flow suffix, luma A, luma B, WIDTH/HEIGHT divisor, anchor)
 LEVELS = [
@@ -825,7 +834,7 @@ if __name__ == "__main__":
     # propagated base ("0,12,8,4" / "0,2,2,0" on the seeded one); check_binds finds a later-save bind
     # otherwise.
     if len(sys.argv) > 7:
-        SRC = str(shader_arg(sys.argv[7]))
+        SRC = str(base_arg(sys.argv[7]))
     # ZERO_SEED=1 in the environment switches the base's zero seed on in the output (both sites, asserted):
     # the variant on the propagated base ships with it on, its gate being a trade the base itself does not
     # take in place (NFRAME-LIMITS.md, "The owner's eyes", the gate).

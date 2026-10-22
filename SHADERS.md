@@ -213,10 +213,20 @@ regeneration. A **hand-maintained fork** began as a copy and is edited directly,
 if it is made there too. The generated files of a fork come from the fork, not from the base. Checked on 2026-10-04:
 all 29 generated files rebuild byte-identical from the recipes below ([REPAIRS.md](REPAIRS.md)).
 
+**Since 2026-10-22 the four bases the generators read are edited in `shaders/src/`**: the base, `-seeded`,
+`-propagated` and `-animation`. Every generator reads them there (a bare base name means `shaders/src/` first, then
+`shaders/` for a variant base). The shipped files of the same names in `shaders/` are `tests/gen_bases.py`'s output,
+an exact copy until the pruned form (their dead passes removed, `PRUNE=1`) is proven on the Arc. So **an edit to a
+base goes to its source, then `tests/gen_bases.py`, then the generators**; `smoke.sh` step 2b fails on a shipped base
+that differs from its source. Gareth's reason, 2026-10-22: "The bases are probably the most critical shaders, since
+problems in the base are iterated to the procedurally generated." The two diffusion forks, the examples and
+`shaders/animation/` are not generator inputs and stay edited in place.
+
 | How it is made | Files | Source |
 |---|---|---|
-| Hand-maintained | `bidirectional-interpolation.glsl` (the base) | — |
-| Hand-maintained forks | `-seeded`, `-propagated`, `-animation`, `-diffuse-coarse`, `-diffuse-dual`, the six files in `shaders/animation/` | a copy of their parent in the tree above |
+| Hand-maintained, in `shaders/src/` (shipped by `tests/gen_bases.py`) | `bidirectional-interpolation.glsl` (the base) | — |
+| Hand-maintained forks, in `shaders/src/` (shipped by `tests/gen_bases.py`) | `-seeded`, `-propagated`, `-animation` | a copy of their parent in the tree above |
+| Hand-maintained forks | `-diffuse-coarse`, `-diffuse-dual`, the six files in `shaders/animation/` | a copy of their parent in the tree above |
 | Hand-maintained examples | `motion-edges-dual.glsl`, `nframe-smoketest.glsl` | — |
 | `tests/gen_variational.py` | `-variational` | the base |
 | `tests/gen_variational.py`, `ZERO_SEED=1` plus the player-line switches | `-variational-propagated` and every `-variational-propagated-*` file | `-propagated` |

@@ -181,6 +181,17 @@ there only the unused helper would differ. Not never-worse, so **the shipped bas
 corrected one is a variant (the tool); why reading A's contrast for the reverse chain helps L2 and M2 on the quad is
 open. Route B no longer waits on it.
 
+*Route B, the CPU-provable part, done the same day (Gareth: "do the CPU-provable part ... and hold the pruned shipped
+bases until the Arc is back").* The four bases moved their editable copy to `shaders/src/`; the six generators read
+them there (`base_arg`: a bare base name means `shaders/src/` first, then `shaders/` for a variant base); the shipped
+bases are `tests/gen_bases.py`'s output, an exact copy for now (`--check` is smoke step 2b, which fails on a stray edit
+to a shipped base: tried). Proof: `tests/probes/repairs/rebuild_generated.py` rebuilds all 35 generated files from
+the sources with identical bodies (the 11 4K twins differ only in the date `scale_shader.py` writes in their header,
+as before); a marker written into the sources reaches the quad, the tri and both variational lines, and with
+`shaders/src/` hidden `gen_aperture.py` refuses to run, so the generators read the sources and not the shipped copies.
+`PRUNE=1 gen_bases.py --check` already runs: the base 22 -> 16 passes at read_view 0, the three forks one fewer each,
+every one parse-checked. Owed: those pruned files proven byte-identical in output on the Arc, then shipped.
+
 ---
 
 ## 2026-10-04: wrong comments across the family, one stale generated file, one generator anchor
@@ -210,8 +221,9 @@ assert every replacement took ([assert-every-patch](WORKFLOW-SAVED-MEMORY.md#ass
 
 ### How it was done
 
-1. **Hand-maintained files edited by exact text replacement**, with the count asserted per file. There are 14 such
-   files: the base, `-seeded`, `-propagated`, `-animation`, the two diffusion forks, the two small examples and the
+1. **Hand-maintained files edited by exact text replacement**, with the count asserted per file. (Since 2026-10-22
+   four of them, the bases, are edited in `shaders/src/` and shipped by `tests/gen_bases.py`: a repair like this one
+   now edits the source and regenerates.) There were 14 such files: the base, `-seeded`, `-propagated`, `-animation`, the two diffusion forks, the two small examples and the
    six files in `shaders/animation/`. Ten of them carry the text, and each received repairs 1 to 4 (repairs 3 and 4
    twice). `human-reading-quad.glsl` was edited the same way (12 copies of repairs 3 and 4) before it was recognised
    as generated. Its body was then shown to be byte-identical to its two-step recipe, both before the repair and

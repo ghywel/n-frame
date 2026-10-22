@@ -114,8 +114,16 @@ def shader_arg(s):
     return p if p.parent != pathlib.Path(".") else SHADERS / p
 
 
-SRC = shader_arg(sys.argv[2]) if len(sys.argv) > 2 else \
-    SHADERS / "bidirectional-interpolation.glsl"
+def base_arg(s):
+    """A bare base name means its source in shaders/src/ (the hand-edited bases, 2026-10-22; tests/gen_bases.py makes
+    the shipped copies), else a shader in shaders/ (a variant base); a path with a directory is used as given."""
+    p = pathlib.Path(s)
+    if p.parent != pathlib.Path("."):
+        return p
+    return SHADERS / "src" / p if (SHADERS / "src" / p).exists() else SHADERS / p
+
+
+SRC = base_arg(sys.argv[2] if len(sys.argv) > 2 else "bidirectional-interpolation.glsl")
 DST = shader_arg(sys.argv[1]) if len(sys.argv) > 1 else \
     SHADERS / "quaddirectional-interpolation.glsl"
 

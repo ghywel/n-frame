@@ -48,7 +48,7 @@ import add_human_reading as HR  # noqa: E402
 
 HERE = pathlib.Path(__file__).resolve().parent
 OUT = pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else HERE.parent / "shaders" / "bidirectional-interpolation-propagated-aperture.glsl"
-BASE = pathlib.Path(sys.argv[2]) if len(sys.argv) > 2 else HERE.parent / "shaders" / "bidirectional-interpolation-propagated.glsl"
+BASE = pathlib.Path(sys.argv[2]) if len(sys.argv) > 2 else HERE.parent / "shaders" / "src" / "bidirectional-interpolation-propagated.glsl"
 
 import os
 PROP_TENSOR = os.environ.get("PROP_TENSOR", "1")

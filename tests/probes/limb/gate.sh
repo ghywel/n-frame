@@ -19,8 +19,8 @@ RUNS="${1:-3}"
 export FFMPEG="${FFMPEG:-$HOME/np-build/ffmpeg/ffmpeg}"
 PY="${PY:-$HOME/np-build/venv/bin/python3}"
 cd "$TESTS"
-ZERO_SEED=1 "$PY" gen_variational.py "0,0,8,4" 0.3 0.08 "$G/vp.glsl" 0 "0,0,2,0" "$SH/bidirectional-interpolation-propagated.glsl" >/dev/null
-EDGE_PROP=1 ZERO_SEED=1 "$PY" gen_variational.py "0,0,8,4" 0.3 0.08 "$G/edgeprop.glsl" 0 "0,0,2,0" "$SH/bidirectional-interpolation-propagated.glsl" >/dev/null
+ZERO_SEED=1 "$PY" gen_variational.py "0,0,8,4" 0.3 0.08 "$G/vp.glsl" 0 "0,0,2,0" "$SH/src/bidirectional-interpolation-propagated.glsl" >/dev/null
+EDGE_PROP=1 ZERO_SEED=1 "$PY" gen_variational.py "0,0,8,4" 0.3 0.08 "$G/edgeprop.glsl" 0 "0,0,2,0" "$SH/src/bidirectional-interpolation-propagated.glsl" >/dev/null
 cmp -s "$G/vp.glsl" "$SH/bidirectional-interpolation-variational-propagated.glsl" \
   && echo "control reproduces the committed recommendation" || { echo "CONTROL DIFFERS -- stopping"; exit 1; }
 echo "gate start $(date +%T), $RUNS runs, at $(git -C "$TESTS" rev-parse --short HEAD)"
