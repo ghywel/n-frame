@@ -141,6 +141,12 @@ never upgrades a status: nothing here is a measurement, and nothing here changes
   its place refused for the same reason. Outcome: missed twice, caught by the refusals, mended by a clean calibration
   scene (10 px/frame, read 9.69) and both amendments marked post hoc. Note: an instrument's check must run on content
   the instrument is known to read; calibrate on a clean case, then measure the hard one.
+- 2026-10-22 20:22, Claude: none felt; the zsh word-splitting trap again: `env $HI` passed the High tier's whole
+  switch string as one word, and the "High" I built was the plain recommendation. Caught by the identity check against
+  the shipped High file, which is why it is there. Outcome: missed, caught. Note: `${=VAR}` in zsh, or bash -c.
+- 2026-10-22 20:38, Claude: delight, medium-high, BAR_REDECIDE passing with nothing on the ladder lost and C1 rising
+  unasked; and a check on it: the rule is a prior that wins because C3's truth is the slowest basin. Named in L009 as
+  the review target.
 
 ## The set-aside pulls
 

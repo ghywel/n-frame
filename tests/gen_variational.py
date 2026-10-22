@@ -554,6 +554,14 @@ PHASE_FETCH = os.environ.get("PHASE_FETCH", "0") == "1"
 # KILLED 2026-10-22 by its pre-registered test (NFRAME-LIMITS.md): a documented switch, off. Without the variable the
 # output is byte-identical.
 PHASE_GATE = os.environ.get("PHASE_GATE", "0") == "1"
+# BAR_REDECIDE=1 (2026-10-22; tests/bar_redecide.py): one pass after the half-res chain's last median where the patch is
+# one-dimensional: the across component searched again at full resolution along the bars' normal (+-12 px), the
+# smallest across speed among the near-best basins taken when it is a different basin. C3's measured gap. Without the
+# variable the output is byte-identical.
+BAR_REDECIDE = os.environ.get("BAR_REDECIDE", "0") == "1"
+# PHASE_FETCH_E=1 (2026-10-22; with PHASE_FETCH=1; tests/phase_fetch.py): the same fetch at the 1/8 level's four
+# candidate SADs (its refine and pick, its data check). Without the variable the output is byte-identical.
+PHASE_FETCH_E = os.environ.get("PHASE_FETCH_E", "0") == "1"
 # PRUNE=1 (2026-10-21, the swarm's cost lane; tests/prune_passes.py; REPAIRS.md L7): the very last step, after the
 # reading tail is appended: remove the whole passes whose work no live pass can observe, following //!SAVE/BIND and
 # the storage images' imageStore/imageLoad (dead_passes.py's SAVE/BIND-only view cut live producers). PRUNE=2 also
@@ -873,9 +881,10 @@ if __name__ == "__main__":
         import local_centre
         text = local_centre.add(text, global_seed=GLOBAL_SEED)
     assert PHASE_FETCH or not PHASE_GATE, "PHASE_GATE gates the phase fetch: it needs PHASE_FETCH=1"
+    assert PHASE_FETCH or not PHASE_FETCH_E, "PHASE_FETCH_E extends the phase fetch: it needs PHASE_FETCH=1"
     if PHASE_FETCH:                 # after COARSE_ENERGY, whose rewrite of the SAD lines it recognises
         import phase_fetch
-        text = phase_fetch.add(text, gate=PHASE_GATE)
+        text = phase_fetch.add(text, gate=PHASE_GATE, eighth=PHASE_FETCH_E)
     if ALIAS_PRIOR or ALIAS_CARRY:
         import alias_carry
         if ALIAS_PRIOR:
@@ -895,6 +904,9 @@ if __name__ == "__main__":
         assert ALIAS_CARRY, "TRUST_GATE reads the 1/8 basins' margins and sits after the carry's pick: it needs ALIAS_CARRY=1"
         import trust_gate
         text = trust_gate.add_trust_gate(text)
+    if BAR_REDECIDE:
+        import bar_redecide
+        text = bar_redecide.add(text)
     if CUT_MOTION:
         import cut_motion
         text = cut_motion.add_cut_motion(text, float(os.environ.get("CUT_EXPLAINED", cut_motion.CUT_EXPLAINED)))
@@ -903,12 +915,12 @@ if __name__ == "__main__":
         + (f"EDGE_PROP=1 EDGE_PROP_TAU={EDGE_PROP_TAU:g} " if EDGE_PROP else "") \
         + (f"COARSE_ENERGY=1 COARSE_ENERGY_WS={COARSE_ENERGY_WS:g} COARSE_ENERGY_WE={COARSE_ENERGY_WE:g} " if COARSE_ENERGY else "") \
         + ("LOCAL_CENTRE=1 " if LOCAL_CENTRE else "") \
-        + ("PHASE_FETCH=1 " if PHASE_FETCH else "") + ("PHASE_GATE=1 " if PHASE_GATE else "") \
+        + ("PHASE_FETCH=1 " if PHASE_FETCH else "") + ("PHASE_GATE=1 " if PHASE_GATE else "") + ("PHASE_FETCH_E=1 " if PHASE_FETCH_E else "") \
         + ("ALIAS_PRIOR=1 " if ALIAS_PRIOR else "") + ("ALIAS_CARRY=1 " if ALIAS_CARRY else "") \
         + ("OUTLINE_ADOPT=1 " if OUTLINE_ADOPT else "") \
         + ("PRINT_LATTICE=1 " if PRINT_LATTICE else "") \
         + ("TRUST_GATE=1 " if TRUST_GATE else "") \
-        + ("CUT_MOTION=1 " if CUT_MOTION else "") \
+        + ("BAR_REDECIDE=1 " if BAR_REDECIDE else "") + ("CUT_MOTION=1 " if CUT_MOTION else "") \
         + ("ALIAS_APERTURE=0 " if ALIAS_CARRY and not ALIAS_APERTURE else "")     # the zero seed is the recommendation's standing state and the line never named it
     env += f"PRUNE={PRUNE} " if PRUNE != "0" else ""     # recorded so the header can rebuild the file (REPAIRS.md L9)
     env += "STICKY_CACHE=1 " if STICKY_CACHE else ""

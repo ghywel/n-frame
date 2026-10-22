@@ -5450,3 +5450,89 @@ ALIAS_Q1D as written): the fix has to re-decide the across component wherever th
 that resolves a 9 px period (Q at the edge, H comfortably), with a reach of a period either way and a bias that is
 not the coarse seed's. Open, and the next question for a build: why the lock is always on the -9 side (the
 translation's +1 px across against REG_LAMBDA's pull, or the descents' scan order), which the same taps can answer.
+
+### Why always -9: the Moire's reversal, read band by band (2026-10-22, late evening)
+
+Pre-registered in `c3_flow.py` (mode `moire`) before the computation, on the taps already saved: the 9 px bars sampled
+at the 1/8 pitch and (second harmonic) the 1/16 pitch alias to a 72 px Moire moving at -8 times the bars' across speed
+v_a, so the 1/16 level's across error should be about -9 v_a (slope in [-11, -7]) and the finer levels should lock
+-9 round(v_a). **KILLED as registered:** the slope at S is -5.0 (rec) and -4.4 (High), and the H error matches
+-9 round(v_a) on 41-44 percent of the disc, not band by band. **What the bands show instead:** where v_a lies in 1.5-2.5
+px (30 percent of the disc) the 1/16 level reads the reversed Moire (its commonest error -17 against -18 predicted),
+and the finer levels recover one period of the two, leaving -9 at H; where v_a lies in 0.5-1.5 (36 percent) the coarse
+level mostly reads the truth (mode -1) and H is mostly right; near zero (28 percent) it is right throughout. So H's -9
+is mostly the fast half of the disc, a two-period Moire error half undone, and its side is the side of v_a, positive on
+96 percent of the disc (the +1 px translation). The reversal is real where the Moire dominates the coarse block and
+absent where the wall's grain does; the slope is the mixture.
+
+### Which coarse basin is the truth on P1 and P5 (2026-10-22, late evening)
+
+`tests/probes/phasefetch/basins.py`, pre-registered on paper: under the phase fetch the two coarse basins sit one
+speckle period apart (13.8 px) on both cases whatever the speed, so a "separation equals the period" cue is as
+speed-blind as `moire_s`. **Held:** the separation is 13.7 px on both. And the reading that moves the line: under the
+fetch P1's ring descent holds the truth on 100 percent of the box and its zero descent the -9.7 alias on 98 percent
+(the first step of the zero descent is +-12 px, nearer the alias than the truth); the coarse pass ranks the truth 68
+percent cheaper (PHASE_GATE's tap); yet the final flow is on the alias on 91 percent. The loss is at the 1/8 level, whose
+pick re-scores the candidates on its stored 8 px grid, where the speckle aliases. P5 under the fetch: the truth in the
+zero descent on 63 percent and the final flow on the truth on 100. The next form is therefore the fetch at the 1/8
+level too (PHASE_FETCH_E, below), not a gate.
+
+### BAR_REDECIDE: C3 +3.9 dB, C1 +2.2, nothing on the ladder lost (2026-10-22, late evening)
+
+`tests/bar_redecide.py` (a generator switch, off and byte-identical by default): one pass after the half-res chain's
+last median where the 5 x 5 structure tensor says the patch is one-dimensional (lambda2 / lambda1 under 0.15): the
+across component searched again at full resolution along the bars' normal, +-12 px in 1 px steps, a 7 x 7 SAD of taps
+2 px apart; among the near-best local minima (within 25 percent plus 1/255 of the lowest) the smallest across speed,
+refined by a parabola, replacing the flow only when that is a different basin (over 2 px); the along component never
+touched. Pre-registered in the module before any render; the High tier with and without, the M5, one sitting.
+
+| | High | High + BAR_REDECIDE | the test |
+|---|---|---|---|
+| C3's disc (cage.sh) | 23.43 | **27.30** | up 3.0 or more: held (+3.87; predicted 27-33) |
+| C1's cage / frame | 35.05 / 40.98 | 37.27 / 42.76 | not down 0.5: held, and up (predicted within 0.2: missed upward) |
+| C2's cage / frame | 31.86 / 37.75 | 31.64 / 37.60 | not down 0.5: held (-0.22) |
+| the 45, worst case | | R3 -0.06 | none down 1.0: held |
+| the 45, gains | | A1 +0.75, L3 +0.44, V3x +0.30, V1 +0.27, H1 +0.26 | |
+| capped means (headline, frozen) | 39.08, 38.33 | 39.08, 38.33 | not down 0.05: held |
+| region capped (headline) | 36.50 | 36.55 | |
+
+**PASSED.** The first change since 2026-09-21 to move C3, and the first to move C1 since the cage switch; it recovers
+about 30 percent of C3's gap to the oracle (36.47), so the disc is still under the blend (28.94). What remains is the
+smear the 13 px block cannot rank: where the wall's grain does not reach into the block, true and alias basins tie and
+the smallest-speed rule is right only when the truth is the slowest basin. A variant by the rule in any case (one pass,
+up to 1225 full-resolution fetches per one-dimensional half-res texel per source pair; its time below); adoption into a
+tier is Gareth's call. **The real-footage gate and the time, run the same evening:** on the build gate's five film
+segments (realbench.sh, 12 -> 24, the synthesised frames) PSNR 33.68 -> 33.71 and SSIM 0.9576 -> 0.9574, level within
+the segments' spread (no segment moves more than 0.10 dB or 0.0005); interleaved time (timeset.sh, 24 -> 60, raw
+sources) 11.88 -> 12.47 ms/frame on O5 (+5%) and 12.46 -> 13.71 on a film clip (+10%).
+
+### PHASE_FETCH_E, the fetch at the 1/8 level too: P1 +13.6, M1c_v12 +20.3, L7 +22.1, and a new comb (2026-10-22, late evening)
+
+`PHASE_FETCH_E=1` (with `PHASE_FETCH=1`; `tests/phase_fetch.py`): the 1/8 level's four candidate SADs (both refines,
+the data check's two) read their target taps from the frame. Pre-registered in the module before any render: as a
+mechanism CONFIRMED if P1 returns within 1.0 dB of the recommendation with P5 keeping at least half its +8.5, REFUTED
+otherwise; as a candidate killed by item 10's rule. The M5, the same tree as rec, phase and gate tonight.
+
+Every case it moved by more than 1 dB against the recommendation:
+
+| up | | down | |
+|---|---|---|---|
+| L7_textured_large | 23.57 -> 45.63 (+22.06) | M1c_noise_v10 | 45.10 -> 32.27 (-12.83) |
+| M1c_noise_v12 | 28.61 -> 48.92 (+20.31) | V3x_stairs_cov_v12 | 31.75 -> 23.85 (-7.90) |
+| P1_stairs_along_v4 | 45.25 -> 58.82 (+13.57) | V3_stairs_sq24_v12 | 26.46 -> 21.22 (-5.24) |
+| H2x_stairs_cov_h6 | 40.19 -> 46.72 (+6.53) | L1_trans_8px | 65.69 -> 61.07 (-4.62) |
+| V2x_stairs_cov_v6 | 41.02 -> 46.73 (+5.71) | L2_trans_16px | 50.12 -> 46.43 (-3.69) |
+| R3_rot_tex | 38.14 -> 42.79 (+4.65) | P5_stairs_along_v8_alias | 41.88 -> 38.42 (-3.46) |
+| M2_period40 | 52.02 -> 56.14 (+4.12) | F1_fourier_edge | 49.78 -> 46.89 (-2.89) |
+| M1c_noise_v6, L6, H1, V1, A5, O1, P2 | +3.72 to +1.08 | L8_diagonal | 46.71 -> 44.97 (-1.74) |
+
+Capped means level with the fetch alone (headline 38.91, frozen 38.35); the region column (headline) 35.92 against the
+fetch alone's 35.78 and the recommendation's 35.34. **The mechanism claim is REFUTED as registered** (P5 lost its gain, falling 3.46 under the
+recommendation), though its first half held far past the line: P1 is not only back but 13.6 dB above the
+recommendation, which confirms the basins tap's reading that P1 was lost at the 1/8 re-score. **Killed as a candidate**
+(eight cases down more than 1.0). The shape is the comb again, moved: the lane's inconclusive branch named the 1/8
+level's fixed grid as M1c_v12's mechanism, and fetching there lifts v12 by 20 dB, while v10 (1.25 of an 8 px texel)
+falls 12.8 where the stored grid had escaped it; L1 and L2, plain translations of a white box, lose 3.7-4.6. Read
+together with item 10, every grid the matcher reads on a fixed lattice protects some speeds by its comb and loses
+others, and fetching at the exact phase trades which. Not built tonight: the per-case reading of v10's new failure
+(the same basins tap at the 1/8 level), which is the next instrument on this line. A switch, off, byte-identical.

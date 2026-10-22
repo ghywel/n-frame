@@ -56,6 +56,17 @@ PRE-REGISTERED (before the run):
   (M2c_period40_v10, exactly 10 px/frame: H 9.69, Q 9.63, E 8.00 (one 8 px texel), S 11.75 (0.75 of a 16 px texel):
   the scale is right at every level, the coarse two read at their step); the slopes are printed as data, and the
   split keeps the original rule for H (its wall median within 1 px) and the 1.5 dB picture check.
+WHY ALWAYS -9 (`c3_flow.py moire <work>`; pre-registered 2026-10-22 evening, before the computation, from the taps
+already saved): the bars' 9 px period sampled at the 1/8 pitch (8 px) and at the 1/16 pitch (16 px, the second
+harmonic) aliases in both cases to f' = 1/9 - 1/8 = -1/72 per px: a 72 px Moire moving at -8 times the bars' across
+velocity v_a (reversed, eight times as fast). On the disc v_a = v . n runs about -0.7 to +2.9 px (the +1 px translation
+plus the rotation's +-1.75), so:
+  M1 the 1/16 level's across error is about -9 v_a: its least-squares slope on v_a over the disc lies in [-11, -7];
+  M2 the finer levels lock the nearest basin of the true bars to the Moire's reading: at H the across error equals
+     -9 round(v_a) within 1.5 px on at least half of the disc's texels, and in each v_a band ((-1, -0.5), (-0.5, 0.5),
+     (0.5, 1.5), (1.5, 2.5), (2.5, 3)) the commonest error is that band's -9 round(v_a) (+9, 0, -9, -18, -27);
+  so the one-sidedness is v_a's sign, the translation's: killed if the slope at S is outside [-11, -7] or M2 holds on
+  under a quarter of the disc.
 Numbers only; the taps stay in <work>.
 """
 import os
@@ -241,11 +252,40 @@ def calib(work, shader):
     return bad
 
 
+def moire(work):
+    names = sorted({p.name.rsplit("-", 1)[0] for p in work.glob("*-H.rgb48") if not p.name.startswith("calib-")})
+    for name in names:
+        print(f"== {name}")
+        for lv in ("S", "E", "Q", "H"):
+            F = tap(work / f"{name}-{lv}.rgb48")
+            VA, EA = [], []
+            for n in range(2, len(F) - 2):
+                t = n / 24.0
+                disc, _ = regions(t)
+                tr = truth(t, CX, CY)
+                va, _ = split(tr, t); ea, _ = split(F[n] - tr, t)
+                VA.append(va[disc]); EA.append(ea[disc])
+            va, ea = np.concatenate(VA), np.concatenate(EA)
+            slope = float(np.polyfit(va, ea, 1)[0])
+            pred = -9.0 * np.round(va)
+            hit = 100 * np.mean(np.abs(ea - pred) <= 1.5)
+            bands = []
+            for lo, hi in ((-1, -0.5), (-0.5, 0.5), (0.5, 1.5), (1.5, 2.5), (2.5, 3.0)):
+                m = (va >= lo) & (va < hi)
+                if m.sum() < 50: bands.append(f"[{lo},{hi}) n<50"); continue
+                h, e = np.histogram(ea[m], bins=np.arange(-31.5, 32.5, 1.0))
+                bands.append(f"[{lo},{hi}) {100 * m.mean():.0f}%: mode {int(e[np.argmax(h)] + 0.5):+d} (pred {int(-9 * round((lo + hi) / 2)):+d})")
+            print(f"  {lv}: slope of across error on v_a {slope:+.2f}; error = -9 round(v_a) within 1.5 px on {hit:.1f}%")
+            print("     " + "; ".join(bands))
+
+
 if __name__ == "__main__":
     mode, work = sys.argv[1], pathlib.Path(sys.argv[2]).resolve()
     work.mkdir(parents=True, exist_ok=True)
     if mode == "run":
         run(work, sys.argv[3:])
+    elif mode == "moire":
+        moire(work)
     elif mode == "calib":
         sys.exit(1 if calib(work, sys.argv[3]) else 0)
     elif mode == "read":

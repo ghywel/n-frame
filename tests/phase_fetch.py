@@ -43,7 +43,19 @@ under 38.26; confirms with all nine inside those bounds and M1c_v12 unchanged.
 KILLED 2026-10-22 (the M5): P1, V3, V1, H1, L1 exactly as ungated and P5's gain lost; the gate never opens where an
 alias is in reach (tests/probes/phasefetch/gate_fire.py; NFRAME-LIMITS.md, "The phase fetch gated by the two-basin
 tie"). Kept, off.
-    phase_fetch.add(t, gate=False) -> t      every anchor asserted exactly once
+PHASE_FETCH_E=1 (2026-10-22, with PHASE_FETCH=1; the lane's "1/8 form", wildcard.md "Item 10's result" (1)): the same
+fetch at the 1/8 level, in the four places it compares A with B by a candidate offset: the two refine passes' SADs
+(sad5x5_e, sad5x5_e2: the seeds' refinement and the pick among the coarse candidates) and the data check's two
+(sad5, sad5_ba). Why now (tests/probes/phasefetch/basins.py, 2026-10-22): under PHASE_FETCH alone P1's coarse ring
+descent holds the truth on 100 percent of texels and the coarse pass ranks it 68 percent cheaper than the zero
+descent's alias, yet the final flow sits on the alias on 91 percent: the loss is the 1/8 pick re-scoring the candidates
+on its stored 8 px grid, where the speckle aliases. PRE-REGISTERED (before any render; the M5, beside rec and
+PHASE_FETCH alone, the 45 and the comb cases): as a mechanism it is CONFIRMED if P1 comes back within 1.0 dB of the
+recommendation (from -6.67) with P5 keeping at least half its +8.5, and REFUTED otherwise; as a candidate for the
+recommendation it is killed by item 10's own rule (any of the 42 down more than 1.0, or the capped mean down more than
+0.15). Predicted: the mechanism confirmed; the period-24 family (V3, V1, H1) still down, its loss being the coarse
+reach's, so killed as a candidate.
+    phase_fetch.add(t, gate=False, eighth=False) -> t      every anchor asserted exactly once
 """
 
 LUMA = "vec3(0.299, 0.587, 0.114)"
@@ -114,7 +126,38 @@ def gate_block(d, uv, sad, desc):
 """
 
 
-def add(t, gate=False):
+# PHASE_FETCH_E: the 1/8 level's four candidate SADs, target taps from the frame
+E_SADS = (
+    ("            s += abs(LUMA_A_E_tex(uv_a + o).r - LUMA_B_E_tex(uv_b + o).r);",
+     "            s += abs(LUMA_A_E_tex(uv_a + o).r - lum_pf_b(uv_b + o));"),
+    ("            s += abs(LUMA_B_E_tex(uv_b + o).r - LUMA_A_E_tex(uv_a + o).r);",
+     "            s += abs(LUMA_B_E_tex(uv_b + o).r - lum_pf_a(uv_a + o));"),
+    ("            s += abs(LUMA_A_E_tex(uv + o).r - LUMA_B_E_tex(uv + o + flow_uv).r);",
+     "            s += abs(LUMA_A_E_tex(uv + o).r - lum_pf_b(uv + o + flow_uv));"),
+    ("            s += abs(LUMA_B_E_tex(uv + o).r - LUMA_A_E_tex(uv + o + flow_uv).r);",
+     "            s += abs(LUMA_B_E_tex(uv + o).r - lum_pf_a(uv + o + flow_uv));"),
+)
+E_PASSES = (("//!SAVE FLOW_E_AB_RAW\n", "float sad5x5_e(vec2 uv_a, vec2 uv_b) {\n"),
+            ("//!SAVE FLOW_E_BA_RAW\n", "float sad5x5_e2(vec2 uv_b, vec2 uv_a) {\n"),
+            ("//!SAVE FLOW_E_AB\n", "float sad5(vec2 uv, vec2 flow_uv) {\n"))
+
+
+def add_eighth(t):
+    def once(a):
+        k = t.count(a)
+        assert k == 1, f"phase fetch (1/8): anchor found {k} times, expected 1: {a[:70]!r}"
+    for save, first in E_PASSES:
+        once(save); once(first)
+        i = t.index(save); j = t.index(first)
+        assert i < j and "//!HOOK" not in t[i:j], f"phase fetch (1/8): {first.strip()} is not in the pass saving {save.strip()}"
+        t = t.replace(save, "//!BIND HOOKED\n//!BIND NEXT\n" + save).replace(first, HELPERS + first)
+    for old, new in E_SADS:
+        once(old)
+        t = t.replace(old, new)
+    return t
+
+
+def add(t, gate=False, eighth=False):
     def once(a):
         k = t.count(a)
         assert k == 1, f"phase fetch: anchor found {k} times, expected 1: {a[:70]!r}"
@@ -135,6 +178,8 @@ def add(t, gate=False):
         once(old)
         t = t.replace(old, new)
     assert "lum_pf_b(uv_b + o)" in t and "lum_pf_a(uv_a + o)" in t
+    if eighth:
+        t = add_eighth(t)
     if not gate:
         return t
     for old, new in ((SAD_AB_E_PF, GATED[SAD_AB_E_PF]), (SAD_BA_E_PF, GATED[SAD_BA_E_PF])) if energy else \
