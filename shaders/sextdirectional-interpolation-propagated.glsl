@@ -13620,11 +13620,13 @@ vec4 hook() {
                         float c0 = (SEXT_CENTRED == 1) ? sx[0] : 0.0, c0y = (SEXT_CENTRED == 1) ? sy[0] : 0.0;
                         vec2 m = vec2(c0 + sx[1] * u + sx[2] * u * u * 0.5 + sx[3] * u * u * u / 6.0 + sx[4] * u * u * u * u / 24.0,
                                       c0y + sy[1] * u + sy[2] * u * u * 0.5 + sy[3] * u * u * u / 6.0 + sy[4] * u * u * u * u / 24.0);
-                        vec2 r = d7[k] - m;
+                        // in px per axis (2026-10-22: the residual divided a uv norm by length(HOOKED_pt), which
+                        // read x at about 0.49 and y at 0.87 of itself at 1280x720; probes/uncertainty/sext_resid)
+                        vec2 r = (d7[k] - m) / HOOKED_pt;
                         num += w7[k] * dot(r, r);
                         den += w7[k];
                     }
-                    resid_px = sqrt(num / max(den, 1.0e-6)) / length(HOOKED_pt);
+                    resid_px = sqrt(num / max(den, 1.0e-6));
                 }
             }
         }
@@ -13961,11 +13963,13 @@ vec4 hook() {
                         float c0 = (SEXT_CENTRED == 1) ? sx[0] : 0.0, c0y = (SEXT_CENTRED == 1) ? sy[0] : 0.0;
                         vec2 m = vec2(c0 + sx[1] * u + sx[2] * u * u * 0.5 + sx[3] * u * u * u / 6.0 + sx[4] * u * u * u * u / 24.0,
                                       c0y + sy[1] * u + sy[2] * u * u * 0.5 + sy[3] * u * u * u / 6.0 + sy[4] * u * u * u * u / 24.0);
-                        vec2 r = d7[k] - m;
+                        // in px per axis (2026-10-22: the residual divided a uv norm by length(HOOKED_pt), which
+                        // read x at about 0.49 and y at 0.87 of itself at 1280x720; probes/uncertainty/sext_resid)
+                        vec2 r = (d7[k] - m) / HOOKED_pt;
                         num += w7[k] * dot(r, r);
                         den += w7[k];
                     }
-                    resid_px = sqrt(num / max(den, 1.0e-6)) / length(HOOKED_pt);
+                    resid_px = sqrt(num / max(den, 1.0e-6));
                 }
             }
         }

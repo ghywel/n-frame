@@ -130,5 +130,9 @@ AMBIGUITY (whether a different reading fits as well), because the lock that matt
 by the second; most of its inputs exist already (the carry's stored margins, the sext's least-squares residual, the
 forward-backward agreement the N-frame shaders compute, the cage's coherence support). It becomes an instrument only
 when calibrated: predicted against measured per-texel error on the ladder's exact truth, monotone and right in scale,
-with a counterfactual that must fail. Not built yet; the first step is reading out the cues that exist and scoring them.
+with a counterfactual that must fail. Not built yet. The first cue is measured (2026-10-22, `tests/probes/uncertainty/`): the sext's least-squares
+residual ranks its own field's error on six textured cases, the median error rising steadily from 0.05 to 0.21 px
+across the residual's deciles (Spearman +1.00 pooled, against +0.13 for the residual shuffled), so it is a working
+NOISE channel; but it holds only 40% of the gross errors in its top fifth. Most gross errors sit where the fit
+refuses to run (too few trusted links), and that refusal, a flag the shader already has, is the better gross cue.
 

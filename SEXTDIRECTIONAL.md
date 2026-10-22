@@ -85,10 +85,24 @@ each side should pay -- is unmeasured.
 
 The field on O6 and O10 and the rest of the field cases; the full
 32-case ladder; real footage; the residual's calibration as a confidence
-signal (mode 6 exists and is unmeasured); a host lookahead sized for six
+signal (mode 6 exists and is unmeasured; *measured 2026-10-22, below*); a host lookahead sized for six
 frames so the tail skips go; and a pre-registration written before any
 of that, which this line never had.
 
 *2026-10-01: the full ladder has since run (41 cases, L0 excluded, on the NAS's Arc):
 [tests/TESTING.md, "The Linux witness on the Arc (2026-09-30)"](tests/TESTING.md#the-linux-witness-on-the-arc-2026-09-30),
 the first deterministic family table.*
+
+*2026-10-22: the residual's calibration (`tests/probes/uncertainty/sext_resid.sh`, step 2 of the uncertainty map;
+WHAT-IT-CAN-MEASURE.md).* Scored against exact truth on O5, O6, O9, O10, A4 (constant acceleration) and a rigid
+translation at N:N, against the field the residual belongs to (the fit's velocity at the anchor, injected as a
+diagnostic mode: no shipped mode returns it; mode 7 and the tail's mode 4 return the straddle flow, which never enters
+the fit). The calibration read 9.997 px/frame for 10 and the background exactly zero. Interior texels, pooled (27.5
+million): the error's median rises with every residual decile, 0.049 to 0.208 px (Spearman over the deciles +1.00;
+per texel +0.41), and the shuffled residual fails as it must (+0.13 over deciles, 0.00 per texel, gross capture 20%);
+gross errors (over 2 px) in the residual's top fifth: 40%. The texels where the fit does not run (0.3-2.6% of the
+interior) hold about a hundred times more gross errors than the fitted ones. So the residual is a noise measure, and
+the refusal is the gross flag. The same run found the residual was not in pixels: it divided a uv norm by
+`length(HOOKED_pt)`, which reads x residuals at 0.49 and y at 0.87 of themselves at 1280x720. The generator now
+divides per axis; the picture does not change (the residual feeds only mode 6).
+

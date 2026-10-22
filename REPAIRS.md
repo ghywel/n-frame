@@ -170,6 +170,17 @@ route A (synthesis by mirror) would have to reproduce this drift to stay byte-id
 the editable bases to `shaders/src/` and generates the shipped bases from them pruned (about twelve edits); it follows
 the drift's fix, so the fix is made once, in the source.
 
+*Measured the same day (the M5, the 45 cases; `tests/prop_conf_ba.py` makes the corrected base; the generators
+regenerated from the shipped bases first, byte-identical on all ten files, as the control).* The High tier does not
+move: headline 39.080 against 39.080, region 36.501 against 36.500. The quad moves on 23 cases by more than 0.01 while
+the shipped quad rendered twice agrees within 0.01 on every case, so the moves are real, and they are a **trade**: the
+mean flat (38.225 against 38.226; region 35.342 against 35.328), L2 and M2 -0.44, A2 and L6 -0.35, L3 and H1 -0.20
+against P3 +0.40, L1 and O3 +0.09. The prediction is refuted in its form: the moves are on rigid translations and the
+period family, not on content with asymmetric contrast. The Low and Standard tiers prune the B->A propagation, so
+there only the unused helper would differ. Not never-worse, so **the shipped bases keep the shared read** and the
+corrected one is a variant (the tool); why reading A's contrast for the reverse chain helps L2 and M2 on the quad is
+open. Route B no longer waits on it.
+
 ---
 
 ## 2026-10-04: wrong comments across the family, one stale generated file, one generator anchor

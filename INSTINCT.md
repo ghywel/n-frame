@@ -122,7 +122,8 @@ never upgrades a status: nothing here is a measurement, and nothing here changes
 - 2026-10-22 11:45, Claude: unease (niggle), the cost lane's mirror comparison: three propagation twins that do not match
   their mirrors, in a family whose other eleven twins all do, high; first guess: a shared helper read the wrong frame's
   luma since the fusion. -> confirmed by the lane (`prop_conf()` reads LUMA_A_E for both directions); REPAIRS L11, a
-  variant and a ladder gate next. Outcome: open (whether it costs picture is the gate's question).
+  variant and a ladder gate next. Outcome: right that it was a defect in form; the gate (same day) found no effect on
+  High and a trade on the quad, so it stays a variant, and why the wrong read helps L2 and M2 is a new question.
 
 ## The set-aside pulls
 
