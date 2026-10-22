@@ -178,3 +178,38 @@ information; test that interaction before strengthening its preference for small
 Background checked during this review: [MIT, Foundations of Computer Vision, Image Sampling and Aliasing](https://visionbook.mit.edu/sampling_and_aliasing.html),
 sections 20.3-20.4 and 20.6, for spectral replication, reconstruction and spatiotemporal sampling. The transfer factor,
 specific counterexample and restrictions above are derived here; no novelty claim is made.
+
+## 5. Follow-up: the actual GLSL pass run on the GPU
+
+The owner clarified that GPT should run GPU work directly. [bar_gpu.py](bar_gpu.py) now supplies the exact seed and
+the half-res luma to the **unmodified** `bar_redecide.PASS`, then split-encodes its output flow. This is a newly
+generated diagnostic shader, with no change to the shipped sources. Eight short sequential M5/Vulkan renders,
+256x128, 24->24, ten scored outputs per run (source frames 3-12 of 16), reading `rgba64le` inside the filter graph.
+The two repository MoltenVK settings are enabled; dithering is disabled explicitly. The lower flat strip is still
+with zero seeded motion, and the bar interior excludes the strip boundary and image edges.
+
+**Measured, 2026-10-22, predictions held:**
+
+| Truth, px/frame | Bypass median x | Actual bars pass median x | Bars pass x, p5 to p95 |
+|---|---:|---:|---:|
+| +6 | 6.000000 | -2.999985 | -3.029282 to -2.968765 |
+| -6 | -6.000000 | 3.000015 | 2.968765 to 3.029282 |
+| +3 | 3.000015 | 3.000015 | 3.000015 to 3.000015 |
+
+All eight instrument checks pass: three bypass calibrations, deliberately truncated output refused by the same
+decoder, three flat-background checks (exact zero), and the +6 bars repeat byte-identical. All three registered
+velocity predictions pass. A .15 co-moving marker preserves +6 at every sampled point within four pixels of the
+marker's centre across the ten outputs; far from it the periodic interior still takes -3. This marker fraction is
+descriptive, not a new general calibration claim.
+
+This upgrades the prior failure from a CPU restriction to a measured failure of the actual GLSL decision with a
+known-correct input flow. It still does not establish how frequently the complete High pipeline supplies the correct
+seed in this regime, or a picture-score regression of High against High+BAR_REDECIDE. Those require the paired
+full-pipeline experiment described above. The current result is enough to show that the last pass can erase valid
+incoming motion, even while every input and output of the test is calibrated.
+
+    PYTHONDONTWRITEBYTECODE=1 python3 tests/probes/cage/bar_gpu.py --out "$NP_SCRATCH/bar-review/gpu"
+
+`FFMPEG` selects the patched executable; numpy is required. `results.json` records source-pass, executable, generated
+shader and output hashes, the eight run summaries, all controls and the verdict. The inputs, shaders, logs and raw
+outputs are retained beside it outside git. A compile/fallback error or wrong frame count refuses the measurement.

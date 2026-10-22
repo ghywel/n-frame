@@ -8,7 +8,10 @@ their numbers and a number without its instrument is not reproducible. They are 
 **2026-10-22 review supplement:** [cage/BAR-REVIEW.md](cage/BAR-REVIEW.md), reproduced by
 `cage/bar_review.py` (CPU, numpy; output `$NP_SCRATCH/bar-review/results.json`): 13/13 controls; a correct +6 px/frame
 seed on period-9 bars becomes -3 under BAR_REDECIDE, the fixed-grid interpolation response checked against direct
-samples, and the rotating bars' two-dimensional alias and coarse-candidate interpretation audited. No GPU verdict.
+samples, and the rotating bars' two-dimensional alias and coarse-candidate interpretation audited.
+`cage/bar_gpu.py` then runs the actual GLSL pass with exact input flow: the M5 confirms +6 -> -3 and -6 -> +3,
+with +3 retained, eight instrument checks passing and the repeat byte-identical. This isolates the final decision;
+it is not a paired full-High picture regression. GPU data: `$NP_SCRATCH/bar-review/gpu/`.
 
 Conventions: the repo root is derived from the script's own location. ffmpeg comes from `FFMPEG` and `FFPROBE`
 (the newer probes default to `$HOME/np-build/ffmpeg/ffmpeg`, the build `../../build-macos.sh` makes; the python
