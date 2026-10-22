@@ -298,3 +298,43 @@ on cage.sh's rectangle, 92 scored outputs from 120. Guard gains 3.9217 dB, again
 High baseline differs from Local's 23.43; these comparisons use the same run's baseline. A repeat is required before
 calling this deterministic. Data: `$NP_SCRATCH/bar-guard/results.json`; exact inputs are the previous block's guided
 source and scenes.sh's C3. This is a surviving candidate, not an adoption or a completed regression gate.
+
+## 8. Broader-support guard: complete M5 screen, still a partial repair
+
+G013's follow-up is `guard_followup.py`, summarized by `guard_report.py`. Sources/guard settings are unchanged.
+C1/C2/C3 all rendered through the existing cage driver; both High and guard then rendered on all 45 ladder cases
+(60 outputs per case, 44 synthesized/non-startup outputs scored). Counts and compiler/fallback errors are checked.
+The canonical means use the frozen and headline 42 separately, never the union's mean.
+
+| cage rectangle, dB | High | guard | change |
+|---|---:|---:|---:|
+| C1 | 34.8767 | 37.1746 | +2.2978 |
+| C2 | 31.7834 | 32.0905 | +.3072 |
+| C3 | 23.2378 | 27.1597 | +3.9218 |
+
+The frame scores improve too: C1 +1.8860, C2 +.2605. C3's guard score log reproduces exactly; High's changes from
+23.2379348 to 23.2378261 (about .000109 dB). That is a failing *strict score-log identity* control on the M5, though
+it is far smaller than the comparisons here. Do not call this an Arc identity verdict or deterministic adoption gate.
+
+**45-case M5 screen passes:** worst loss is R3 at -.0500 dB, versus the registered 1 dB limit. Capped frozen mean
+38.330774 -> 38.331039; headline 39.079919 -> 39.080168. Those tiny mean differences are effectively level, not a
+meaningful gain. The .05 capped-loss thresholds hold on both canonical sets. Real-footage gate, timing and an Arc
+verdict were not run for this still-incomplete repair.
+
+**The important failure remains:** on the fixed guided scene, the same +3-pixel motion-following mask selected by
+High-to-bars field corruption has MSE High .000081417, bars .00744811, guard .00184300. The guard removes 75.3% of
+bars' local squared error, yet remains **22.64 times worse than High**, a -13.55 dB local change. This does not meet a
+claim of preserving the correct picture. No masks or new thresholds were fitted to make the candidate pass.
+The whole guided crop improves from High by 9.58 dB (guard MSE .000874257), again hiding the local defect.
+
+Thus the guard survives its written preliminary and ladder thresholds and improves C1/C2, but is a **partial repair**.
+Retain both this surviving candidate and the unresolved local regression in any next comparison. It lives only as
+an asserted diagnostic variant generator; no production switch, default change or adoption is made here.
+Data and complete results: `$NP_SCRATCH/bar-guard/followup/{results,report}.json` with the raw guided picture,
+90 ladder renders' logs, cage/repeat scores and driver logs. Reproduce round 2 after round 1:
+
+    PYTHONDONTWRITEBYTECODE=1 python3 tests/probes/cage/guard_followup.py --work "$NP_SCRATCH/bar-guard"
+    PYTHONDONTWRITEBYTECODE=1 python3 tests/probes/cage/guard_report.py "$NP_SCRATCH/bar-guard"
+
+Reasoned verdict: a useful candidate with visible local failure; stop short of adoption. Gut verdict: larger support
+helps, but the remaining damage should lead the next experiment rather than the attractive whole-crop mean.

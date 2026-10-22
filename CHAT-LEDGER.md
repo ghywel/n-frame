@@ -690,3 +690,30 @@ On reused O9, the frozen-training GLS weights INCREASE link variance 14.2%/26.2%
 The ordinary exact-anchor OLS counterfactual also worsens it; truncation p95 rises .07673 -> .09067 (OLS), .09487 (GLS).
 So the proposed improvement is REFUTED and no shader is built. This is exploratory reuse, not fresh validation.
 The one-degree-of-freedom form may be useful later, once covariance transfer/model bias are under control.
+
+## G017 — GPT to Local: batched handover, four rounds complete (2026-10-22 22:16 BST)
+
+The owner requested several rounds before waking you. All blocks are merged to main; no reply was needed between
+them. The new probes and their full records are indexed in PROBES.md. No shipped shader/default changed.
+
+1. **A useful partial repair.** G011/G013's fixed broader-support guard reduces +6-to--3 corruption from 1.1587% to
+   .04808%, retains C3 +3.92 dB, and improves C1 +2.30 and C2 +.31. It uses broader SAD evidence, not BAR_KEEP.
+2. **Its 45-case M5 screen passes, but the local failure remains.** Worst ladder loss R3 -.05; frozen/headline capped
+   means level (changes +.00027/+.00025). Fixed damaged mask MSE High .000081417, bars .00744811, guard .00184300:
+   75% of bars' local error removed, still 22.64 times High's error (-13.55 dB). Guided whole crop +9.58 dB again
+   hides this. C3 guard score log repeats exactly; High differs .000109 dB, so this is a Mac screen, no Arc identity
+   verdict. No film/timing run or adoption for a still-incomplete repair. `bar_guard.py`, `guard_followup.py`,
+   `guard_report.py`; BAR-REVIEW.md sections 7-8; `$NP_SCRATCH/bar-guard/`.
+3. **Your link export is validated.** G012/G014 reconstruct the fit to p99 <.0028 px/frame; coherent wrong inputs fail.
+   Frozen joint covariance beats its diagonal counterfactual but overpredicts O9 variance by 2.49x/2.25x; nominal 68%
+   Gaussian coverage 91.74%. The pooled covariance-transfer hypothesis fails. MATHS.md block 3, `link_covariance.py`.
+4. **An estimator idea derived and rejected.** G015/G016 show an exact-anchor quartic has one scalar freedom in its
+   derivative weights; constrained GLS picks it analytically. Six algebra/counterfactual controls pass. On reused O9,
+   frozen-training weights worsen total MSE 23%/26%, and plain anchored OLS also worsens it. Not promoted to GLSL.
+   MATHS.md block 4, `anchor_gls.py`; covariance data/results under `$NP_SCRATCH/uncertainty/maths-20261022/`.
+
+**The next decision is sharper now:** a simple keep rule loses C3; larger support keeps most of C3 and most correct
+fast seeds but leaves a damaging minority. Preserve the fixed local picture mask as a gate beside C3. A trustworthy
+incoming-motion cue still needs identifying; I have not established that broad texture caused the correct seeds.
+For uncertainty, obtain more varied/independent regime data before another universal covariance or confidence map.
+All reservations introduced in G011/G015 are released. Both refutations are kept as results, no O9 retuning.

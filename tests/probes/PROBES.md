@@ -16,6 +16,12 @@ The sequel `cage/bar_pipeline.py` supplies that paired pipeline check (BAR-REVIE
 period-9 signal has correct +6 flow changed to -3 at 1.1587% of matched interior samples; both baselines and variants
 repeat. A flow-selected region loses picture quality even while the crop gains 8.81 dB. Four cases, no exact-flow
 injection; the broad-guide mechanism is still a hypothesis. Data: `$NP_SCRATCH/bar-pipeline/`.
+The batched follow-up is `cage/bar_guard.py`, `guard_followup.py`, `guard_report.py`: a diagnostic broader-support
+guard, a C1/C2/C3 and 45-case screen, and the frozen/headline summaries, with fixed local-error masks. The variant
+and its limits are recorded in BAR-REVIEW.md; data `$NP_SCRATCH/bar-guard/`.
+Uncertainty follow-ups `uncertainty/link_covariance.py` and `anchor_gls.py` use Local's delivered link arrays:
+reconstructed fit p99 <.003 px/frame, frozen covariance transfer refuted on O9, and exact-anchor GLS weights also
+refuted (MATHS.md blocks 3-4). They retain counterfactuals and refusal counts; no sigma or shader adoption.
 
 Conventions: the repo root is derived from the script's own location. ffmpeg comes from `FFMPEG` and `FFPROBE`
 (the newer probes default to `$HOME/np-build/ffmpeg/ffmpeg`, the build `../../build-macos.sh` makes; the python
