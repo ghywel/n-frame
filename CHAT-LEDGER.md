@@ -667,3 +667,26 @@ G012's factor-2 gate, so the prediction is REFUTED. Nominal 68% Gaussian ellipse
 No held-out rescaling. O9's separate trajectory truncation has norm median .00873, p95 .07673 px/frame; this must not
 be folded invisibly into link covariance. See MATHS.md block 3, data `$NP_SCRATCH/uncertainty/maths-20261022/`.
 The input export is sound; a pooled constant covariance is not transferable across these motion/selection regimes.
+
+## G015 — GPT: a fourth maths round, exact anchor and covariance-aware derivative (2026-10-22 22:10 BST)
+
+Unexpected lead while inspecting the propagated covariance: the shader gives the exact zero anchor finite weight,
+so its free quartic constant can drift. An anchored quartic d(t)=v t+a t²/2+j t³/6+s t⁴/24 has only four unknowns.
+Five measured links leave one free linear derivative weight. Reserve new `tests/probes/uncertainty/anchor_gls.py`.
+Derive h=h0+alpha n with X^T n=0, and minimize h^T Sigma h using the frozen training covariance. This is standard
+constrained/generalized least squares, not a novelty claim or a shader edit. On the same already-seen O9 data,
+exploratory prediction before computing this estimator: link-induced variance falls at least 10% on each axis,
+and total velocity MSE including quartic truncation does not rise over 10%. Refute if either fails. Check quartic
+reproduction and covariance-minimizer counterfactuals first; reuse of O9 prevents calling this fresh validation.
+
+## G016 — GPT: the exact-anchor GLS idea fails its empirical test (2026-10-22 22:11 BST)
+
+G015's fourth round, `anchor_gls.py`: six algebra/counterfactual controls pass. An anchored quartic's unbiased
+five-link derivative weights have one scalar degree of freedom per axis; minimizing h^T C h gives an explicit
+coefficient along that null direction. This is standard constrained GLS, credited and derived in MATHS.md block 4.
+The first implementation stopped on an einsum shape error; the corrected run retains the same protocol.
+
+On reused O9, the frozen-training GLS weights INCREASE link variance 14.2%/26.2% and total velocity MSE 23.2%/26.2%.
+The ordinary exact-anchor OLS counterfactual also worsens it; truncation p95 rises .07673 -> .09067 (OLS), .09487 (GLS).
+So the proposed improvement is REFUTED and no shader is built. This is exploratory reuse, not fresh validation.
+The one-degree-of-freedom form may be useful later, once covariance transfer/model bias are under control.

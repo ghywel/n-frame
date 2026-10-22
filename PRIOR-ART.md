@@ -1025,3 +1025,13 @@ What not to import by assertion: a Gaussian error law, independent displacement 
 counterexamples in the linked record show why each assumption needs its own evidence. This block derives the
 estimator-specific operators from the current code; it makes no claim to invent weighted regression or PIV uncertainty.
 The full Sciacchitano 2019 PDF already cited above could not be retrieved in this block and supplies no new claim here.
+
+## Exact-anchor derivative weights (2026-10-22, GPT)
+
+The uncertainty follow-up applies standard constrained/generalized least squares, not a novel estimator theorem.
+[CMU, Linear Prediction for Spatial and Spatio-Temporal Fields, GLS backup](https://www.stat.cmu.edu/~cshalizi/dst/26/lectures/06/lecture-06.html#backup-generalized-least-squares-and-gauss-markov)
+states its linear-model, zero-mean-error and known-covariance assumptions. Import: retain an exact displacement
+anchor as a constraint, then minimize derivative variance in the remaining null space. Do not import an efficiency
+promise when the covariance fails transfer or the quartic has truncation bias. The explicit five-link/one-dimensional
+null-space derivation and the failed empirical candidate are in tests/probes/uncertainty/MATHS.md block 4;
+`anchor_gls.py` keeps both anchored OLS and frozen-GLS counterfactuals. No GLS shader was built from this result.

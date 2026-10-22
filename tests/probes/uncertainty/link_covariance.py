@@ -53,7 +53,8 @@ def sample(path,case,rng):
     trunc=np.einsum('ni,nij->nj',h,truth)-vel
     projected=np.einsum('ni,nij->nj',h[:,:5],error.reshape(-1,5,2))
     return {'error':error,'h':h[:,:5],'projected':projected,'trunc':trunc,'counts':counts,
-            'reconstruction_p99':gate,'coherent_fault_p99':badgate,'frames':frames.tolist()}
+            'reconstruction_p99':gate,'coherent_fault_p99':badgate,'frames':frames.tolist(),
+            'truth':truth[:,:5,:],'velocity':vel}
 
 def evaluate(data,mu,cov):
     h=data['h'];hs=np.zeros((len(h),2,10));hs[:,0,::2]=h;hs[:,1,1::2]=h

@@ -427,3 +427,57 @@ The output retains input hashes, the mean/covariance, all reconstruction/fault c
 No GPU job or shader change was needed for this round. Reasoned verdict: the export permits validated covariance
 propagation; the frozen constant covariance fails transfer. Gut verdict: cross-covariance matters, but the regime
 and selection matter at least as much; a single scalar sigma would conceal both.
+
+## Block 4: exact-anchor quartic and covariance-aware weights, explored and refuted
+
+The extra round G015 tested a possible improvement rather than only a confidence readout. The current quartic has a
+free constant and gives the exactly known d(0)=0 a finite observation weight. One can instead impose that equality:
+
+    d(t)=v t+a t²/2+j t³/6+s t⁴/24.
+
+For the five live times [-3,-2,-1,1,2], form X with those four factorial-power columns. A linear derivative weight h
+must satisfy X^T h=(1,0,0,0)^T to reproduce every anchored quartic. X has rank four, so all such weights are h0+alpha n,
+where h0 is the anchored ordinary-least-squares derivative and X^T n=0. For positive-definite input covariance C,
+
+    alpha* = -(n^T C h0)/(n^T C n).
+
+Proof: expand (h0+alpha n)^T C(h0+alpha n); it is a strictly convex quadratic with derivative
+2 n^T C h0+2 alpha n^T C n. This is a one-dimensional form of constrained/generalized least squares. It is not a new
+estimation theorem, and the variance claim assumes the covariance and polynomial model are right.
+
+`anchor_gls.py` uses the already frozen M2c+A4 covariance separately for x and y; cross-axis covariances are not used
+in this candidate. It reuses exactly the block-3 samples and refusal/reconstruction controls. Six algebra controls
+pass: quartic reproduction, the stationary variance minimum against explicit perturbations, and deliberately wrong
+coefficients rejected on both axes. The first run stopped on an einsum dimension error before producing any result;
+fixing that contraction changed neither the model nor thresholds.
+
+This is an **exploratory reuse of already-seen O9**, explicitly declared before computing the new estimator, not an
+independent validation set. Prediction: >=10% link-variance reduction on each axis, no >10% total-MSE increase.
+
+| case | GLS / old link variance, x,y | GLS / old total velocity MSE, x,y |
+|---|---|---|
+| M2c | .982, .873 | .982, .873 |
+| A4 | .984, 1.029 | .985, 1.029 |
+| O9 | **1.142, 1.262** | **1.232, 1.262** |
+
+**REFUTED.** On O9, the supposedly better covariance-aware estimator increases link variance and total error.
+The simpler exact-anchor OLS counterfactual also worsens O9: variance .008420/.012820 versus the old .007671/.011915;
+total MSE .012396/.012822 versus .010616/.011917. GLS worsens those to .013076/.015037. O9 truncation p95 rises from
+.07673 to .09067 (anchor OLS) and .09487 (GLS). Both covariance transfer and trajectory mismatch therefore matter.
+No candidate was put into GLSL, and no per-case optimal weights were fitted after this failure.
+
+The useful structural finding remains: with five live links and an exact anchor, unbiased quartic derivative
+weights have one scalar degree of freedom per axis. That can be optimized cheaply **if** a transferable covariance
+and valid motion model are established. These measurements reject this particular frozen-covariance choice, not the
+exact displacement identity itself. The same current estimator is unbiased on exact quartics in expectation under
+zero-mean errors even though its fitted constant can drift; "known anchor" alone is not proof of improved real error.
+
+    PYTHONDONTWRITEBYTECODE=1 python3 tests/probes/uncertainty/anchor_gls.py \
+        "$NP_SCRATCH/uncertainty/export_links" --out "$NP_SCRATCH/uncertainty/maths-20261022/anchor-gls.json"
+
+The JSON retains coefficients, null vector, controls and all errors, including the OLS counterfactual. Background:
+[CMU's GLS and Gauss-Markov lecture](https://www.stat.cmu.edu/~cshalizi/dst/26/lectures/06/lecture-06.html#backup-generalized-least-squares-and-gauss-markov),
+which states the covariance/model assumptions and explains why estimated covariance introduces another uncertainty.
+Our scalar constrained derivation and the tested stencil are given above. Reasoned verdict: reject these weights for
+shader adoption. Gut verdict: exact constraints are attractive, but the failed covariance model cannot make a better
+estimator by algebra alone.
