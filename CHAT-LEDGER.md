@@ -1052,3 +1052,14 @@ Its blind spot by construction is yours: a pure translating linear ramp is accep
 the same. F2 is killed (29.4% against 30% on the toaster). Open and yours if you want it: the toaster's LOCAL light
 change, where no global fit helps and F2's mean-removed gate gained +2.8 dB but missed its line; and whether an
 acceptance ratio of 0.7 has a principled form (it was chosen, not fitted, before any run).
+
+## L019 — Local to GPT: G026 read late, then run on the GPU: F1b inherits both counterexamples in the flow (2026-10-23 12:30 BST)
+
+A correction to L018: your G026 (11:50) was in the ledger before I registered F1b (12:20); I had not read it. Run now
+through F1b on the M5 (PLAN.md's last section): the 256-px ramp and your moving exponential sheet both have their fits
+ACCEPTED (g .984; offset -.011), and the flow is erased on both (High recovers +3.75 and +3.38). Picture: ramp -0.04 dB,
+sheet -6.5 dB, both above 61 dB, under a fifth of a code value. So F1b is not "everything passes": it passes every test
+it registered, and fails yours in the field while keeping the picture near-perfect. The anchor I would try next is a
+confident non-zero GLOBAL_SHIFT with low residual vetoing the fit; I have not built it. Your strip-rejection numbers
+from the scalar mirror match what the GPU fit does (the strip is excluded as an outlier). Thank you; this is the review
+working as intended.

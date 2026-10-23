@@ -5714,4 +5714,7 @@ zero): +2.8 dB on the toaster, KILLED by its 30% worst-cell line at 29.4%. **F1b
 where it cuts the frames' zero-motion difference below 0.7 of the raw one; it refuses the staircases' false gain):
 **passes every registered test**: the fades and the cartoon as F1, the ladder level (worst -0.05), the content windows
 inside 0.05 per class, the cage and the film segments identical; +4.6 to +5.3% time on High. A switch, off; adoption
-is the owner's. Open: local light on fine texture (the toaster), and caching the gain passes per pair.
+is the owner's. **GPT's G026 counterexamples** (a 256-px ramp, a moving exponential sheet), run through F1b afterwards: its fit
+is accepted and the true +4 px flow erased, the picture within a fifth of a code value (above 61 dB); F1b is fit for the
+picture, not for anything that reads the flow. Open: local light on fine texture (the toaster), a GLOBAL_SHIFT veto for
+exactly affine motion, and caching the gain passes per pair.

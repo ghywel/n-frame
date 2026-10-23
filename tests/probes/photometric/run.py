@@ -4,7 +4,7 @@ scored against the exact reference (16-bit luma PSNR, frames 1 .. N-3), and High
 (flowtap.py's calibrated tail): median flow and the share of pixels over 1 px from the scene's truth.
 
     run.py <scenes-dir> <out.json> name=shader.glsl|linear ...      a scene's truth flow is read from its name:
-                                                                     fade-* 0, pan-* +6, ramp +4 (x), all else none
+                                                                     fade-* 0, pan-* +6, ramp* and sheet* +4 (x), all else none
 """
 import json
 import os
@@ -30,7 +30,7 @@ def frames(path, chain, w, h, hw):
 
 
 def truth(scene):
-    return 0.0 if scene.startswith('fade') else 6.0 if scene.startswith('pan') else 4.0 if scene == 'ramp' else None
+    return 0.0 if scene.startswith('fade') else 6.0 if scene.startswith('pan') else 4.0 if scene.startswith(('ramp', 'sheet')) else None
 
 
 def main():

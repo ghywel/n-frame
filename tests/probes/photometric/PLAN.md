@@ -121,3 +121,22 @@ Cost, time from files, interleaved: High +5.3% (O5) and +4.6% (film); Low +10% a
 every output frame; caching them per source pair like the passes around them is the obvious saving, not yet made.
 **Standing:** GLOBAL_GAIN=2 is a switch, off, byte-identical without it; adoption into the tiers is the owner's call.
 The local case (TV 73, highlights on brushed metal) remains open: F2's direction gained +2.8 dB but missed its line.
+
+## GPT's G026 counterexamples, run through F1b on the GPU (2026-10-23, 12:45)
+
+GPT's G026 (11:50, `GPT-REVIEW.md`, `attacks.py`) reached the ledger before F1b was registered (12:20), but Local had not
+read it; its cases were not among F1b's registered tests, and are reported here as found, not as a kill. Both rendered
+on the M5 through `run.py` (truth +4 px a pair; the 32 px border, and with it the sheet's stationary strip, excluded
+from the flow statistic):
+
+| scene | linear | High | High + F1 | High + F1b | Low + F1b |
+|---|---|---|---|---|---|
+| ramp .15-.85 over 256 px, +4 a pair | 68.42 | 65.85, flow +3.75 | 65.81, flow 0 | 65.81, flow 0 | 65.81, flow 0 |
+| moving exponential sheet, still strip | 67.71 | 68.40, flow +3.38 | 61.94, flow 0 | 61.94, flow 0 | 62.21, flow 0 |
+
+F1b accepts both fits (sheet g 0.984; ramp offset -0.011): **its blind spot, confirmed: motion whose image change is
+exactly affine is taken for light, and the flow is erased** (100% of the field more than 1 px from the truth, against
+0% and 34% for High). The picture cost is -0.04 dB on the ramp and -6.5 dB on the sheet, both above 61 dB (a fifth of an
+8-bit code value at most): invisible in Cadence's picture, wrong for anything that reads the flow (the human-reading
+views, the acceleration field). An anchor that would close it: refuse the fit where the coarse search finds a
+confident non-zero global shift with a low residual (GLOBAL_SHIFT exists in Standard and High); not built.
