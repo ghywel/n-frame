@@ -626,6 +626,8 @@ byte-identical (checked 2026-10-01; the `-4k` twins apart from the date in
 their header). Every switch is off by default, and with all of them off the
 output is the recommendation.
 
+Every switch's purpose, implementation, evidence and defaults per host, in full: [SWITCH-AUDIT.md](SWITCH-AUDIT.md) (GPT, 2026-10-23); the table below is the compact form.
+
 | Switch | What it adds | Since | Shipped in |
 |---|---|---|---|
 | `GLOBAL_SEED=1` | The frame's dominant shift, found by two small passes, as a coarse seed, a 1/8 candidate and the centre of the 1/8 level's small-motion prior (the fast pan) | 2026-09-20 | `-global`; `-global-cage` onwards |
@@ -642,7 +644,7 @@ output is the recommendation.
 | `EDGE_PROP=1`, with `EDGE_PROP_TAU` | Flow-agreement weighting in the 1/8 propagation | 2026-09-27 | none: REFUTED the same evening (capped ladder mean -0.36 dB, 21 of 42 cases down) |
 | `ZERO_SEED=1` | Switches a base's zero seed on in the output | 2026-09-06 | redundant on the propagated base, which has the seed on (and `ZERO_SEED=0` does not force it off: G019) |
 | `PHASE_FETCH=1`, with `PHASE_GATE=1` or `PHASE_FETCH_E=1` | The coarse (and with `_E` the 1/8) matcher's target taps read from the frame at the candidate's exact phase (`tests/phase_fetch.py`) | 2026-10-21/22 | none: trades along the texture period (L7 +19.7 to +22, P1 -6.7 or +13.6, M1c_v10 -12.8 with `_E`); the gate KILLED |
-| `BAR_REDECIDE=1` | On a one-dimensional patch, the across component re-decided at full resolution along the bars' normal after the half-res chain (`tests/bar_redecide.py`) | 2026-10-22 | none yet: a variant that passed its kill test on High (C3 +3.9, C1 +2.2, C4 +2.25, ladder and real film level, +5-10% time); GPT's counterexample (a correct fast seed on a fine period is erased) stands for the pass, unobserved in the pipeline; adoption is the owner's call |
+| `BAR_REDECIDE=1` | On a one-dimensional patch, the across component re-decided at full resolution along the bars' normal after the half-res chain (`tests/bar_redecide.py`) | 2026-10-22 | none yet: a variant that passed its kill test on High (C3 +3.9, C1 +2.2, C4 +2.25, ladder and real film level, +5-10% time); GPT's counterexample (a correct fast seed on a fine period is erased) is OBSERVED in the ordinary pipeline (G010, `bar_pipeline.py`), a local regression `BAR_BASIN` closes; adoption is the owner's call |
 | `BAR_KEEP=1` (needs `BAR_REDECIDE=1`) | Keep the incoming basin whenever it is itself near-best (G008's counterexample) | 2026-10-22 | none: KILLED (C3 keeps +0.44 of +3.87, C2 -0.68) |
 | `BAR_BASIN=1` (needs `BAR_REDECIDE=1`) | A basin change needs GPT's 48 px evidence, basin against basin at their own fine minima (`tests/bar_redecide.py`, `tests/probes/cage/bar_basin.py`) | 2026-10-23 | none yet: every registered condition held (the guided scene's alias flips 3.65% -> 0, its damage mask under High's; C1 +2.47, C2 +0.24, C3 +3.82, C4 +2.34; ladder, film level; +3.6-5.8% time); forfeits the smallest-speed rule's coherence on true ties (a random draw: +0.2 where the plain pass gains +10); adoption is the owner's call |
 | `CUT_MOTION=1`, with `CUT_EXPLAINED` | The cut gate holds a frame only when the final flow also fails to explain the frames' difference (`tests/cut_motion.py`) | 2026-10-01 | every `-cut` file: all three Cadence tiers |
@@ -650,7 +652,7 @@ output is the recommendation.
 | `QZERO_MOIRE_MIN` (default 0.25) | The Moire score that opens `QZERO_MOIRE`'s zero descent | 2026-09-30 | the default everywhere |
 | `TRUST_GATE=1` (needs `ALIAS_CARRY=1`; knobs `TRUST_DECIDE`, `TRUST_OFFER`, `TRUST_UNIQUE`, `TRUST_ALIAS`) | Where the 1/8 level is ambiguous, the quarter level offers its minima and full resolution decides (`tests/trust_gate.py`) | 2026-10-01 | none: built, gated and held (ENERGY-TRANSFER.md, "Where the per-level trust gate stands") |
 | `LOCAL_CENTRE=1` | The 1/8 prior centred on the texel's own agreed coarse candidate (`tests/local_centre.py`) | 2026-10-21 | none: between its lines (W3 +0.7 plain, +1.46 on energy; SWARM-2026-10-21.md item 9) |
-| `PRUNE=1`/`2` | Removes the passes no live pass can observe; 2 also the fused passes' dead B->A twins; output byte-identical (`tests/prune_passes.py`) | 2026-10-21 | `=2` in the recommendation and the three `-cut` tiers with their 4K twins, and in the demo app; NOT in Cadence's bundled graphs, which predate it (audit 2026-10-23; Cadence rebuilt from the pruned files the same morning) |
+| `PRUNE=1`/`2` | Removes the passes no live pass can observe; 2 also the fused passes' dead B->A twins; output byte-identical (`tests/prune_passes.py`) | 2026-10-21 | `=2` in the recommendation and the three `-cut` tiers with their 4K twins, in the demo app, and in Cadence's bundled tiers since 2026-10-23 (Low 43, Standard 63, High 82 passes; byte-identical on Metal; CADENCE.md) |
 | `STICKY_CACHE=1` (also the tri/quad/quint/sext generators) | Pair-cached passes get `//!WHEN pair_changed` and `//!STICKY` (`tests/sticky_cache.py`) | 2026-10-22 | none: a host capability, not a quality switch; it needs the 2026-10-22 libplacebo patch, and the Metal graph translator rejects it today (G019) |
 
 Other generators' switches: `tests/gen_quaddirectional.py` takes `CADENCE=1`
