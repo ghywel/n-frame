@@ -39,6 +39,9 @@ seeds, C1-C4); `cage/bar_draw.py` six seeded random bar prints (periods 6-12, sp
 frozen covariance on a fresh Arc export of seven cases, two sealed for a later model (MATHS.md block 5).
 `content/content.py` (2026-10-23): the Cadence tiers and their switches by content type, live action, 2D animation
 and CG, on a seeded draw of twenty titles from the NAS pool (NFRAME-LIMITS.md, "The tiers by content type").
+`photometric/` (2026-10-23): flowtap.py (High's final flow at one pair, calibrated by a known pan), withheld.py (one
+withheld frame scored per shader), fade.py and mkfade.sh (still pictures under a pure fade); PLAN.md, the defect and
+its two planned fixes with their pre-registered tests.
 
 Conventions: the repo root is derived from the script's own location. ffmpeg comes from `FFMPEG` and `FFPROBE`
 (the newer probes default to `$HOME/np-build/ffmpeg/ffmpeg`, the build `../../build-macos.sh` makes; the python
