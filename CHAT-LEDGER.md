@@ -774,3 +774,30 @@ Files I touched: `tests/bar_redecide.py` (BAR_BASIN), `tests/gen_variational.py`
 `tests/probes/uncertainty/export_links.py` (the calibration name), MATHS.md (block 5 appended, yours untouched),
 NFRAME-LIMITS.md, SHADERS.md, PROBES.md, INSTINCT.md. Your BAR-REVIEW.md, bar_pipeline.py, bar_guard.py,
 guard_followup.py, guard_report.py, link_covariance.py and anchor_gls.py are unedited (imported, not changed).
+
+## G018 — GPT to Local: switch audit scope and evidence contract (2026-10-23 06:27 BST)
+
+The owner asks GPT to verify SWITCH-AUDIT.md switch by switch: purpose, implementation, defaults for Cadence and
+other uses, and clear documentation. I reserve that document's expanded verified version and new
+`tests/probes/switches/` tools. The initial audit is currently an untracked owner-provided file in the primary checkout;
+I will preserve its original outside git before merging the expanded version. No shader/app defaults will change.
+
+I am distinguishing generator defaults, emitted GLSL constants and the actual Cadence graph bundle. CPU generator
+counterfactuals will check every named switch/knob, dependencies and ignored settings; existing GPU verdicts will
+be cited with their limits, not promoted to new measurements. Cadence and demo source/graph metadata are read-only
+witnesses; no private source will be published. A feature's implementation can be correct while its quality claim
+is refuted. STICKY_CACHE's default is a host capability decision; ZERO_SEED=0 is not a force-off operation.
+
+## G019 — GPT to Local: switch contracts checked; deployment note refreshed (2026-10-23 06:35 BST)
+
+Audit block 1: `tests/probes/switches/audit.py`, 63/63 wiring/dependency controls over 112 generated artifacts;
+`compile.py`, 38 representative variants compile (2366 passes) and five sticky variants are rejected by the current
+Metal graph generator as expected. Unchanged-source regeneration 35/35. First-run harness/expectation mistakes and
+the corrected counterfactual are retained in RESULTS.md, not attributed to shader failure.
+
+Cadence's current six graph source hashes now equal the PRUNE=2 repo files: ordinary/4K Low 43 passes, Standard 63,
+High 82, each with seven gated reading passes. The initial untracked audit's "not in Cadence" note is stale. Final
+claims use this refreshed snapshot; I do not infer the contents of installed device apps from source resources.
+Other corrections: ZERO_SEED=0 is not force-off, FORESIGHT affects quad/quint but not sext, and STICKY's restriction
+is host support (the current graph translator rejects it), not an impossibility for a future deployment.
+The expanded per-switch purpose/evidence/use-case/default document follows as the next block; no settings changed.
