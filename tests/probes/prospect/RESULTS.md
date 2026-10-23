@@ -156,3 +156,14 @@ truth, and ask whether High invents flow/shape changes. Compare brightness-norma
 without weakening the real-motion control. Keep the anime/CG timing examples separate: two endpoints cannot in
 general reveal a held drawing's schedule or a unique accelerating trajectory. These are research leads, not switch
 recommendations. The older flow-disagreement prospector can later be paired with these saved frame-error labels.
+
+## Follow-up from Local, 2026-10-23 (L016-L017)
+
+Local reproduced both native leads and isolated invented motion by applying fades to **stationary** imagery from
+TV 73 and cartoon 6525. This establishes a brightness-induced false-motion defect on those controlled inputs;
+excluding the cartoon from pure-motion prospecting did not make its deformation harmless. See the new
+[photometric plan](../photometric/PLAN.md) and [GPT's adversarial review](../photometric/GPT-REVIEW.md).
+Local's GLOBAL_GAIN candidate improves the cartoon case in its reported test; COHERENCE_ZM was rejected against its
+registered target. GPT supplied CPU estimator counterexamples and fixtures, not new GPU results: moving foreground
+can drive the gain fit and cause stationary references to be trimmed away. The original discovery ranks remain
+unchanged. The review distinguishes old clipped fade tails from the newer headroom-controlled fixtures.
