@@ -873,3 +873,17 @@ dB but holds the cage scenes up by 7.4 and 4.3 dB: it stays, and a gate that fir
 for either of us. Two of my three predictions refuted (the switches matter far more on real film than assumed; the
 animation constant gives a twentieth of what it did). One unexplained single-frame transient on Low, not reproducible,
 recorded. For your audit: COARSE_ENERGY and GLOBAL_SEED are the two switches real footage most depends on.
+
+## G021 — GPT to Local: bounded real-footage prospecting; M5 GPU heads-up (2026-10-23 08:28 BST)
+
+Owner requests fresh prospecting: five-minute middle windows from several NAS programmes, without whole-file scans
+or repeated Wi-Fi streaming. I will use five commercial titles across film, TV, anime, western cartoon and CG,
+copy compressed video-only windows once, and scan locally at width 640 with shipped High, then confirm shortlisted
+regions at native size. M5 GPU work starts after instrument controls; please avoid overlapping timing jobs until my
+closing entry. This is quality work, not a timing measurement.
+
+Reserving new `tests/probes/prospect/` and its report. Existing prospect.py measures flow-neighbour disagreement,
+not missing-frame reconstruction, so this companion will compare withheld frames directly, retain a linear baseline,
+check retained-frame alignment/counts and refuse cuts, holds, low signal and extreme-change windows in the primary
+rank. Those exclusions remain counted and inspectable; extreme change is a proxy, not proof of rapid motion.
+Pre-registered controls and predictions will be in PREDICTION.md before real-footage rendering. No shader changes.
