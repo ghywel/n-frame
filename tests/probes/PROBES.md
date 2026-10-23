@@ -32,6 +32,8 @@ own fine minima) and runs its registered test against High, the plain pass and G
 seeds, C1-C4); `cage/bar_draw.py` six seeded random bar prints (periods 6-12, speeds to +19). NFRAME-LIMITS.md,
 "BAR_BASIN"; data `$NP_SCRATCH/bar-basin/`, `bar-draw/`, `basin-20261023/`. `uncertainty/link_regimes.py` tests the
 frozen covariance on a fresh Arc export of seven cases, two sealed for a later model (MATHS.md block 5).
+`content/content.py` (2026-10-23): the Cadence tiers and their switches by content type, live action, 2D animation
+and CG, on a seeded draw of twenty titles from the NAS pool (NFRAME-LIMITS.md, "The tiers by content type").
 
 Conventions: the repo root is derived from the script's own location. ffmpeg comes from `FFMPEG` and `FFPROBE`
 (the newer probes default to `$HOME/np-build/ffmpeg/ffmpeg`, the build `../../build-macos.sh` makes; the python

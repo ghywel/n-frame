@@ -84,7 +84,10 @@ CLASSES = {
     'cg': ('cg', 3, 'Movies', ['Despicable Me', 'How To Train Your Dragon', 'Kung Fu Panda', 'Madagascar', 'Megamind',
             'Minions', 'Shrek', 'Sing', 'The Lego Movie', 'The Secret Life of Pets', 'Trolls']),
 }
-EXCLUDE = re.compile(r'Earwig', re.I)            # Ghibli's one CG film, out of the 2D class
+EXCLUDE = re.compile(r'Earwig|Menu|Extra|Interview|Gag.?Reel|Trailer|NCOP|NCED|Sample', re.I)
+# Earwig: Ghibli's one CG film, out of the 2D class. The rest AMENDED after the first draw (2026-10-23, before any render):
+# it drew a Blu-ray menu loop for Fate Zero; menus, extras and creditless openings are not programme content. The whole
+# draw was rerun from the same seed, so every pick may differ from the first; the first draw's log is kept (draw-1.log).
 RATES = {'24000/1001': ('24000/1001', '12000/1001'), '24/1': ('24', '12'), '25/1': ('25', '25/2')}
 
 HIGH_ENV = dict(GLOBAL_SEED='1', QZERO_MOIRE='1', COHERENCE_GATE='1', COARSE_ENERGY='1', COARSE_ENERGY_WS='8',
@@ -239,7 +242,10 @@ def score(out):
                     d = read(root / f'{m}_{name}_{s:g}.log', pat) or read(root / f'{m}_{name}_{s}.log', pat)
                     syn = [v for n, v in d.items() if n % 2 == 0 and v != float('inf')]
                     thru = [v for n, v in d.items() if n % 2 == 1]
-                    if m == 'psnr' and thru and min(thru) < 45:
+                    # The alignment alarm (AMENDED after the first scores, 2026-10-23: the first line, 45 dB, was a guess; on a
+                    # dark grainy film every shader's retained frames read 43.6-50, identical between shaders frame for
+                    # frame, the conversion floor; a misaligned window reads 25-35). Linear is a baseline, not checked.
+                    if m == 'psnr' and name != 'linear' and thru and min(thru) < 40:
                         bad.append(f"{c['id']} {s} {name}: passthrough {min(thru):.1f} dB")
                     if syn:
                         per.setdefault((c['class'], c['id'], s), {}).setdefault(name, {})[m] = statistics.mean(syn)

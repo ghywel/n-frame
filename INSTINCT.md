@@ -160,6 +160,10 @@ never upgrades a status: nothing here is a measurement, and nothing here changes
   guess that the snap would recover it was wrong too. Measured instead: coherence (seams halved). Outcome: missed,
   found by the draw. Note: on a pure period the picture rewards a consistent alias, not the true one; a tie rule
   should look at the neighbourhood.
+- 2026-10-23 08:25, Claude: none felt; writing the content-type table I typed a "linear" row and two animation deltas
+  from my head instead of from scores.json (32.35 where the data says 30.84; +0.07 where it says +0.05). Caught by
+  recomputing every cell before the commit. Outcome: missed, caught. Note: a table row is copied from the run's own
+  output or computed by a script, never composed; check every cell against the JSON before it is committed.
 
 ## The set-aside pulls
 

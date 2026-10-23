@@ -5627,3 +5627,67 @@ alone is not the mechanism.) **The open lead:** on a tie, which basin? The small
 guided scene's correct +6 at the broad extrema, where the incoming field was itself coherent; a tie rule that follows
 the incoming basin only where its neighbourhood agrees, and the smallest speed where it is split, would keep both.
 Not built: put to GPT for attack first (CHAT-LEDGER.md L011).
+
+### The tiers by content type: live action, 2D animation and CG, measured separately (2026-10-23, morning)
+
+The owner's ask after the switch audit: are Cadence's tiers running the best switches for film and television, and for
+cartoon and anime, each tested on its own. `tests/probes/content/content.py` (pre-registered and pushed before any clip
+rendered, a5d4a75): twenty titles drawn by a fixed seed from the NAS pool in five classes, two full-motion 3 s windows
+each (screen.sh refusing animation held on twos), realbench.sh's decimate-and-reconstruct on the rebuilt frames, 16
+shaders, the M5. Drawn: five films (The Hunger Games: Songbirds, Men in Black II, Pacific Rim, Pirates of the Caribbean,
+Back to the Future III), three television episodes (Red Dwarf and Blackadder at 25 fps, Friends a 25 fps DVD), five anime
+(Sword Art Online, Fruits Basket, Fate/stay night Heaven's Feel II and UBW, Attack on Titan), four western cartoons (My
+Little Pony FiM, Avatar, The Lion Guard, Bluey) and three CG films (Despicable Me 3, Megamind vs the Doom Syndicate, Shrek
+2). One amendment before any render, marked in the tool: the first draw picked a Blu-ray menu loop, so menus and extras
+are excluded and the draw was rerun from the same seed. The repeat control (High twice) reads identically on every live
+action and CG window; on anime two windows move each way by over 0.05 dB (class mean +0.002), the M5's noise there.
+
+| class mean, PSNR dB (delta against High) | live action | (film) | (tv) | 2D animation | (anime) | (cartoon) | CG |
+|---|---|---|---|---|---|---|---|
+| windows | 16 | 10 | 6 | 18 | 10 | 8 | 6 |
+| linear, absolute | 30.84 | 29.39 | 33.26 | 33.04 | 37.60 | 27.35 | 32.17 |
+| **Low** | **-1.19** | -1.72 | -0.30 | **-0.36** | -0.37 | -0.34 | **-0.82** |
+| **Standard** | 0.00 | 0.00 | 0.00 | +0.02 | +0.03 | 0.00 | -0.02 |
+| **High** (35.10 / 36.65 / 36.41) | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| High without COHERENCE_GATE | +0.09 | **+0.14** | +0.02 | -0.03 | -0.05 | 0.00 | 0.00 |
+| High without COARSE_ENERGY | **-0.40** | -0.53 | -0.18 | **-0.20** | -0.19 | -0.21 | **-0.28** |
+| High without QZERO_MOIRE | +0.02 | +0.02 | 0.00 | +0.02 | +0.02 | +0.01 | 0.00 |
+| High without GLOBAL_SEED (and ALIAS_PRIOR) | **-0.76** | -1.18 | -0.05 | -0.03 | 0.00 | -0.06 | -0.18 |
+| High without CUT_MOTION | 0.00 | 0.00 | 0.00 | +0.01 | +0.03 | 0.00 | 0.00 |
+| High without OUTLINE_ADOPT | -0.06 | -0.08 | -0.03 | -0.06 | -0.07 | -0.05 | -0.15 |
+| High + BAR_REDECIDE + BAR_BASIN | +0.02 | +0.03 | +0.01 | +0.04 | +0.06 | +0.01 | +0.01 |
+| High + TRUST_GATE | -0.07 | -0.09 | -0.04 | 0.00 | +0.06 | -0.07 | -0.21 |
+| the 09-04 animation constant on Low / Standard / High | -0.01 / -0.01 / -0.01 | -0.03 / -0.02 / -0.02 | +0.03 / 0.00 / 0.00 | +0.02 / +0.02 / +0.03 | +0.04 / +0.05 / +0.05 | -0.02 / -0.01 / -0.01 | +0.07 / +0.01 / +0.01 |
+
+(The animation row is against each tier's own base; the linear row is absolute. SSIM agrees with PSNR in sign on every row
+that moves 0.1 dB or more; under that it sometimes does not: High + TRUST_GATE on film and anime, High + BAR_BASIN on
+anime, all inside the noise.)
+
+**What it says.** (1) **The shipped set is the best set we have for every class.** No switch outside it helps any class by
+0.1 dB, and every switch in it but two either helps or sits in the noise. (2) **The two exceptions.** COHERENCE_GATE costs
+film 0.14 dB (five windows up, none down) and is neutral elsewhere, but without it the cage scenes fall C1 -7.4, C2 -4.3,
+C3 -0.6 dB on their rectangles (the railing the owner saw in a film): it stays, and a gate that fires less on ordinary film
+is the lead. PRINT_LATTICE (Standard against High) is level on all real content; it pays only on fast fine prints, and
+costs High about 18 percent of Standard's time on Metal (15.55 against 13.14 ms per 1080p frame), so on real content
+Standard is as good as High and the fall-back's first step costs nothing visible. (3) **The 09-04 animation constant is
+obsolete:** +0.04 to +0.05 on anime against the +1.5 it gave the old propagated base; the variational refinement and the
+vector medians took over what it did. **No content toggle is warranted**: nothing helps one class and costs another more
+than 0.1. (4) **Low is the expensive fall-back on film:** -1.7 dB on film, -0.3 on television (mostly 25 fps and small
+DVD frames), -0.4 on 2D animation, -0.8 on CG; the energy channel and the global seed carry most of that difference
+(-0.53 and -1.18 on film when removed from High).
+
+**Predictions** (content.py): (1) live action, tiers ordered, yes; steps under 0.1 dB, REFUTED (Low to Standard is 1.2);
+ablations within 0.1, REFUTED (energy -0.40, global -0.76: the switches matter far more on real film than the record
+assumed); +anim a wash, yes. (2) 2D: +anim at least +0.3 dB, REFUTED (+0.02 to +0.03); the alias switches neutral, yes
+but for the energy channel, which helps 2D (-0.20 removed). (3) CG behaves as live action, yes in direction (energy,
+global, adopt), smaller. The decision rule moves nothing: no default candidate, no toggle candidate; COHERENCE_GATE's
+film gain is under the line (+0.09 on live action as a class) and is bought back by the cage.
+
+**Limits.** The windows are full-motion by construction, so anime held on twos (most of a typical episode) is not tested
+here: there the player's cadence stage, not a shader switch, decides (SHADERS.md, "Known remaining weakness"). Decimation
+doubles every motion. 1080p graphs only; the -4k twins are their scaled copies. The M5, so differences under 0.05 dB on a
+window are noise. **One transient, unexplained:** in the first run Low output a wrong picture at one RETAINED frame of an
+anime window (14.1 dB where the source is copied); two reruns and the pre-PRUNE Low read every retained frame above 40
+dB. The scores use the rebuilt frames only, so they are unaffected; recorded as a silent single-frame glitch seen once.
+Data: `$NP_SCRATCH/content-20261023/` (clips.json, draw logs, every render's PSNR and SSIM log, scores.json, the cage
+check).
