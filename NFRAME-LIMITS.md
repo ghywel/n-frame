@@ -5691,3 +5691,9 @@ anime window (14.1 dB where the source is copied); two reruns and the pre-PRUNE 
 dB. The scores use the rebuilt frames only, so they are unaffected; recorded as a silent single-frame glitch seen once.
 Data: `$NP_SCRATCH/content-20261023/` (clips.json, draw logs, every render's PSNR and SSIM log, scores.json, the cage
 check).
+
+**The coherence-gate lead, SET ASIDE by the owner the same morning** ("the 0.14 dB loss doesn't seem worth it"), with
+Local agreeing on the per-frame evidence: of 360 rebuilt film frames, 189 move less than 0.05 dB without the gate, 53
+gain over 0.3 and 6 over 1 dB, five of those six in one half-second of one window (High 32.3-33.1 against 33.5-35.1 dB);
+the top ten frames carry 27 percent of the mean. A spread, mostly invisible softening and one brief mild moment, against
+a visible railing failure (7.4 dB) the gate prevents. Reopen only on a defect someone sees in playback.
