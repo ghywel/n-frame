@@ -560,6 +560,7 @@ PHASE_GATE = os.environ.get("PHASE_GATE", "0") == "1"
 # variable the output is byte-identical.
 BAR_REDECIDE = os.environ.get("BAR_REDECIDE", "0") == "1"
 BAR_KEEP = os.environ.get("BAR_KEEP", "0") == "1"           # with BAR_REDECIDE: keep a near-best incoming basin (G008)
+BAR_BASIN = os.environ.get("BAR_BASIN", "0") == "1"         # with BAR_REDECIDE: a basin change needs 48 px evidence (bar_basin.py)
 # PHASE_FETCH_E=1 (2026-10-22; with PHASE_FETCH=1; tests/phase_fetch.py): the same fetch at the 1/8 level's four
 # candidate SADs (its refine and pick, its data check). Without the variable the output is byte-identical.
 PHASE_FETCH_E = os.environ.get("PHASE_FETCH_E", "0") == "1"
@@ -906,9 +907,10 @@ if __name__ == "__main__":
         import trust_gate
         text = trust_gate.add_trust_gate(text)
     assert BAR_REDECIDE or not BAR_KEEP, "BAR_KEEP qualifies BAR_REDECIDE: it needs BAR_REDECIDE=1"
+    assert BAR_REDECIDE or not BAR_BASIN, "BAR_BASIN qualifies BAR_REDECIDE: it needs BAR_REDECIDE=1"
     if BAR_REDECIDE:
         import bar_redecide
-        text = bar_redecide.add(text, keep=BAR_KEEP)
+        text = bar_redecide.add(text, keep=BAR_KEEP, basin=BAR_BASIN)
     if CUT_MOTION:
         import cut_motion
         text = cut_motion.add_cut_motion(text, float(os.environ.get("CUT_EXPLAINED", cut_motion.CUT_EXPLAINED)))
@@ -922,7 +924,7 @@ if __name__ == "__main__":
         + ("OUTLINE_ADOPT=1 " if OUTLINE_ADOPT else "") \
         + ("PRINT_LATTICE=1 " if PRINT_LATTICE else "") \
         + ("TRUST_GATE=1 " if TRUST_GATE else "") \
-        + ("BAR_REDECIDE=1 " if BAR_REDECIDE else "") + ("BAR_KEEP=1 " if BAR_KEEP else "") + ("CUT_MOTION=1 " if CUT_MOTION else "") \
+        + ("BAR_REDECIDE=1 " if BAR_REDECIDE else "") + ("BAR_KEEP=1 " if BAR_KEEP else "") + ("BAR_BASIN=1 " if BAR_BASIN else "") + ("CUT_MOTION=1 " if CUT_MOTION else "") \
         + ("ALIAS_APERTURE=0 " if ALIAS_CARRY and not ALIAS_APERTURE else "")     # the zero seed is the recommendation's standing state and the line never named it
     env += f"PRUNE={PRUNE} " if PRUNE != "0" else ""     # recorded so the header can rebuild the file (REPAIRS.md L9)
     env += "STICKY_CACHE=1 " if STICKY_CACHE else ""

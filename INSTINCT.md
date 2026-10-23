@@ -147,6 +147,19 @@ never upgrades a status: nothing here is a measurement, and nothing here changes
 - 2026-10-22 20:38, Claude: delight, medium-high, BAR_REDECIDE passing with nothing on the ladder lost and C1 rising
   unasked; and a check on it: the rule is a prior that wins because C3's truth is the slowest basin. Named in L009 as
   the review target.
+- 2026-10-23 05:24, Claude: unease (niggle), reading GPT's guard: "the incoming vector refined over +-1 px, the
+  proposal at its exact minimum" read as a comparison of unequals, medium-high. Checked on GPT's own raw outputs before
+  building anything: the guard's flips sit at the broad extrema where High was 1.7 px off its comb, and GPT's count
+  missed them by counting only seeds within .5 px. -> confirmed: BAR_BASIN, the like-for-like comparison, takes the
+  flips to zero. Outcome: right. Note: when a guard compares two candidates, refine them the same way.
+- 2026-10-23 05:30, Claude: none felt; the Arc export ALARMED on M2c_period40_v6 because my own calibration check
+  matched every case named M2c. Outcome: missed (my tool), caught by the alarm. Note: a calibration gate keys on the
+  exact case it calibrates, never a prefix.
+- 2026-10-23 05:47, Claude: surprise, high, the random draws: the plain pass gaining +10 dB on a print where High has
+  no correct seed at all, by choosing one wrong alias everywhere. I had predicted the guard's cost would be nil; my
+  guess that the snap would recover it was wrong too. Measured instead: coherence (seams halved). Outcome: missed,
+  found by the draw. Note: on a pure period the picture rewards a consistent alias, not the true one; a tie rule
+  should look at the neighbourhood.
 
 ## The set-aside pulls
 

@@ -53,7 +53,15 @@ panning rigidly across the bars at +6 px/frame, so -3 is the slowest basin), cag
 High + BAR_REDECIDE (and + BAR_KEEP). If High's own flow carries +6 into the last pass, BAR_REDECIDE erases it and
 reads 3 dB or more under High; if High already fails there, the two read within 0.5. Predicted: the former (the wall's
 grain and the global seed carry the pan), so BAR_REDECIDE is not adoptable as it stands.
-    bar_redecide.add(t, keep=False) -> t      every anchor asserted exactly once
+BAR_BASIN=1 (with BAR_REDECIDE=1; Local, 2026-10-23, after GPT's G009-G017 and its broader-support guard, bar_guard.py): a
+basin change needs broader evidence. The incoming basin is the fine cost's local minimum nearest s = 0 (within 4 px),
+parabola-refined as the proposal is; GPT's 7 x 7 SAD at spacing 8 (a 48 px block) scores the proposal against it, each
+at its own fine minimum, and the change is made only if the proposal wins by over 1/255; refused, the incoming vector is
+kept exactly. A proposal that IS the incoming basin passes unguarded. Measured (tests/probes/cage/bar_basin.py, its
+docstring pre-registered; NFRAME-LIMITS.md): GPT's guided scene sends 0 samples to the alias (bars 3.65%, the +-1 px
+guard 1.26%) and its damage mask reads 2.6 times better than High; isolated +6, -6, +3 kept; over High C1 +2.47, C2
++0.24, C3 +3.82, C4 +2.34 on the rectangles.
+    bar_redecide.add(t, keep=False, basin=False) -> t      every anchor asserted exactly once
 """
 
 BAR_ONE_D = 0.15
@@ -176,8 +184,43 @@ KEEP_BLOCK = """    // BAR_KEEP: the incoming basin stays whenever it is itself 
 PASS = pass_text(False)
 PASS_KEEP = pass_text(True)
 
+# BAR_BASIN: GPT's broader-support SAD (tests/probes/cage/bar_guard.py's HELPER, G011, verbatim) judging basin against
+# basin, each at its own fine minimum (tests/probes/cage/bar_basin.py, Local, 2026-10-23).
+GUARD_HELPER = """float guard_sad(vec2 c, vec2 v) {
+    float sad = 0.0;
+    for (int y=-3; y<=3; y++) for (int x=-3; x<=3; x++) {
+        vec2 q=c+8.0*vec2(float(x),float(y));
+        sad += abs(bar_lum_a(q)-bar_lum_b(q+v));
+    }
+    return sad/49.0;
+}
+"""
+BASIN_BLOCK = """    // BASIN AGAINST BASIN (tests/probes/cage/bar_basin.py): the incoming basin at its own fine minimum
+    int ib = -1;
+    for (int k = 0; k <= 4; k++) {
+        int lo = BAR_REACH - k, hi = BAR_REACH + k;
+        if (ib < 0 && cost[lo] <= cost[lo - 1] && cost[lo] <= cost[lo + 1]) ib = lo;
+        if (ib < 0 && cost[hi] <= cost[hi - 1] && cost[hi] <= cost[hi + 1]) ib = hi;
+    }
+    if (ib != best) {
+        float s_in = 0.0;
+        if (ib >= 0) {
+            float d2 = cost[ib - 1] - 2.0 * cost[ib] + cost[ib + 1];
+            s_in = float(ib - BAR_REACH) + (d2 > 1.0e-9 ? clamp(0.5 * (cost[ib - 1] - cost[ib + 1]) / d2, -0.5, 0.5) : 0.0);
+        }
+        if (guard_sad(c, vf + s * n) >= guard_sad(c, vf + s_in * n) - 1.0 / 255.0) {
+            vec4 kept = keep;
+            imageStore(FLOW_H_AB_BARS_CACHE, coord, kept);
+            return kept;
+        }
+    }
+"""
+BASIN_ANCHOR = "    vec4 result = vec4((vf + s * n) * 0.5, 0.0, 0.0);"
+assert PASS.count("vec4 hook() {") == 1 and PASS.count(BASIN_ANCHOR) == 1
+PASS_BASIN = PASS.replace("vec4 hook() {", GUARD_HELPER + "vec4 hook() {").replace(BASIN_ANCHOR, BASIN_BLOCK + BASIN_ANCHOR)
 
-def add(t, keep=False):
+
+def add(t, keep=False, basin=False):
     d = "//!DESC [high] vector median filter on flow A->B (pass 2)\n"
     k = t.count(d)
     assert k == 1, f"bar_redecide: the half-res chain's last median found {k} times"
@@ -186,4 +229,5 @@ def add(t, keep=False):
     assert "//!HOOK" not in t[i:j], "bar_redecide: the median pass's body runs into another pass"
     for need in ("//!SAVE LUMA_A_H\n", "//!BIND NEXT\n"):
         assert need in t, f"bar_redecide: the shader has no {need.strip()}"
-    return t[:j] + (PASS_KEEP if keep else PASS) + t[j:]
+    assert not (keep and basin), "bar_redecide: BAR_KEEP and BAR_BASIN are alternatives"
+    return t[:j] + (PASS_KEEP if keep else PASS_BASIN if basin else PASS) + t[j:]

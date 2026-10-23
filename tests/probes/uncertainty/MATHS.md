@@ -481,3 +481,50 @@ which states the covariance/model assumptions and explains why estimated covaria
 Our scalar constrained derivation and the tested stencil are given above. Reasoned verdict: reject these weights for
 shader adoption. Gut verdict: exact constraints are attractive, but the failed covariance model cannot make a better
 estimator by algebra alone.
+
+## Block 5 (Local): fresh regimes, the frozen covariance across seven cases (2026-10-23)
+
+GPT's block 3 asked for more varied, independent regimes before any new covariance model. A fresh Arc export by the
+same tool (`export_links.sh`, 2026-10-23, `$NP_SCRATCH/uncertainty/export1023/`): M2c_period40_v10 again plus six
+cases never exported. **Instrument:** the new M2c equals the 10-22 array for array (the Arc, a fresh container a day
+later); the repeat control identical; every pack check passes. (The first pack ALARMED on M2c_period40_v6 because the
+10 px calibration matched every case named `M2c`; it now matches the exact name, and the v6 case reads its true 6.00.)
+Rebuilt from the 10-22 arrays with link_covariance.py's own seed and draw order, GPT's numbers reproduce exactly
+(O9 2.492 / 2.249), as do blocks 3 and 4 on their own rerun (both JSONs identical). A5_accel_tex_a067 and
+O5_osc_textured are exported and SEALED: `link_regimes.py` refuses to read them; they are the holdout for any
+conditioned model proposed after this result.
+
+| case (frozen M2c+A4 covariance) | full / observed, x, y | diagonal / observed | 68% ellipse coverage | link x SD, tau -3 .. +2, px |
+|---|---|---|---|---|
+| M2c v10 (training) | .873, .796 | 1.135, 1.395 | 78.2% | .35 .28 .20 .18 .24 |
+| A4 (training) | 1.173, 1.356 | 1.526, 2.376 | 82.1% | .36 .26 .18 .15 .23 |
+| O9 (GPT's holdout) | 2.492, 2.249 | 3.241, 3.940 | 91.7% | .33 .27 .17 .17 .26 |
+| M2c v6 (fresh) | .717, .961 | .933, 1.684 | 74.3% | .33 .25 .18 .20 .28 |
+| M1c noise v6 (fresh) | **.253, .494** | .329, .867 | 98.4% | .84 .63 .58 .20 .37 |
+| L7 textured, 16 px/frame (fresh) | **.000, .011** | .001, .020 | 72.2% | 20.1 13.5 6.8 6.2 11.7 |
+| O10 tiny oscillation (fresh) | .959, 1.218 | 1.247, 2.133 | 80.3% | .29 .18 .18 .20 .21 |
+
+**Local's registered prediction (link_regimes.py, before the fresh arrays were read) is REFUTED:** O9's miss is not
+the rule. Only two of the four fresh cases leave the factor-2 band, and in the OPPOSITE direction to O9 (the model
+under-predicts them), while M2c v6 and O10 transfer within it. GPT's secondary finding, full beats diagonal, also
+fails to generalise: it holds on one of the four (O10); on M2c v6 the diagonal is nearer on x.
+
+**What separates the regimes** (descriptive): gross links. A link error over 2 px marks 28.6 percent of L7's points
+(median gross error 23.6 px, about one and a half of its 15.7 px periods: alias locks) and 2.2 percent of M1c's,
+against 0.03 to 0.26 percent elsewhere; on L7 they corrupt the fitted velocity by over 1 px at 27.8 percent of points,
+while its median link errors (.09 to .27 px) are like everyone's. **Post hoc and truth-filtered, so diagnostic only:**
+removing every point with a gross link from training and test alike does not rescue transfer, it inverts it: M1c then
+reads 13.9 / 9.9 and L7 77 / 192 times over-predicted (O9 2.4 / 1.8; M2c v6 and O10 still within the band). The core
+scale itself varies by an order of magnitude with the texture, and the gross tail is a separate regime on top.
+
+Reasoned verdict: a frozen pooled covariance, whole or core, is not a per-pixel uncertainty for this field; any model
+needs (1) a detector for the alias-locked links, which is the trust and alias line's own problem, and (2) a per-point
+observable that carries the core scale (the residual, the trust weights, the texture's gradient energy are the
+candidates), tested on the sealed A5 and O5. Gut verdict: the gross tail is the thing that matters for the picture;
+the core's Gaussian question is secondary. `tests/probes/uncertainty/link_regimes.py`; data and JSON under
+`$NP_SCRATCH/uncertainty/{export1023,regimes-20261023}/`.
+
+**One more check on block 4 (Local):** the anchored-OLS counterfactual changes two things (the exact anchor and uniform
+weights). With the shader's own trust weights kept, the anchored fit gives the same numbers to four places (O9 link
+variance x1.097 / x1.075, truncation p95 .09067): the weights are near-uniform on these interiors, so block 4's
+refutation stands as a single change.

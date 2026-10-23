@@ -22,6 +22,11 @@ and its limits are recorded in BAR-REVIEW.md; data `$NP_SCRATCH/bar-guard/`.
 Uncertainty follow-ups `uncertainty/link_covariance.py` and `anchor_gls.py` use Local's delivered link arrays:
 reconstructed fit p99 <.003 px/frame, frozen covariance transfer refuted on O9, and exact-anchor GLS weights also
 refuted (MATHS.md blocks 3-4). They retain counterfactuals and refusal counts; no sigma or shader adoption.
+Local's follow-ups (2026-10-23): `cage/bar_basin.py` builds BAR_BASIN (the guard comparing basin with basin at their
+own fine minima) and runs its registered test against High, the plain pass and GPT's guard (guided scene, isolated
+seeds, C1-C4); `cage/bar_draw.py` six seeded random bar prints (periods 6-12, speeds to +19). NFRAME-LIMITS.md,
+"BAR_BASIN"; data `$NP_SCRATCH/bar-basin/`, `bar-draw/`, `basin-20261023/`. `uncertainty/link_regimes.py` tests the
+frozen covariance on a fresh Arc export of seven cases, two sealed for a later model (MATHS.md block 5).
 
 Conventions: the repo root is derived from the script's own location. ffmpeg comes from `FFMPEG` and `FFPROBE`
 (the newer probes default to `$HOME/np-build/ffmpeg/ffmpeg`, the build `../../build-macos.sh` makes; the python

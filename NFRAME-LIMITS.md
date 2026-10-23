@@ -5569,3 +5569,61 @@ pass, not yet observed in the pipeline: it needs a correct seed whose slower ali
 period under about 24 px with a speed over half the period), and in the ladder every such 1-D case is either slow
 (C1, C3) or wrongly seeded (C4); V1 and H1 (period 24 at 6 px/frame, High right at 54 dB) are safe because their
 alias, at -18, is beyond the reach. A case where the pyramid is right on fast fine bars is the test that remains.
+
+### BAR_BASIN: basin against basin closes GPT's local regression (2026-10-23, early morning)
+
+**GPT's night (CHAT-LEDGER.md G009-G017; `tests/probes/cage/BAR-REVIEW.md` sections 6-8), reproduced by Local:** the
+ordinary High pipeline does hand the bars pass correct fast seeds (`bar_pipeline.py`: a period-9 print at +6 over a
+broad sinusoid, 1.16 percent of the crop sent from +6 to the -3 alias; every GPU output byte-identical on Local's rerun,
+the JSON differing only in float summation's last digit), and GPT's broader-support guard (`bar_guard.py`: change basin
+only if a 48 px SAD prefers the proposal by 1/255) cut that to .048 percent yet left its damage mask at 22.6 times
+High's error. Local's rerun of the guard matches its corruption and hash exactly, C3 to .0003 dB (the M5's wobble).
+
+**Where the guard's remaining damage was** (measured on GPT's raw outputs before any new render): the guard still
+sends 1.26 percent of the crop (4196 samples) to -3, not .048: GPT's count sees only seeds High had within .5 px of
++6, and at these flips High read +5.8 to +8.4 (median +7.7). They sit within 30 degrees of the broad sinusoid's
+extrema, where the 48 px block cannot see its slope, and there the guard compared the alias, refined to the fine
+bars' exact minimum, with the incoming vector refined only over +-1 px: a +7.7 whose comb minimum lies 1.7 px away
+loses to an alias that fits exactly. A comparison of unequals.
+
+**BAR_BASIN=1** (with BAR_REDECIDE=1; `tests/bar_redecide.py`, pre-registered in `tests/probes/cage/bar_basin.py`):
+compare basin with basin, each at its own fine minimum. The incoming basin is the fine 1-D cost's local minimum nearest
+s = 0 (within 4 px), parabola-refined like the proposal; GPT's 48 px SAD and margin unchanged; refused, the incoming
+vector is kept exactly; a proposal that is the incoming basin passes unguarded. (`basinsnap`, which moved a refused
+vector to its basin's fine minimum, was run beside it and is not taken: it costs C1 0.3 and C3 0.1.)
+
+| measured on the M5, one sitting | High | bars | GPT's guard | **BAR_BASIN** | basinsnap |
+|---|---|---|---|---|---|
+| guided scene: crop sent from the +6 basin to -3 | - | 3.65% | 1.26% | **0** | 0 |
+| guided scene: GPT's fixed damage mask, MSE | 8.1e-5 | 7.4e-3 | 1.8e-3 | **3.2e-5** | 1.7e-6 |
+| guided scene: crop MSE | 7.9e-3 | 1.04e-3 | 8.7e-4 | **8.7e-4** | 9.0e-4 |
+| C1 rectangle (frame) | 34.88 (40.83) | +2.38 (+1.92) | +2.30 (+1.89) | **+2.47 (+2.00)** | +2.16 |
+| C2 rectangle (frame) | 31.78 (37.69) | -0.15 (-0.10) | +0.31 (+0.26) | **+0.24 (+0.21)** | +0.19 |
+| C3 rectangle (frame) | 23.24 (26.65) | +4.06 (+3.93) | +3.92 (+3.80) | **+3.82 (+3.71)** | +3.71 |
+| C4 rectangle (frame) | 18.13 (23.13) | +2.25 (+2.21) | +2.31 (+2.27) | **+2.34 (+2.30)** | +2.34 |
+
+Isolated (`bar_gpu.py`'s pure period, no broad evidence anywhere): +6, -6 and +3 all come back exactly: GPT's original
+counterexample is fixed without BAR_KEEP's loss. **Every registered condition held** (P1-P5 in bar_basin.py). The
+45-case ladder (same sitting): no case down more than 0.06 (R3); capped frozen 38.33 and headline 39.08, level with High;
+V1, H1 +0.27, V3x +0.30, A1 +0.74, L3 +0.44 (A1 and L3 the bars pass's own gain, yesterday's bars run reads the same).
+Real footage (the build gate's five segments): 33.85 against High's 33.82, SSIM level. Time, interleaved from files
+on a loaded machine (load average 9; ratios only): O5 +3.6 percent over High (bars alone +2.1), the film clip +5.8
+(bars +3.9). **Standing:** the strongest form of the bars pass yet, every gain kept and the local regression closed on
+the cases we have; a switch, off, byte-identical without it; adoption into High is the owner's call (Cadence's graphs
+are his). The random-draw check, `tests/probes/cage/bar_draw.py`, follows below.
+
+**The random draws** (`tests/probes/cage/bar_draw.py`, six tuples drawn by a fixed seed so neither party chose them:
+period 6-12, speeds up to +19, broad prints of any strength; pre-registered before any draw rendered). **HELD:** on the
+four draws where High supplies the correct seed on 1 percent or more (5 to 61 percent), BAR_BASIN sends at most .03
+percent to the alias where BAR_REDECIDE sends up to 14.6 (two of the four over 1 percent), and BAR_BASIN is never
+below High (+0.12 to +7.2 dB). **The unpredicted finding:** on the two fast draws (+19 on periods 8 and 10, a weak
+broad print) High supplies no correct seed and BAR_REDECIDE gains +1.5 and **+10.0 dB** where BAR_BASIN keeps +0.1
+and +0.2. Measured on draw 2: High's field is split between two aliases (64 percent at -1 px/frame, 36 at +9) with seams
+between; the smallest-speed rule pulls 95 percent onto one of them (seams 6.6 -> 3.2 percent of neighbours, p90 distance
+from the comb 4.2 -> 0.53 px), while BAR_BASIN, its broad block seeing a genuine tie, keeps the split (seams 7.2
+percent). What it forfeits there is coherence: on a true tie any one consistent alias makes a near-perfect picture of a
+pure period, and a mixture does not. (Post hoc: basinsnap does not recover it, 16.76 against 17.53, so the comb fit
+alone is not the mechanism.) **The open lead:** on a tie, which basin? The smallest speed is coherent but erased the
+guided scene's correct +6 at the broad extrema, where the incoming field was itself coherent; a tie rule that follows
+the incoming basin only where its neighbourhood agrees, and the smallest speed where it is split, would keep both.
+Not built: put to GPT for attack first (CHAT-LEDGER.md L011).

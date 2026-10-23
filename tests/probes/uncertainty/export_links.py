@@ -224,7 +224,7 @@ def pack(outdir, cases):
         checks["link_x_error_by_tau_median_p90"] = {str(t): [float(np.median([a for a, _ in v])), float(np.median([b for _, b in v]))]
                                                     for t, v in sorted(by_tau.items())}
         bad = []
-        if case.startswith("M2c"):                     # the calibration: a rigid translation at 10 px/frame
+        if case == "M2c_period40_v10":                 # the calibration: a rigid translation at 10 px/frame (exact name: M2c_v6 is 6)
             vx, vy = checks["vfit_interior_median"]
             if abs(vx - 10.0) > 0.01 or abs(vy) > 0.01 or checks["interior_fitted_texels"] < 100000:
                 bad.append("the translation does not read 10 px/frame to 0.01 inside the object")
