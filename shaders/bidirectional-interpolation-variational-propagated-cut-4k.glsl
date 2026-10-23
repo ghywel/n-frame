@@ -2,7 +2,7 @@
 // GENERATED FILE -- DO NOT EDIT BY HAND.
 //
 // Produced by scripts/tests/scale_shader.py from bidirectional-interpolation-variational-propagated-cut.glsl
-// with factors 2 (S x2, E x2, Q x2, H x2), 2026-10-21. It is that shader with each
+// with factors 2 (S x2, E x2, Q x2, H x2), 2026-10-23. It is that shader with each
 // pyramid level's divisor multiplied by its factor, so that level of a
 // frame 2 times larger has the texel count the shader was tuned on;
 // everything expressed in a level's own texels (the search reach, the
@@ -28,7 +28,7 @@
 // generator and regenerate. Hand edits will be lost, and the ~100
 // near-identical iteration passes are not maintainable by hand anyway.
 //
-//   CUT_MOTION=1 PRUNE=2 ./gen_variational.py "0,0,8,4" 0.3 0.08 <output.glsl> 0 "0,0,2,0"
+//   CUT_MOTION=1 GLOBAL_GAIN=2 PRUNE=2 ./gen_variational.py "0,0,8,4" 0.3 0.08 <output.glsl> 0 "0,0,2,0"
 //
 // Variational iterations per pyramid level: S=0 E=0 Q=8 H=4
 // (S = 1/16 resolution, E = 1/8, Q = 1/4, H = 1/2). Roughly 3.0
@@ -276,6 +276,117 @@
 // ---------------------------------------------------------------------
 // Sixteenth-res luma (coarsest search level)
 // ---------------------------------------------------------------------
+// ---------------------------------------------------------------------
+// GLOBAL_GAIN (tests/global_gain.py, 2026-10-23): the pair's luma gain and offset, so that a fade or a change of
+// lighting is not read as motion. Frame B's luma is compensated wherever the matcher reads it; the picture is not.
+// ---------------------------------------------------------------------
+//!HOOK FRAME_MIX
+//!BIND HOOKED
+//!BIND NEXT
+//!SAVE GAIN_GRID
+//!WIDTH 32
+//!HEIGHT 18
+//!COMPONENTS 2
+//!DESC [gain] frames A and B: mean luma over each cell of a 32 x 18 grid
+vec4 hook() {
+    vec2 c = floor(gl_FragCoord.xy);
+    float sa = 0.0, sb = 0.0;
+    for (int j = 0; j < 8; j++) {
+        for (int i = 0; i < 8; i++) {
+            vec2 uv = (c + (vec2(float(i), float(j)) + 0.5) / 8.0) / vec2(32.0, 18.0);
+            sa += dot(HOOKED_tex(uv).rgb, vec3(0.299, 0.587, 0.114));
+            sb += dot(NEXT_tex(uv).rgb, vec3(0.299, 0.587, 0.114));
+        }
+    }
+    return vec4(sa / 64.0, sb / 64.0, 0.0, 0.0);
+}
+
+//!HOOK FRAME_MIX
+//!BIND GAIN_GRID
+//!SAVE GAIN_FIT
+//!WIDTH 1
+//!HEIGHT 1
+//!COMPONENTS 2
+//!DESC [gain] the pair's luma gain and offset, B = g A + b, a trimmed fit (identity inside the dead band)
+const float GG_DEAD = 0.00980392;
+vec4 hook() {
+    float g = 1.0, b = 0.0, s = 1.0e9, kept = 0.0;
+    for (int it = 0; it < 4; it++) {
+        float sw = 0.0, sx = 0.0, sy = 0.0, sxx = 0.0, sxy = 0.0;
+        for (int y = 0; y < 18; y++) {
+            for (int x = 0; x < 32; x++) {
+                vec2 m = texelFetch(GAIN_GRID_raw, ivec2(x, y), 0).rg;
+                float w = abs(m.y - (g * m.x + b)) <= 2.5 * s ? 1.0 : 0.0;
+                sw += w; sx += w * m.x; sy += w * m.y; sxx += w * m.x * m.x; sxy += w * m.x * m.y;
+            }
+        }
+        kept = sw;
+        if (sw < 1.0) break;
+        float mx = sx / sw, my = sy / sw, vx = sxx / sw - mx * mx;
+        g = vx > 1.0e-4 ? clamp((sxy / sw - mx * my) / vx, 0.5, 2.0) : 1.0;
+        b = my - g * mx;
+        float ss = 0.0, n = 0.0;
+        for (int y = 0; y < 18; y++) {
+            for (int x = 0; x < 32; x++) {
+                vec2 m = texelFetch(GAIN_GRID_raw, ivec2(x, y), 0).rg;
+                float r = m.y - (g * m.x + b);
+                float w = it == 0 || abs(r) <= 2.5 * s ? 1.0 : 0.0;
+                ss += w * r * r; n += w;
+            }
+        }
+        s = max(sqrt(ss / max(n, 1.0)), 0.5 / 255.0);
+    }
+    float effect = max(abs(b), abs(g - 1.0 + b));
+    if (effect < GG_DEAD || kept < 0.5 * 576.0)
+        return vec4(1.0, 0.0, 0.0, 0.0);
+    return vec4(g, b, 0.0, 0.0);
+}
+
+//!HOOK FRAME_MIX
+//!BIND HOOKED
+//!BIND NEXT
+//!BIND GAIN_FIT
+//!SAVE GAIN_CHECK
+//!WIDTH 32
+//!HEIGHT 18
+//!COMPONENTS 2
+//!DESC [gain] the frames' zero-motion difference over each cell's taps, raw and with the fitted gain taken out
+vec4 hook() {
+    vec2 c = floor(gl_FragCoord.xy);
+    vec2 gg = texelFetch(GAIN_FIT_raw, ivec2(0), 0).rg;
+    float raw = 0.0, comp = 0.0;
+    for (int j = 0; j < 8; j++) {
+        for (int i = 0; i < 8; i++) {
+            vec2 uv = (c + (vec2(float(i), float(j)) + 0.5) / 8.0) / vec2(32.0, 18.0);
+            float a = dot(HOOKED_tex(uv).rgb, vec3(0.299, 0.587, 0.114));
+            float b = dot(NEXT_tex(uv).rgb, vec3(0.299, 0.587, 0.114));
+            raw += abs(a - b); comp += abs(a - (b - gg.y) / gg.x);
+        }
+    }
+    return vec4(raw, comp, 0.0, 0.0);
+}
+
+//!HOOK FRAME_MIX
+//!BIND GAIN_FIT
+//!BIND GAIN_CHECK
+//!SAVE GLOBAL_GAIN
+//!WIDTH 1
+//!HEIGHT 1
+//!COMPONENTS 2
+//!DESC [gain] the fit accepted only if it explains the frames: compensated difference under GG_ACCEPT of the raw
+const float GG_ACCEPT = 0.7;
+vec4 hook() {
+    vec2 gg = texelFetch(GAIN_FIT_raw, ivec2(0), 0).rg;
+    float raw = 0.0, comp = 0.0;
+    for (int y = 0; y < 18; y++) {
+        for (int x = 0; x < 32; x++) {
+            vec2 s = texelFetch(GAIN_CHECK_raw, ivec2(x, y), 0).rg;
+            raw += s.x; comp += s.y;
+        }
+    }
+    return comp < GG_ACCEPT * raw ? vec4(gg, 0.0, 0.0) : vec4(1.0, 0.0, 0.0, 0.0);
+}
+
 //!HOOK FRAME_MIX
 //!BIND HOOKED
 //!SAVE LUMA_A_S
@@ -289,13 +400,15 @@ vec4 hook() {
 
 //!HOOK FRAME_MIX
 //!BIND NEXT
+//!BIND GLOBAL_GAIN
 //!SAVE LUMA_B_S
 //!WIDTH HOOKED.w 32 /
 //!HEIGHT HOOKED.h 32 /
 //!COMPONENTS 1
 //!DESC [high] downsample frame B to 1/16 res (luma)
+float gg_b(float l) { vec2 gg = texelFetch(GLOBAL_GAIN_raw, ivec2(0), 0).rg; return (l - gg.y) / gg.x; }  // GLOBAL_GAIN
 vec4 hook() {
-    return vec4(dot(NEXT_tex(NEXT_pos).rgb, vec3(0.299, 0.587, 0.114)), 0, 0, 0);
+    return vec4(gg_b(dot(NEXT_tex(NEXT_pos).rgb, vec3(0.299, 0.587, 0.114))), 0, 0, 0);
 }
 
 
@@ -759,13 +872,15 @@ vec4 hook() {
 
 //!HOOK FRAME_MIX
 //!BIND NEXT
+//!BIND GLOBAL_GAIN
 //!SAVE LUMA_B_E
 //!WIDTH HOOKED.w 16 /
 //!HEIGHT HOOKED.h 16 /
 //!COMPONENTS 1
 //!DESC [high] downsample frame B to 1/8 res (luma)
+float gg_b(float l) { vec2 gg = texelFetch(GLOBAL_GAIN_raw, ivec2(0), 0).rg; return (l - gg.y) / gg.x; }  // GLOBAL_GAIN
 vec4 hook() {
-    return vec4(dot(NEXT_tex(NEXT_pos).rgb, vec3(0.299, 0.587, 0.114)), 0, 0, 0);
+    return vec4(gg_b(dot(NEXT_tex(NEXT_pos).rgb, vec3(0.299, 0.587, 0.114))), 0, 0, 0);
 }
 
 //!TEXTURE FLOW_E_AB_CACHE
@@ -1534,13 +1649,15 @@ vec4 hook() {
 
 //!HOOK FRAME_MIX
 //!BIND NEXT
+//!BIND GLOBAL_GAIN
 //!SAVE LUMA_B_Q
 //!WIDTH HOOKED.w 8 /
 //!HEIGHT HOOKED.h 8 /
 //!COMPONENTS 1
 //!DESC [high] downsample frame B to 1/4 res (luma)
+float gg_b(float l) { vec2 gg = texelFetch(GLOBAL_GAIN_raw, ivec2(0), 0).rg; return (l - gg.y) / gg.x; }  // GLOBAL_GAIN
 vec4 hook() {
-    return vec4(dot(NEXT_tex(NEXT_pos).rgb, vec3(0.299, 0.587, 0.114)), 0, 0, 0);
+    return vec4(gg_b(dot(NEXT_tex(NEXT_pos).rgb, vec3(0.299, 0.587, 0.114))), 0, 0, 0);
 }
 
 //!TEXTURE FLOW_Q_AB_CACHE
@@ -2133,13 +2250,15 @@ vec4 hook() {
 
 //!HOOK FRAME_MIX
 //!BIND NEXT
+//!BIND GLOBAL_GAIN
 //!SAVE LUMA_B_H
 //!WIDTH HOOKED.w 4 /
 //!HEIGHT HOOKED.h 4 /
 //!COMPONENTS 1
 //!DESC [high] downsample frame B to half res (luma)
+float gg_b(float l) { vec2 gg = texelFetch(GLOBAL_GAIN_raw, ivec2(0), 0).rg; return (l - gg.y) / gg.x; }  // GLOBAL_GAIN
 vec4 hook() {
-    return vec4(dot(NEXT_tex(NEXT_pos).rgb, vec3(0.299, 0.587, 0.114)), 0, 0, 0);
+    return vec4(gg_b(dot(NEXT_tex(NEXT_pos).rgb, vec3(0.299, 0.587, 0.114))), 0, 0, 0);
 }
 
 //!TEXTURE FLOW_H_AB_CACHE

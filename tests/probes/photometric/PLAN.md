@@ -140,3 +140,21 @@ exactly affine is taken for light, and the flow is erased** (100% of the field m
 8-bit code value at most): invisible in Cadence's picture, wrong for anything that reads the flow (the human-reading
 views, the acceleration field). An anchor that would close it: refuse the fit where the coarse search finds a
 confident non-zero global shift with a low residual (GLOBAL_SHIFT exists in Standard and High); not built.
+
+## Adopted (2026-10-23, afternoon, the owner's word: "adopt GLOBAL_GAIN=2 into the three Cadence tiers and their 4K twins")
+
+The three `-cut` tier files regenerated with `GLOBAL_GAIN=2` (their headers record it; the names are unchanged, as with
+PRUNE), the 4K twins by scale_shader.py (taught the wrapped read of frame B in the energy pass; both frames' energy taps
+and the lattice's samplers checked scaled alike). The new High and Low files are byte-identical to the high+gain2 and
+low+gain2 that passed the tests above; Standard + F1b, untested until then, was run the same afternoon: the six fades
+fixed (invented flow 0%), cartoon 6525 36.40 -> 44.45, the ladder worst -0.01 with identical means, the content windows
+live -0.045 (SSIM +0.0002), 2D +0.01, CG 0. A 4K fade (the TV still at 2880x2160) on the 4K twins: Low 50.78 -> 66.68
+and High 52.02 -> 66.68 on libplacebo. smoke.sh 19/19 (its tier check now regenerates with GLOBAL_GAIN=2); all six
+compile. The Metal side (the demo engine, QuadDemo --export, Cadence's new graphs from gen_metal.py): the TV fade High
+51.71 -> 67.84 and Low 50.50 -> 67.84 (libplacebo 51.61 -> 67.73), the 4K twins 52.09 / 50.90 -> 66.77, cartoon
+6525's whole window +3.36 (High, Standard) and +2.58 (Low); retained frames within 0.07 codes. lockstep.sh PASS
+(4 min 16 s; it regenerated the demo's three affected graphs).
+Cadence's six graphs rebuilt from these files (Low 47, Standard 67, High 86 passes; metallibs for all three platforms);
+Metal cost (QuadDemo --bench, medians of five interleaved rounds): High +3.8% at 1080p / +1.6% at 4K, Standard +3.9 /
++2.0, Low +5.3 / +4.1. Cadence's mac-tests short 56 passed, 0 failed (one case skipped itself: the owner's own Cadence
+was open). The upload is the owner's.

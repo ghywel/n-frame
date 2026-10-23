@@ -163,6 +163,8 @@ for fr in ("HOOKED", "NEXT"):
     tap = "(vec2(float(i), float(j)) * 2.0 - 1.0) * %s_pt;" % fr
     grad = "abs(lum_q(p + vec2(2.0, 0.0) * %s_pt) - c) + abs(lum_q(p + vec2(0.0, 2.0) * %s_pt) - c)" % (fr, fr)
     lum = "float lum_q(vec2 p) { return dot(%s_tex(p).rgb" % fr
+    if fr == "NEXT" and t.count(lum) == 0:   # GLOBAL_GAIN (tests/global_gain.py) wraps frame B's read in gg_b(...)
+        lum = "float lum_q(vec2 p) { return gg_b(dot(%s_tex(p).rgb" % fr
     assert t.count(tap) == t.count(grad) == t.count(lum) <= 1, "an energy pass for %s not in its known form" % fr
     if t.count(tap):
         t = t.replace(tap, "(vec2(float(i), float(j)) * 2.0 - 1.0) * ENERGY_FRAME_PX * %s_pt;" % fr)

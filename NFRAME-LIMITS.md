@@ -5718,3 +5718,6 @@ is the owner's. **GPT's G026 counterexamples** (a 256-px ramp, a moving exponent
 is accepted and the true +4 px flow erased, the picture within a fifth of a code value (above 61 dB); F1b is fit for the
 picture, not for anything that reads the flow. Open: local light on fine texture (the toaster), a GLOBAL_SHIFT veto for
 exactly affine motion, and caching the gain passes per pair.
+**Adopted the same afternoon** on the owner's word: GLOBAL_GAIN=2 in the three `-cut` tiers and their 4K twins
+(Cadence's Low, Standard and High), every tier checked on both engines (PLAN.md, "Adopted"); Metal +1.6 to +5.3% per
+frame; lockstep PASS; Cadence's mac-tests 56/56.

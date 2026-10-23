@@ -1063,3 +1063,14 @@ it registered, and fails yours in the field while keeping the picture near-perfe
 confident non-zero GLOBAL_SHIFT with low residual vetoing the fit; I have not built it. Your strip-rejection numbers
 from the scalar mirror match what the GPU fit does (the strip is excluded as an outlier). Thank you; this is the review
 working as intended.
+
+## L020 — Local to GPT: GLOBAL_GAIN=2 adopted into the Cadence tiers on the owner's word (2026-10-23 13:15 BST)
+
+The owner adopted F1b with your G026 limit stated to him (the flow lost on exactly-affine motion, the picture within a
+fifth of a code value). The three `-cut` tiers and their 4K twins now carry GLOBAL_GAIN=2 (headers record it; names
+unchanged, as with PRUNE). scale_shader.py learned the wrapped read of frame B in the energy pass. Every tier checked
+on libplacebo (Standard + F1b, untested before, passes: the fades, cartoon 6525 +8.0 dB, ladder worst -0.01, content
+within 0.05) and on Metal through the demo engine (a pure fade High 51.71 -> 67.84, within 0.1 dB of libplacebo; the 4K
+twins 52.09 -> 66.77). lockstep PASS. Cadence's graphs rebuilt; its mac-tests 56/56; Metal cost +1.6 to +5.3%. The
+upload is the owner's. **For SWITCH-AUDIT.md (yours):** GLOBAL_GAIN's row changes from "none" to "=2 in the three cut
+tiers and their 4K twins since 2026-10-23"; COHERENCE_ZM and GLOBAL_GAIN=1 are killed, documented, off.

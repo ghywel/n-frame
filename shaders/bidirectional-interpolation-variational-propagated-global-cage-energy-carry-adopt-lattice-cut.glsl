@@ -6,7 +6,7 @@
 // generator and regenerate. Hand edits will be lost, and the ~100
 // near-identical iteration passes are not maintainable by hand anyway.
 //
-//   GLOBAL_SEED=1 QZERO_MOIRE=1 COHERENCE_GATE=1 COARSE_ENERGY=1 COARSE_ENERGY_WS=8 COARSE_ENERGY_WE=1 ALIAS_PRIOR=1 ALIAS_CARRY=1 OUTLINE_ADOPT=1 PRINT_LATTICE=1 CUT_MOTION=1 PRUNE=2 ./gen_variational.py "0,0,8,4" 0.3 0.08 <output.glsl> 0 "0,0,2,0"
+//   GLOBAL_SEED=1 QZERO_MOIRE=1 COHERENCE_GATE=1 COARSE_ENERGY=1 COARSE_ENERGY_WS=8 COARSE_ENERGY_WE=1 ALIAS_PRIOR=1 ALIAS_CARRY=1 OUTLINE_ADOPT=1 PRINT_LATTICE=1 CUT_MOTION=1 GLOBAL_GAIN=2 PRUNE=2 ./gen_variational.py "0,0,8,4" 0.3 0.08 <output.glsl> 0 "0,0,2,0"
 //
 // Variational iterations per pyramid level: S=0 E=0 Q=8 H=4
 // (S = 1/16 resolution, E = 1/8, Q = 1/4, H = 1/2). Roughly 3.0
@@ -254,6 +254,117 @@
 // ---------------------------------------------------------------------
 // Sixteenth-res luma (coarsest search level)
 // ---------------------------------------------------------------------
+// ---------------------------------------------------------------------
+// GLOBAL_GAIN (tests/global_gain.py, 2026-10-23): the pair's luma gain and offset, so that a fade or a change of
+// lighting is not read as motion. Frame B's luma is compensated wherever the matcher reads it; the picture is not.
+// ---------------------------------------------------------------------
+//!HOOK FRAME_MIX
+//!BIND HOOKED
+//!BIND NEXT
+//!SAVE GAIN_GRID
+//!WIDTH 32
+//!HEIGHT 18
+//!COMPONENTS 2
+//!DESC [gain] frames A and B: mean luma over each cell of a 32 x 18 grid
+vec4 hook() {
+    vec2 c = floor(gl_FragCoord.xy);
+    float sa = 0.0, sb = 0.0;
+    for (int j = 0; j < 8; j++) {
+        for (int i = 0; i < 8; i++) {
+            vec2 uv = (c + (vec2(float(i), float(j)) + 0.5) / 8.0) / vec2(32.0, 18.0);
+            sa += dot(HOOKED_tex(uv).rgb, vec3(0.299, 0.587, 0.114));
+            sb += dot(NEXT_tex(uv).rgb, vec3(0.299, 0.587, 0.114));
+        }
+    }
+    return vec4(sa / 64.0, sb / 64.0, 0.0, 0.0);
+}
+
+//!HOOK FRAME_MIX
+//!BIND GAIN_GRID
+//!SAVE GAIN_FIT
+//!WIDTH 1
+//!HEIGHT 1
+//!COMPONENTS 2
+//!DESC [gain] the pair's luma gain and offset, B = g A + b, a trimmed fit (identity inside the dead band)
+const float GG_DEAD = 0.00980392;
+vec4 hook() {
+    float g = 1.0, b = 0.0, s = 1.0e9, kept = 0.0;
+    for (int it = 0; it < 4; it++) {
+        float sw = 0.0, sx = 0.0, sy = 0.0, sxx = 0.0, sxy = 0.0;
+        for (int y = 0; y < 18; y++) {
+            for (int x = 0; x < 32; x++) {
+                vec2 m = texelFetch(GAIN_GRID_raw, ivec2(x, y), 0).rg;
+                float w = abs(m.y - (g * m.x + b)) <= 2.5 * s ? 1.0 : 0.0;
+                sw += w; sx += w * m.x; sy += w * m.y; sxx += w * m.x * m.x; sxy += w * m.x * m.y;
+            }
+        }
+        kept = sw;
+        if (sw < 1.0) break;
+        float mx = sx / sw, my = sy / sw, vx = sxx / sw - mx * mx;
+        g = vx > 1.0e-4 ? clamp((sxy / sw - mx * my) / vx, 0.5, 2.0) : 1.0;
+        b = my - g * mx;
+        float ss = 0.0, n = 0.0;
+        for (int y = 0; y < 18; y++) {
+            for (int x = 0; x < 32; x++) {
+                vec2 m = texelFetch(GAIN_GRID_raw, ivec2(x, y), 0).rg;
+                float r = m.y - (g * m.x + b);
+                float w = it == 0 || abs(r) <= 2.5 * s ? 1.0 : 0.0;
+                ss += w * r * r; n += w;
+            }
+        }
+        s = max(sqrt(ss / max(n, 1.0)), 0.5 / 255.0);
+    }
+    float effect = max(abs(b), abs(g - 1.0 + b));
+    if (effect < GG_DEAD || kept < 0.5 * 576.0)
+        return vec4(1.0, 0.0, 0.0, 0.0);
+    return vec4(g, b, 0.0, 0.0);
+}
+
+//!HOOK FRAME_MIX
+//!BIND HOOKED
+//!BIND NEXT
+//!BIND GAIN_FIT
+//!SAVE GAIN_CHECK
+//!WIDTH 32
+//!HEIGHT 18
+//!COMPONENTS 2
+//!DESC [gain] the frames' zero-motion difference over each cell's taps, raw and with the fitted gain taken out
+vec4 hook() {
+    vec2 c = floor(gl_FragCoord.xy);
+    vec2 gg = texelFetch(GAIN_FIT_raw, ivec2(0), 0).rg;
+    float raw = 0.0, comp = 0.0;
+    for (int j = 0; j < 8; j++) {
+        for (int i = 0; i < 8; i++) {
+            vec2 uv = (c + (vec2(float(i), float(j)) + 0.5) / 8.0) / vec2(32.0, 18.0);
+            float a = dot(HOOKED_tex(uv).rgb, vec3(0.299, 0.587, 0.114));
+            float b = dot(NEXT_tex(uv).rgb, vec3(0.299, 0.587, 0.114));
+            raw += abs(a - b); comp += abs(a - (b - gg.y) / gg.x);
+        }
+    }
+    return vec4(raw, comp, 0.0, 0.0);
+}
+
+//!HOOK FRAME_MIX
+//!BIND GAIN_FIT
+//!BIND GAIN_CHECK
+//!SAVE GLOBAL_GAIN
+//!WIDTH 1
+//!HEIGHT 1
+//!COMPONENTS 2
+//!DESC [gain] the fit accepted only if it explains the frames: compensated difference under GG_ACCEPT of the raw
+const float GG_ACCEPT = 0.7;
+vec4 hook() {
+    vec2 gg = texelFetch(GAIN_FIT_raw, ivec2(0), 0).rg;
+    float raw = 0.0, comp = 0.0;
+    for (int y = 0; y < 18; y++) {
+        for (int x = 0; x < 32; x++) {
+            vec2 s = texelFetch(GAIN_CHECK_raw, ivec2(x, y), 0).rg;
+            raw += s.x; comp += s.y;
+        }
+    }
+    return comp < GG_ACCEPT * raw ? vec4(gg, 0.0, 0.0) : vec4(1.0, 0.0, 0.0, 0.0);
+}
+
 //!HOOK FRAME_MIX
 //!BIND HOOKED
 //!SAVE ENERGY_A_Q0
@@ -310,12 +421,14 @@ vec4 hook() {
 
 //!HOOK FRAME_MIX
 //!BIND NEXT
+//!BIND GLOBAL_GAIN
 //!SAVE ENERGY_B_Q0
 //!WIDTH HOOKED.w 4 /
 //!HEIGHT HOOKED.h 4 /
 //!COMPONENTS 1
 //!DESC [energy] frame B: each 4x4 block's 2-px gradient magnitude, dense 2x2 taps (1/4 res)
-float lum_q(vec2 p) { return dot(NEXT_tex(p).rgb, vec3(0.299, 0.587, 0.114)); }
+float gg_b(float l) { vec2 gg = texelFetch(GLOBAL_GAIN_raw, ivec2(0), 0).rg; return (l - gg.y) / gg.x; }  // GLOBAL_GAIN
+float lum_q(vec2 p) { return gg_b(dot(NEXT_tex(p).rgb, vec3(0.299, 0.587, 0.114))); }
 vec4 hook() {
     float e = 0.0;
     for (int j = 0; j < 2; j++) {
@@ -376,14 +489,16 @@ vec4 hook() {
 
 //!HOOK FRAME_MIX
 //!BIND NEXT
+//!BIND GLOBAL_GAIN
 //!BIND ENERGY_B
 //!SAVE LUMA_B_S
 //!WIDTH HOOKED.w 16 /
 //!HEIGHT HOOKED.h 16 /
 //!COMPONENTS 2
 //!DESC [high] downsample frame B to 1/16 res (luma; .g the smoothed texture energy, one sample)
+float gg_b(float l) { vec2 gg = texelFetch(GLOBAL_GAIN_raw, ivec2(0), 0).rg; return (l - gg.y) / gg.x; }  // GLOBAL_GAIN
 vec4 hook() {
-    return vec4(dot(NEXT_tex(NEXT_pos).rgb, vec3(0.299, 0.587, 0.114)), ENERGY_B_tex(NEXT_pos).r, 0, 0);
+    return vec4(gg_b(dot(NEXT_tex(NEXT_pos).rgb, vec3(0.299, 0.587, 0.114))), ENERGY_B_tex(NEXT_pos).r, 0, 0);
 }
 
 
@@ -463,14 +578,16 @@ vec4 hook() {
 
 //!HOOK FRAME_MIX
 //!BIND NEXT
+//!BIND GLOBAL_GAIN
 //!BIND ENERGY_B
 //!SAVE LUMA_B_E
 //!WIDTH HOOKED.w 8 /
 //!HEIGHT HOOKED.h 8 /
 //!COMPONENTS 2
 //!DESC [high] downsample frame B to 1/8 res (luma; .g the smoothed texture energy, one sample)
+float gg_b(float l) { vec2 gg = texelFetch(GLOBAL_GAIN_raw, ivec2(0), 0).rg; return (l - gg.y) / gg.x; }  // GLOBAL_GAIN
 vec4 hook() {
-    return vec4(dot(NEXT_tex(NEXT_pos).rgb, vec3(0.299, 0.587, 0.114)), ENERGY_B_tex(NEXT_pos).r, 0, 0);
+    return vec4(gg_b(dot(NEXT_tex(NEXT_pos).rgb, vec3(0.299, 0.587, 0.114))), ENERGY_B_tex(NEXT_pos).r, 0, 0);
 }
 
 //!TEXTURE ALIAS_E_AB_ST
@@ -1992,13 +2109,15 @@ vec4 hook() {
 
 //!HOOK FRAME_MIX
 //!BIND NEXT
+//!BIND GLOBAL_GAIN
 //!SAVE LUMA_B_Q
 //!WIDTH HOOKED.w 4 /
 //!HEIGHT HOOKED.h 4 /
 //!COMPONENTS 1
 //!DESC [high] downsample frame B to 1/4 res (luma)
+float gg_b(float l) { vec2 gg = texelFetch(GLOBAL_GAIN_raw, ivec2(0), 0).rg; return (l - gg.y) / gg.x; }  // GLOBAL_GAIN
 vec4 hook() {
-    return vec4(dot(NEXT_tex(NEXT_pos).rgb, vec3(0.299, 0.587, 0.114)), 0, 0, 0);
+    return vec4(gg_b(dot(NEXT_tex(NEXT_pos).rgb, vec3(0.299, 0.587, 0.114))), 0, 0, 0);
 }
 
 //!TEXTURE FLOW_Q_AB_CACHE
@@ -3240,6 +3359,7 @@ vec4 hook() {
 //!BIND ALIAS_E_M_ST
 //!BIND PLAT_SN
 //!BIND NEXT
+//!BIND GLOBAL_GAIN
 //!BIND FLOW_Q_BA
 //!BIND ALIAS_E_BA_ST
 //!SAVE PLAT_O
@@ -3247,6 +3367,7 @@ vec4 hook() {
 //!HEIGHT HOOKED.h 8 /
 //!COMPONENTS 4
 //!DESC [print] the lattice's offsets (AB and BA, fused): one thread per offset, refined by a self-match
+float gg_b(float l) { vec2 gg = texelFetch(GLOBAL_GAIN_raw, ivec2(0), 0).rg; return (l - gg.y) / gg.x; }  // GLOBAL_GAIN
 vec2 pl_frag;                                              // this direction's own texel (the half's coordinate)
 vec4 plat_sn_ab(vec2 uv) { return PLAT_SN_tex(vec2(uv.x * 0.5, uv.y)); }
 vec4 plat_sn_ba(vec2 uv) { return PLAT_SN_tex(vec2(uv.x * 0.5 + 0.5, uv.y)); }
@@ -3330,7 +3451,7 @@ vec4 hook_ab() {
     if (bc / 64.0 < 0.30 * mad && pl_isolated_ab(bc, best, smp, b0, mad)) return vec4(pl_fold_ab(best), 1.0, 0.0);
     return vec4(0.0);
 }
-float pl_lum_ba(vec2 p) { return dot(NEXT_tex((p + 0.5) * NEXT_pt).rgb, vec3(0.299, 0.587, 0.114)); }
+float pl_lum_ba(vec2 p) { return gg_b(dot(NEXT_tex((p + 0.5) * NEXT_pt).rgb, vec3(0.299, 0.587, 0.114))); }
 vec2 pl_fold_ba(vec2 q) { return (q.x < 0.0 || (q.x == 0.0 && q.y < 0.0)) ? -q : q; }
 // a lattice vector is an ISOLATED minimum of the self-match (step 1r): its 8 neighbours at +-2 px all cost at least
 // max(2 c, c + 0.15 MAD) -- along a stripe the cost does not rise, so a one-dimensional print yields no such vector
@@ -3423,11 +3544,13 @@ vec4 hook() {
 //!BIND PLAT_O
 //!BIND PLAT_SN
 //!BIND NEXT
+//!BIND GLOBAL_GAIN
 //!SAVE PLAT_L
 //!WIDTH HOOKED.w 8 / 2 *
 //!HEIGHT HOOKED.h 8 /
 //!COMPONENTS 4
 //!DESC [print] the lattice (AB and BA, fused): the refined offsets gathered, completed, reduced to a basis
+float gg_b(float l) { vec2 gg = texelFetch(GLOBAL_GAIN_raw, ivec2(0), 0).rg; return (l - gg.y) / gg.x; }  // GLOBAL_GAIN
 vec2 pl_frag;                                              // this direction's own texel (the half's coordinate)
 vec4 plat_o_ab(vec2 uv) { return PLAT_O_tex(vec2(uv.x * 0.5, uv.y)); }
 vec4 plat_o_ba(vec2 uv) { return PLAT_O_tex(vec2(uv.x * 0.5 + 0.5, uv.y)); }
@@ -3533,7 +3656,7 @@ vec4 hook_ab() {
     }
     return vec4(p1, p2);
 }
-float pl_lum_ba(vec2 p) { return dot(NEXT_tex((p + 0.5) * NEXT_pt).rgb, vec3(0.299, 0.587, 0.114)); }
+float pl_lum_ba(vec2 p) { return gg_b(dot(NEXT_tex((p + 0.5) * NEXT_pt).rgb, vec3(0.299, 0.587, 0.114))); }
 vec2 pl_fold_ba(vec2 q) { return (q.x < 0.0 || (q.x == 0.0 && q.y < 0.0)) ? -q : q; }
 // a lattice vector is an ISOLATED minimum of the self-match (step 1r): its 8 neighbours at +-2 px all cost at least
 // max(2 c, c + 0.15 MAD) -- along a stripe the cost does not rise, so a one-dimensional print yields no such vector
@@ -3643,6 +3766,7 @@ vec4 hook() {
 //!HOOK FRAME_MIX
 //!BIND HOOKED
 //!BIND NEXT
+//!BIND GLOBAL_GAIN
 //!BIND FLOW_Q_AB
 //!BIND LUMA_A_E
 //!BIND PLAT_L
@@ -3655,13 +3779,14 @@ vec4 hook() {
 //!HEIGHT HOOKED.h 8 /
 //!COMPONENTS 4
 //!DESC [print] the menu (AB and BA, fused): the 3 x 3 cells' distinct flows plus the nearest lattice steps, its best four by a cheap SAD
+float gg_b(float l) { vec2 gg = texelFetch(GLOBAL_GAIN_raw, ivec2(0), 0).rg; return (l - gg.y) / gg.x; }  // GLOBAL_GAIN
 vec2 pl_frag;                                              // this direction's own texel (the half's coordinate)
 vec4 plat_l_ab(vec2 uv) { return PLAT_L_tex(vec2(uv.x * 0.5, uv.y)); }
 vec4 plat_l_ba(vec2 uv) { return PLAT_L_tex(vec2(uv.x * 0.5 + 0.5, uv.y)); }
 vec4 plat_sn_ab(vec2 uv) { return PLAT_SN_tex(vec2(uv.x * 0.5, uv.y)); }
 vec4 plat_sn_ba(vec2 uv) { return PLAT_SN_tex(vec2(uv.x * 0.5 + 0.5, uv.y)); }
 float pr_lum_a_ab(vec2 p) { return dot(HOOKED_tex((p + 0.5) * HOOKED_pt).rgb, vec3(0.299, 0.587, 0.114)); }
-float pr_lum_b_ab(vec2 p) { return dot(NEXT_tex((p + 0.5) * NEXT_pt).rgb, vec3(0.299, 0.587, 0.114)); }
+float pr_lum_b_ab(vec2 p) { return gg_b(dot(NEXT_tex((p + 0.5) * NEXT_pt).rgb, vec3(0.299, 0.587, 0.114))); }
 vec4 hook_ab() {
     if (!pair_changed) return vec4(0.0);                  // unused: the decision reuses its cached result
     ivec2 tc = ivec2(pl_frag);                        // compact (see the offsets pass)
@@ -3732,7 +3857,7 @@ vec4 hook_ab() {
             if (top[s] >= 0) imageStore(PLAT_T_AB_ST, ivec2(tc.x * 4 + s, tc.y), vec4(alts[top[s]], float(top[s]), 1.0));
     return vec4(w, 1.0, 0.0);
 }
-float pr_lum_a_ba(vec2 p) { return dot(NEXT_tex((p + 0.5) * NEXT_pt).rgb, vec3(0.299, 0.587, 0.114)); }
+float pr_lum_a_ba(vec2 p) { return gg_b(dot(NEXT_tex((p + 0.5) * NEXT_pt).rgb, vec3(0.299, 0.587, 0.114))); }
 float pr_lum_b_ba(vec2 p) { return dot(HOOKED_tex((p + 0.5) * HOOKED_pt).rgb, vec3(0.299, 0.587, 0.114)); }
 vec4 hook_ba() {
     if (!pair_changed) return vec4(0.0);                  // unused: the decision reuses its cached result
@@ -3814,6 +3939,7 @@ vec4 hook() {
 //!HOOK FRAME_MIX
 //!BIND HOOKED
 //!BIND NEXT
+//!BIND GLOBAL_GAIN
 //!BIND LUMA_A_E
 //!BIND PLAT_M
 //!BIND PLAT_SN
@@ -3826,13 +3952,14 @@ vec4 hook() {
 //!HEIGHT HOOKED.h 8 /
 //!COMPONENTS 1
 //!DESC [print] the rank (AB and BA, fused): one thread per offered candidate, the best full SAD within +-0.5 px
+float gg_b(float l) { vec2 gg = texelFetch(GLOBAL_GAIN_raw, ivec2(0), 0).rg; return (l - gg.y) / gg.x; }  // GLOBAL_GAIN
 vec2 pl_frag;                                              // this direction's own texel (the half's coordinate)
 vec4 plat_m_ab(vec2 uv) { return PLAT_M_tex(vec2(uv.x * 0.5, uv.y)); }
 vec4 plat_m_ba(vec2 uv) { return PLAT_M_tex(vec2(uv.x * 0.5 + 0.5, uv.y)); }
 vec4 plat_sn_ab(vec2 uv) { return PLAT_SN_tex(vec2(uv.x * 0.5, uv.y)); }
 vec4 plat_sn_ba(vec2 uv) { return PLAT_SN_tex(vec2(uv.x * 0.5 + 0.5, uv.y)); }
 float pr_lum_a_ab(vec2 p) { return dot(HOOKED_tex((p + 0.5) * HOOKED_pt).rgb, vec3(0.299, 0.587, 0.114)); }
-float pr_lum_b_ab(vec2 p) { return dot(NEXT_tex((p + 0.5) * NEXT_pt).rgb, vec3(0.299, 0.587, 0.114)); }
+float pr_lum_b_ab(vec2 p) { return gg_b(dot(NEXT_tex((p + 0.5) * NEXT_pt).rgb, vec3(0.299, 0.587, 0.114))); }
 vec4 hook_ab() {
     if (!pair_changed) return vec4(0.0);
     ivec2 t = ivec2(pl_frag);
@@ -3855,7 +3982,7 @@ vec4 hook_ab() {
     imageStore(PLAT_K_AB_ST, t, vec4(cd.xy, bc, cd.z));
     return vec4(0.0);
 }
-float pr_lum_a_ba(vec2 p) { return dot(NEXT_tex((p + 0.5) * NEXT_pt).rgb, vec3(0.299, 0.587, 0.114)); }
+float pr_lum_a_ba(vec2 p) { return gg_b(dot(NEXT_tex((p + 0.5) * NEXT_pt).rgb, vec3(0.299, 0.587, 0.114))); }
 float pr_lum_b_ba(vec2 p) { return dot(HOOKED_tex((p + 0.5) * HOOKED_pt).rgb, vec3(0.299, 0.587, 0.114)); }
 vec4 hook_ba() {
     if (!pair_changed) return vec4(0.0);
@@ -3889,6 +4016,7 @@ vec4 hook() {
 //!HOOK FRAME_MIX
 //!BIND HOOKED
 //!BIND NEXT
+//!BIND GLOBAL_GAIN
 //!BIND LUMA_A_E
 //!BIND PLAT_M
 //!BIND PLAT_KD
@@ -3902,6 +4030,7 @@ vec4 hook() {
 //!HEIGHT HOOKED.h 8 /
 //!COMPONENTS 1
 //!DESC [print] the refine (AB and BA, fused): one thread per (candidate, row), +-1 px in half-pixel steps
+float gg_b(float l) { vec2 gg = texelFetch(GLOBAL_GAIN_raw, ivec2(0), 0).rg; return (l - gg.y) / gg.x; }  // GLOBAL_GAIN
 vec2 pl_frag;                                              // this direction's own texel (the half's coordinate)
 vec4 plat_m_ab(vec2 uv) { return PLAT_M_tex(vec2(uv.x * 0.5, uv.y)); }
 vec4 plat_m_ba(vec2 uv) { return PLAT_M_tex(vec2(uv.x * 0.5 + 0.5, uv.y)); }
@@ -3910,7 +4039,7 @@ vec4 plat_kd_ba(vec2 uv) { return PLAT_KD_tex(vec2(uv.x * 0.5 + 0.5, uv.y)); }
 vec4 plat_sn_ab(vec2 uv) { return PLAT_SN_tex(vec2(uv.x * 0.5, uv.y)); }
 vec4 plat_sn_ba(vec2 uv) { return PLAT_SN_tex(vec2(uv.x * 0.5 + 0.5, uv.y)); }
 float pr_lum_a_ab(vec2 p) { return dot(HOOKED_tex((p + 0.5) * HOOKED_pt).rgb, vec3(0.299, 0.587, 0.114)); }
-float pr_lum_b_ab(vec2 p) { return dot(NEXT_tex((p + 0.5) * NEXT_pt).rgb, vec3(0.299, 0.587, 0.114)); }
+float pr_lum_b_ab(vec2 p) { return gg_b(dot(NEXT_tex((p + 0.5) * NEXT_pt).rgb, vec3(0.299, 0.587, 0.114))); }
 vec4 hook_ab() {
     if (!pair_changed) return vec4(0.0);
     ivec2 t = ivec2(pl_frag);
@@ -3953,7 +4082,7 @@ vec4 hook_ab() {
     imageStore(PLAT_F_AB_ST, t, vec4(best, bc, 1.0));
     return vec4(0.0);
 }
-float pr_lum_a_ba(vec2 p) { return dot(NEXT_tex((p + 0.5) * NEXT_pt).rgb, vec3(0.299, 0.587, 0.114)); }
+float pr_lum_a_ba(vec2 p) { return gg_b(dot(NEXT_tex((p + 0.5) * NEXT_pt).rgb, vec3(0.299, 0.587, 0.114))); }
 float pr_lum_b_ba(vec2 p) { return dot(HOOKED_tex((p + 0.5) * HOOKED_pt).rgb, vec3(0.299, 0.587, 0.114)); }
 vec4 hook_ba() {
     if (!pair_changed) return vec4(0.0);
@@ -4132,6 +4261,7 @@ vec4 hook() {
 //!HOOK FRAME_MIX
 //!BIND HOOKED
 //!BIND NEXT
+//!BIND GLOBAL_GAIN
 //!BIND FLOW_Q_AB
 //!BIND LUMA_A_E
 //!BIND PLAT_G
@@ -4145,6 +4275,7 @@ vec4 hook() {
 //!HEIGHT HOOKED.h 8 /
 //!COMPONENTS 4
 //!DESC [print] the borrowing (AB and BA, fused): over the budget, an opened cell off the grid tries its grid neighbours' lattice steps
+float gg_b(float l) { vec2 gg = texelFetch(GLOBAL_GAIN_raw, ivec2(0), 0).rg; return (l - gg.y) / gg.x; }  // GLOBAL_GAIN
 vec2 pl_frag;                                              // this direction's own texel (the half's coordinate)
 vec4 plat_g_ab(vec2 uv) { return PLAT_G_tex(vec2(uv.x * 0.5, uv.y)); }
 vec4 plat_g_ba(vec2 uv) { return PLAT_G_tex(vec2(uv.x * 0.5 + 0.5, uv.y)); }
@@ -4153,7 +4284,7 @@ vec4 plat_sn_ba(vec2 uv) { return PLAT_SN_tex(vec2(uv.x * 0.5 + 0.5, uv.y)); }
 vec4 plat_r_ab(vec2 uv) { return PLAT_R_tex(vec2(uv.x * 0.5, uv.y)); }
 vec4 plat_r_ba(vec2 uv) { return PLAT_R_tex(vec2(uv.x * 0.5 + 0.5, uv.y)); }
 float pp_lum_a_ab(vec2 p) { return dot(HOOKED_tex((p + 0.5) * HOOKED_pt).rgb, vec3(0.299, 0.587, 0.114)); }
-float pp_lum_b_ab(vec2 p) { return dot(NEXT_tex((p + 0.5) * NEXT_pt).rgb, vec3(0.299, 0.587, 0.114)); }
+float pp_lum_b_ab(vec2 p) { return gg_b(dot(NEXT_tex((p + 0.5) * NEXT_pt).rgb, vec3(0.299, 0.587, 0.114))); }
 vec4 hook_ab() {
     ivec2 cell = ivec2(pl_frag);
     if (!pair_changed) return imageLoad(PLAT_P_AB_ST, cell);
@@ -4216,7 +4347,7 @@ vec4 hook_ab() {
     imageStore(PLAT_P_AB_ST, cell, result);
     return result;
 }
-float pp_lum_a_ba(vec2 p) { return dot(NEXT_tex((p + 0.5) * NEXT_pt).rgb, vec3(0.299, 0.587, 0.114)); }
+float pp_lum_a_ba(vec2 p) { return gg_b(dot(NEXT_tex((p + 0.5) * NEXT_pt).rgb, vec3(0.299, 0.587, 0.114))); }
 float pp_lum_b_ba(vec2 p) { return dot(HOOKED_tex((p + 0.5) * HOOKED_pt).rgb, vec3(0.299, 0.587, 0.114)); }
 vec4 hook_ba() {
     ivec2 cell = ivec2(pl_frag);
@@ -4775,13 +4906,15 @@ vec4 hook() {
 
 //!HOOK FRAME_MIX
 //!BIND NEXT
+//!BIND GLOBAL_GAIN
 //!SAVE LUMA_B_H
 //!WIDTH HOOKED.w 2 /
 //!HEIGHT HOOKED.h 2 /
 //!COMPONENTS 1
 //!DESC [high] downsample frame B to half res (luma)
+float gg_b(float l) { vec2 gg = texelFetch(GLOBAL_GAIN_raw, ivec2(0), 0).rg; return (l - gg.y) / gg.x; }  // GLOBAL_GAIN
 vec4 hook() {
-    return vec4(dot(NEXT_tex(NEXT_pos).rgb, vec3(0.299, 0.587, 0.114)), 0, 0, 0);
+    return vec4(gg_b(dot(NEXT_tex(NEXT_pos).rgb, vec3(0.299, 0.587, 0.114))), 0, 0, 0);
 }
 
 //!TEXTURE FLOW_H_AB_CACHE
