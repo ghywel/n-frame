@@ -92,8 +92,9 @@ def prepare(root, rate, width=640):
     h = round(meta['height'] * w / meta['width'] / 2) * 2
     native_count = frame_count(root / 'native.mkv')
     keep = native_count - native_count % 2
-    # A last odd-index frame has no right anchor. Trim only that untestable
-    # tail, before decimation, rather than silently accept a renderer count gap.
+    # Make the reference even-length: the renderer emits twice the retained
+    # input count. Trim one terminal source frame if needed, then discard the
+    # final unsupported midpoint and the wider boundary guard in measure().
     save(root / 'prepare.json', dict(native_frames=native_count, reference_frames=keep,
                                      tail_unpaired_frames=native_count-keep, width=w, height=h, rate=rate))
     call([FF, '-nostdin', '-y', '-v', 'warning', '-i', str(root / 'native.mkv'), '-an', '-sn',
@@ -111,9 +112,15 @@ def prepare(root, rate, width=640):
 
 
 def frame_count(p):
-    return int(subprocess.run([FP, '-v', 'error', '-select_streams', 'v:0', '-count_frames',
-                              '-show_entries', 'stream=nb_read_frames', '-of', 'csv=p=0', str(p)],
-                             capture_output=True, text=True, check=True).stdout.strip())
+    # All working files are our own FFV1: one video packet is one frame. Avoid
+    # ffprobe's single-threaded full decode merely to count. measure() still
+    # checks actual decoded counts of all three streams independently.
+    d = json.loads(subprocess.run([FP, '-v', 'error', '-select_streams', 'v:0', '-count_packets',
+                                  '-show_entries', 'stream=codec_name,nb_read_packets', '-of', 'json', str(p)],
+                                 capture_output=True, text=True, check=True).stdout)['streams'][0]
+    if d['codec_name'] != 'ffv1':
+        raise ValueError('packet-count shortcut is only valid for our FFV1 working files')
+    return int(d['nb_read_packets'])
 
 
 def render(root, rate, name):

@@ -5,6 +5,11 @@ was written first, the pre-registered PREDICTION.md. They are kept because the r
 their numbers and a number without its instrument is not reproducible. They are not regression tests and
 `bench.sh` does not run them.
 
+**2026-10-23 bounded reconstruction prospecting:** [prospect/README.md](prospect/README.md),
+[prospect/RESULTS.md](prospect/RESULTS.md); `reconstruct.py` samples five local middle windows, reconstructs withheld
+frames with High/linear, and keeps cuts/holds/noise/extreme changes outside the primary ranking. `review.py` supplies
+contact sheets, native-size repeats and a packet-timing guard. This complements the older flow-disagreement prospector.
+
 **2026-10-23 switch audit:** [switches/RESULTS.md](switches/RESULTS.md), `switches/audit.py` and `switches/compile.py`:
 37 distinct environment controls, 63 wiring/dependency checks, 38 representative variants compiling through 2366
 passes and five expected STICKY host rejections. Optional read-only Cadence graph provenance; no fresh image-quality

@@ -36,3 +36,26 @@ all scans and confirmations use local footage. Reduced-width scan candidates nee
 and normal-rate playback confirmation before attributing a production failure or changing a shader.
 
 Footage measurements and inspection results follow when the run completes.
+
+## First completed sources (interim, before native confirmation)
+
+Film: 3595 evaluable midpoints, 1480 eligible; the raw top 20 errors are all excluded by the frozen guards. Median
+eligible advantage over linear: +5.20 dB. Relative candidate 4991 (208.166 s into the copied window) loses 8.74 dB to
+linear, SSIM8 .9711 versus .9937, with a local coat-area excess. The other four inspected events are vigorous
+rotation/action and remain hard-motion examples rather than shader-defect leads. These show the change guard does
+not remove all rapid motion: its statistic is image change, not velocity.
+
+TV: 3749 evaluable midpoints, 2022 eligible, median advantage +3.89 dB. Relative candidate 73 (2.920 s into the window)
+loses 6.02 dB, SSIM8 .9882 versus .9951, on a gently moving shot of a toaster and bottle. Candidate 101 is nearby in the
+same shot. Candidate 183's SSIM8 gap is below the .005 regression threshold. The two absolute-error candidates show
+arm motion: High improves SSIM8 over the visibly ghosted linear image. None is yet a native-size confirmed defect.
+
+All five native windows' packet intervals agree with their nominal 23.976/25 fps within millisecond rounding. The
+TV file lacks a field-order tag; a 125-frame centre sample with idet reports 124 progressive, one undetermined,
+zero TFF/BFF in its multi-frame classification. This short check is supporting evidence, not a full-window proof.
+
+Preparation was restarted to replace an unnecessarily slow single-threaded count decode with FFV1 packet counting.
+A child process survived the first stop and briefly overlapped the new preparation; both were stopped, and the
+reference regenerated with one writer before any scoring. Decoded counts and retained-frame checks then passed.
+The first helper name shadowed Python's inspect module and failed at import; renamed review.py before use. These
+orchestration errors produced no accepted quality measurements.

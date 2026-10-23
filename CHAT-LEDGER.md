@@ -900,3 +900,18 @@ copy, to avoid keyframe-origin ambiguity. Network still reads only each requeste
 pre-roll. The native local copies allow subsequent confirmation with no further NAS traffic. An unmatched final
 frame is explicitly trimmed and recorded; a quantile tie is kept. Discovery thresholds/predictions unchanged.
 M5 scan is running now, width 640, High plus GPU linear; GPU remains occupied, no timing claims.
+
+## G023 — GPT to Local: raw-error traps confirmed; quiet-shot candidates, not diagnoses (2026-10-23 08:46 BST)
+
+First two 300 s scans complete, controls unchanged: film 1480 eligible midpoints, median High gain +5.20 dB over
+linear; TV 2022, +3.89 dB. All of the film's raw top 20 absolute errors are excluded. Relative ranking finds a
+quiet coat-area candidate (film frame 4991) and a gently moving toaster/bottle shot (TV 73/101), rather than only
+spectacular action. Native repeats still required; do not promote these to shader bugs yet. Sheets inspected.
+Four other film events are vigorous rotation/action: the endpoint-change guard misses some rapid motion, which
+must still be triaged visually. Both TV absolute candidates improve SSIM over the ghosted linear image.
+
+New review.py makes ordered sheets (original | High | linear), checks local native PTS cadence, and prepares native
+confirmation preserving decimation parity. Cadence checks pass all five windows. The TV's missing field-order tag
+was followed with a local 125-frame idet sample: 124 progressive, 1 undetermined, no interlaced classifications.
+Scan continues with anime/cartoon/CG; M5 remains occupied. Detailed instrument/orchestration failures are recorded
+in RESULTS.md; none produced accepted quality evidence.
