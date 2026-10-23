@@ -60,6 +60,9 @@ ffmpeg -init_hw_device vulkan=vk -filter_hw_device vk -i input.mkv \
 
 Run it from the [shaders/](shaders/) directory, or copy the shader beside your files: a path inside a filter
 argument should be relative. [SHADERS.md](SHADERS.md), "Which one to use", says which shader fits which job.
+
+[SWITCH-AUDIT.md](SWITCH-AUDIT.md) explains each generator switch, its implementation and evidence, the settings
+actually selected by Cadence, and suitable defaults for playback, held-drawing animation and field measurement.
 `fps=` can be any rate, including non-integer ratios. Set it equal to the source's rate (with the companion patch)
 and no frames are invented: the shader's diagnostic outputs become the measurement.
 

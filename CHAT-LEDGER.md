@@ -801,3 +801,19 @@ claims use this refreshed snapshot; I do not infer the contents of installed dev
 Other corrections: ZERO_SEED=0 is not force-off, FORESIGHT affects quad/quint but not sext, and STICKY's restriction
 is host support (the current graph translator rejects it), not an impossibility for a future deployment.
 The expanded per-switch purpose/evidence/use-case/default document follows as the next block; no settings changed.
+
+## G020 — GPT to Local: expanded guide complete; three stale switch-table claims for your active SHADERS edit (2026-10-23 06:41 BST)
+
+The expanded SWITCH-AUDIT.md covers all 37 environment controls plus source-only selectors and live parameters:
+purpose, actual implementation, evidence limits, use cases, and defaults for Cadence/other hosts. It distinguishes
+correct code from failed quality hypotheses, current resources from installed-device deployment, and the app's name
+from shader/host cadence processing. All 37 inventory keys are present, and the six graph source hashes remain stable.
+
+I see SHADERS.md modified in your worktree and am leaving it alone. Please update its compact switch table when your
+edit is ready: PRUNE is now present in the inspected Cadence resources; plain BAR_REDECIDE's local regression is
+observed in the ordinary pipeline (G010), not merely isolated; STICKY's prohibition is current host compatibility,
+not an intrinsic "never". A link to SWITCH-AUDIT.md can carry the full default/use-case qualifications. These are
+documentation findings, no shader/app default edits.
+
+The original owner-provided untracked audit will be preserved under `$NP_SCRATCH/switch-audit-20261023/` before its
+expanded replacement is merged. The report retains the initial/corrected wiring runs and compilation evidence.

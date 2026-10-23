@@ -5,6 +5,11 @@ was written first, the pre-registered PREDICTION.md. They are kept because the r
 their numbers and a number without its instrument is not reproducible. They are not regression tests and
 `bench.sh` does not run them.
 
+**2026-10-23 switch audit:** [switches/RESULTS.md](switches/RESULTS.md), `switches/audit.py` and `switches/compile.py`:
+37 distinct environment controls, 63 wiring/dependency checks, 38 representative variants compiling through 2366
+passes and five expected STICKY host rejections. Optional read-only Cadence graph provenance; no fresh image-quality
+gate implied. Use-case/default conclusions: [SWITCH-AUDIT.md](../../SWITCH-AUDIT.md).
+
 **2026-10-22 review supplement:** [cage/BAR-REVIEW.md](cage/BAR-REVIEW.md), reproduced by
 `cage/bar_review.py` (CPU, numpy; output `$NP_SCRATCH/bar-review/results.json`): 13/13 controls; a correct +6 px/frame
 seed on period-9 bars becomes -3 under BAR_REDECIDE, the fixed-grid interpolation response checked against direct
