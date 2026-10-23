@@ -17,7 +17,11 @@ and every read of frame B's luma for MATCHING (the energy channel's gradients, t
 lattice's and the prior's full-resolution reads) becomes (l - b) / g. Frame A is never touched; the picture is mixed
 from the original frames, so the fade itself is the blend's; the scene-cut statistics and the warp keep the true
 frames. Without the variable the output is byte-identical.
-    global_gain.add(t) -> t      every changed pass counted and asserted
+GLOBAL_GAIN=1 was KILLED by its pre-registered ladder test (PLAN.md: translating bars and stairs read as a brightness
+change, H2x -4.6 dB). GLOBAL_GAIN=2 (F1b) keeps the fit and accepts it only where it explains the frames: a second grid
+pass sums the frames' zero-motion difference over the same taps raw and compensated, and the gain is used only if the
+compensated sum is under GG_ACCEPT (0.7) of the raw one, else identity.
+    global_gain.add(t, accept=False) -> (t, changed passes, reads)      every changed pass counted and asserted
 """
 import re
 
@@ -53,7 +57,7 @@ vec4 hook() {{
 
 //!HOOK FRAME_MIX
 //!BIND GAIN_GRID
-//!SAVE GLOBAL_GAIN
+//!SAVE {{FIT}}
 //!WIDTH 1
 //!HEIGHT 1
 //!COMPONENTS 2
@@ -92,12 +96,59 @@ vec4 hook() {{
     return vec4(g, b, 0.0, 0.0);
 }}
 """
+CHECK = """
+//!HOOK FRAME_MIX
+//!BIND HOOKED
+//!BIND NEXT
+//!BIND GAIN_FIT
+//!SAVE GAIN_CHECK
+//!WIDTH 32
+//!HEIGHT 18
+//!COMPONENTS 2
+//!DESC [gain] the frames' zero-motion difference over each cell's taps, raw and with the fitted gain taken out
+vec4 hook() {
+    vec2 c = floor(gl_FragCoord.xy);
+    vec2 gg = texelFetch(GAIN_FIT_raw, ivec2(0), 0).rg;
+    float raw = 0.0, comp = 0.0;
+    for (int j = 0; j < 8; j++) {
+        for (int i = 0; i < 8; i++) {
+            vec2 uv = (c + (vec2(float(i), float(j)) + 0.5) / 8.0) / vec2(32.0, 18.0);
+            float a = dot(HOOKED_tex(uv).rgb, vec3(0.299, 0.587, 0.114));
+            float b = dot(NEXT_tex(uv).rgb, vec3(0.299, 0.587, 0.114));
+            raw += abs(a - b); comp += abs(a - (b - gg.y) / gg.x);
+        }
+    }
+    return vec4(raw, comp, 0.0, 0.0);
+}
+
+//!HOOK FRAME_MIX
+//!BIND GAIN_FIT
+//!BIND GAIN_CHECK
+//!SAVE GLOBAL_GAIN
+//!WIDTH 1
+//!HEIGHT 1
+//!COMPONENTS 2
+//!DESC [gain] the fit accepted only if it explains the frames: compensated difference under GG_ACCEPT of the raw
+const float GG_ACCEPT = 0.7;
+vec4 hook() {
+    vec2 gg = texelFetch(GAIN_FIT_raw, ivec2(0), 0).rg;
+    float raw = 0.0, comp = 0.0;
+    for (int y = 0; y < 18; y++) {
+        for (int x = 0; x < 32; x++) {
+            vec2 s = texelFetch(GAIN_CHECK_raw, ivec2(x, y), 0).rg;
+            raw += s.x; comp += s.y;
+        }
+    }
+    return comp < GG_ACCEPT * raw ? vec4(gg, 0.0, 0.0) : vec4(1.0, 0.0, 0.0, 0.0);
+}
+"""
 HELPER = ("float gg_b(float l) { vec2 gg = texelFetch(GLOBAL_GAIN_raw, ivec2(0), 0).rg; return (l - gg.y) / gg.x; }  "
           "// GLOBAL_GAIN\n")
 PAT = re.compile(r"dot\(NEXT_tex\(([^;]*?)\)\.rgb, vec3\(0\.299, 0\.587, 0\.114\)\)")
 
 
-def add(t):
+def add(t, accept=False):
+    passes = PASSES.replace('{FIT}', 'GAIN_FIT' if accept else 'GLOBAL_GAIN') + (CHECK if accept else '')
     i = t.index("//!HOOK")
     blocks = t[i:].split("\n//!HOOK")
     out, changed, reads = [], [], 0
@@ -120,6 +171,6 @@ def add(t):
     for d in ("downsample frame B to 1/16", "downsample frame B to 1/8", "downsample frame B to 1/4", "[energy] frame B"):
         if "//!DESC " + d in t or any(("//!DESC " + d) in b for b in blocks):
             assert any(d in c for c in changed), f"global_gain: no compensated pass '{d}'"
-    t = t[:i] + PASSES.lstrip("\n") + "\n" + "\n//!HOOK".join(b[len("//!HOOK"):] if k else b for k, b in enumerate(out))
+    t = t[:i] + passes.lstrip("\n") + "\n" + "\n//!HOOK".join(b[len("//!HOOK"):] if k else b for k, b in enumerate(out))
     t = t.replace("\n\n//!HOOK", "\n\n//!HOOK")
     return t, changed, reads

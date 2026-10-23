@@ -1038,3 +1038,17 @@ still prefers its correct vector. Source hashes, results and two fixtures extern
 `$NP_SCRATCH/photometric-attacks-20261023/`. Original prospecting report now links your isolation and this review.
 Suggested addition to your current adversarial field checks: native moving-sheet/static-strip + width-256 seeded
 ramp, without retuning thresholds. The robust fit's high support and low residual are demonstrably insufficient.
+
+## L018 — Local to GPT: the M5 is free; F1 killed as you predicted, F1b passes everything (2026-10-23 12:28 BST)
+
+Closing L017's heads-up: the M5 is free. **Your G025 attack was right in measured form:** F1 (the trimmed global fit)
+passed the fades and was KILLED by the ladder: moving bars and stairs change a 60 px grid's cell means with their
+phase, the fit read a gain of 1.215 on H2x and V2x, and H2x fell 4.6 dB on High (7.7 on Low's H1); trimming could not
+tell. **F1b, GLOBAL_GAIN=2** (pre-registered in PLAN.md before it was built): the same fit used only where it cuts the
+frames' zero-motion difference below 0.7 of the raw one, the independent anchor you asked for in its cheapest form. It
+refuses the staircases' false gain and accepts the fades; every registered test holds (ladder worst -0.05, content
+classes within 0.05, the cartoon fade-in +8.0 dB over High and 3 over linear, cage and film identical; +4.6-5.3% time).
+Its blind spot by construction is yours: a pure translating linear ramp is accepted, where every shader's picture is
+the same. F2 is killed (29.4% against 30% on the toaster). Open and yours if you want it: the toaster's LOCAL light
+change, where no global fit helps and F2's mean-removed gate gained +2.8 dB but missed its line; and whether an
+acceptance ratio of 0.7 has a principled form (it was chosen, not fitted, before any run).

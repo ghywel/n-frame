@@ -164,6 +164,11 @@ never upgrades a status: nothing here is a measurement, and nothing here changes
   from my head instead of from scores.json (32.35 where the data says 30.84; +0.07 where it says +0.05). Caught by
   recomputing every cell before the commit. Outcome: missed, caught. Note: a table row is copied from the run's own
   output or computed by a script, never composed; check every cell against the JSON before it is committed.
+- 2026-10-23 11:58, Claude: unease (niggle), medium, reading F1's first good fade numbers: "a global fit on a coarse grid
+  will be fooled by something moving"; I had registered a ramp control and no periodic one. -> confirmed by the ladder an
+  hour later: moving stairs read as a gain of 1.2, H2x -4.6 dB; GPT's attack (G025) had named the class. Outcome: right,
+  but I did not act on it before the long run. Note: when a reviewer names an identifiability hole, add the control
+  for it before the run, not after the kill.
 
 ## The set-aside pulls
 

@@ -5697,3 +5697,21 @@ Local agreeing on the per-frame evidence: of 360 rebuilt film frames, 189 move l
 gain over 0.3 and 6 over 1 dB, five of those six in one half-second of one window (High 32.3-33.1 against 33.5-35.1 dB);
 the top ten frames carry 27 percent of the mean. A spread, mostly invisible softening and one brief mild moment, against
 a visible railing failure (7.4 dB) the gate prevents. Reopen only on a defect someone sees in playback.
+
+### Brightness changes read as motion: the defect, F1 killed, F2 killed, F1b passing (2026-10-23, midday)
+
+From GPT's bounded footage prospecting (`tests/probes/prospect/RESULTS.md`, G021-G024): its two strong leads, a nearly
+still toaster's brushed-metal grille (TV, High 5.6 dB under a plain blend) and a fade-in on a colonnade (cartoon, 5.0
+dB under), are one defect, isolated by Local: High's matcher compares raw luma and energy and compensates no gain or
+offset, so a still picture under a pure fade is read as motion (invented flow on 32-46% of pixels at x1.06 a pair, High
+2-4 dB under the blend; Low worse). Plan, pre-registration and every number: `tests/probes/photometric/PLAN.md`.
+**F1 GLOBAL_GAIN=1** (a trimmed per-pair gain and offset taken out of B's luma wherever the matcher reads it): fixes the
+fades (invented flow 0%; the cartoon fade-in 36.40 -> 44.45 dB, over the blend) and is KILLED by the ladder: moving bars
+and stairs change a coarse grid's cell means with their phase, the fit reads that motion as a gain of 1.2, and H2x
+falls 4.6 dB (GPT's identifiability attack, G025, measured). **F2 COHERENCE_ZM** (the coherence gate's zero-motion sums
+mean-removed, after a tap showed the gate stays shut on the toaster because the highlight makes the frames differ at
+zero): +2.8 dB on the toaster, KILLED by its 30% worst-cell line at 29.4%. **F1b GLOBAL_GAIN=2** (the same fit, used only
+where it cuts the frames' zero-motion difference below 0.7 of the raw one; it refuses the staircases' false gain):
+**passes every registered test**: the fades and the cartoon as F1, the ladder level (worst -0.05), the content windows
+inside 0.05 per class, the cage and the film segments identical; +4.6 to +5.3% time on High. A switch, off; adoption
+is the owner's. Open: local light on fine texture (the toaster), and caching the gain passes per pair.

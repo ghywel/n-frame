@@ -80,3 +80,44 @@ For each fix, on High (and on Low too, the fall-back that loses most):
 
 Not planned: the anime and CG timing leads (two endpoints cannot reveal a held drawing's schedule; GPT's own reading),
 and any change to the prospector's frozen ranking.
+
+## Results of F1 and F2, and F1b pre-registered (2026-10-23, 12:20, before F1b is built)
+
+**F2 COHERENCE_ZM: KILLED by test 2** (TV 73's worst cell -29.4% against the registered 30%; +2.8 dB, SSIM .9847 ->
+.9889). Not retuned. **F1 GLOBAL_GAIN=1: passes tests 1-3** (pure fades: invented flow 0% on all six, within 0.5 dB of
+linear on five, the sixth at 65 dB where the error is a seventh of an 8-bit code; cartoon 6525 36.40 -> 44.45, over
+linear by 3 dB; the textured pan under fades kept and improved; cage level) **and is KILLED by test 4**: the ladder's
+translating bars and stairs fall H2x -4.61, V2x -4.24, V1 -1.27 on High (Low: H1 -7.66, V2x -6.01, H2x -5.51), and the
+content windows' film class -0.15 (CG -0.12). The mechanism is GPT's identifiability attack (G025) in measured form: a
+moving periodic pattern changes the 60 px cells' means with its phase, the trimmed fit finds a gain or offset that is
+motion, and the "compensation" then corrupts the matching. Trimming cannot tell.
+
+**F1b, GLOBAL_GAIN=2: the fit accepted only where it explains the frames.** The same fit, then a second grid pass
+measures the frames' zero-motion difference over the same taps raw, |A - B|, and compensated, |A - (B - b)/g|, and the
+gain is used only if the compensated difference is under GG_ACCEPT = 0.7 of the raw one; otherwise identity. Rationale:
+under a fade the difference IS the brightness change and compensation removes most of it; under motion the difference
+is motion and compensation removes little or adds. Known blind spot, by construction: a pure translating linear ramp is
+accepted (its difference is exactly an offset; GPT's case), where every shader's picture is the same anyway; and a fade
+combined with large motion may be refused (F1's pan-under-fade gain may be lost). No other change to F1.
+**Pre-registered (before building):** the ladder first, since it killed F1: no case down more than 1 dB on High or
+Low, capped means within 0.05 (KILL otherwise). Then the content windows: no class mean down more than 0.05 (KILL).
+Then tests 1-2: the pure fades within 1 dB of F1's own figures on at least five of six, and cartoon 6525 at least +3 dB
+over High (KILL otherwise). Then the cage and the film segments, level within 0.05. Predicted: all pass; the pan under
+fade keeps under half of F1's gain.
+
+## F1b results (2026-10-23, 12:30; the M5, one sitting with F1's)
+
+**Every registered condition held.** Instrument first: on the two moving staircases that killed F1 (H2x, V2x) F1 read
+a spurious gain of 1.215 and F1b refuses it (identity); F1b accepts the pure fade (1.060), the real fade-in (1.221)
+and the pan under a x1.06 fade. Ladder (45 cases): worst L0 -0.05 (a static scene near 81 dB), every bars/stairs case
+within 0.01, capped frozen and headline means identical to High's and Low's. Content windows: live action -0.047
+(SSIM +0.0002), 2D animation +0.020, CG 0.000 on High; Low -0.049 / +0.015 / 0.000; the one window that moves is a
+film segment (Pirates, 3787.7 s) at PSNR -0.75 but SSIM +0.0029, where the record's rule trusts SSIM. Tests 1-2:
+identical to F1 on all six pure fades (invented flow 0%) and on cartoon 6525 (36.40 -> 44.45, over linear by 3.0);
+TV 73 untouched (its change is local; F2 was the attempt at it, killed). Pan under fade: refused at x1.03 (the
+difference there is mostly motion), kept at x1.06 and x1.12 (+6.9, +8.9 dB): my "under half of F1's gain" was
+pessimistic. Cage C1-C4 identical to High and to Low. The build gate's five film segments: 33.82 / 0.9583, identical.
+Cost, time from files, interleaved: High +5.3% (O5) and +4.6% (film); Low +10% and +4%. The four gain passes run
+every output frame; caching them per source pair like the passes around them is the obvious saving, not yet made.
+**Standing:** GLOBAL_GAIN=2 is a switch, off, byte-identical without it; adoption into the tiers is the owner's call.
+The local case (TV 73, highlights on brushed metal) remains open: F2's direction gained +2.8 dB but missed its line.

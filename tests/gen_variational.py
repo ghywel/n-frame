@@ -564,7 +564,8 @@ BAR_BASIN = os.environ.get("BAR_BASIN", "0") == "1"         # with BAR_REDECIDE:
 # GLOBAL_GAIN=1 (2026-10-23; tests/global_gain.py; tests/probes/photometric/PLAN.md F1): the pair's luma gain and
 # offset, fitted robustly at a 32 x 18 grid, taken out of frame B's luma wherever the matcher reads it, so that a fade is
 # not read as motion. Without the variable the output is byte-identical.
-GLOBAL_GAIN = os.environ.get("GLOBAL_GAIN", "0") == "1"
+GLOBAL_GAIN = os.environ.get("GLOBAL_GAIN", "0")          # "1" the killed F1; "2" F1b, the fit accepted only where it explains the frames
+assert GLOBAL_GAIN in ("0", "1", "2"), "GLOBAL_GAIN is 0, 1 or 2"
 # COHERENCE_ZM=1 (2026-10-23; with COHERENCE_GATE=1; tests/coherence_zm.py; PLAN.md F2): the coherence gate's two
 # zero-motion sums compare mean-removed patches, so a local change of brightness is not disagreement. Byte-identical off.
 COHERENCE_ZM = os.environ.get("COHERENCE_ZM", "0") == "1"
@@ -925,9 +926,9 @@ if __name__ == "__main__":
     if COHERENCE_ZM:
         import coherence_zm
         text = coherence_zm.add(text)
-    if GLOBAL_GAIN:
+    if GLOBAL_GAIN != "0":
         import global_gain
-        text, _gg_changed, _gg_reads = global_gain.add(text)
+        text, _gg_changed, _gg_reads = global_gain.add(text, accept=GLOBAL_GAIN == "2")
         print(f"GLOBAL_GAIN: {_gg_reads} reads of frame B's luma compensated in {len(_gg_changed)} passes", file=sys.stderr)
     cost = 2 * (s / 256 + e / 64 + q / 16 + h / 4)
     env = ("GLOBAL_SEED=1 " if GLOBAL_SEED else "") + ("QZERO_MOIRE=1 " if QZERO_MOIRE else "") + ("COHERENCE_GATE=1 " if COHERENCE_GATE else "") \
@@ -939,7 +940,7 @@ if __name__ == "__main__":
         + ("OUTLINE_ADOPT=1 " if OUTLINE_ADOPT else "") \
         + ("PRINT_LATTICE=1 " if PRINT_LATTICE else "") \
         + ("TRUST_GATE=1 " if TRUST_GATE else "") \
-        + ("BAR_REDECIDE=1 " if BAR_REDECIDE else "") + ("BAR_KEEP=1 " if BAR_KEEP else "") + ("BAR_BASIN=1 " if BAR_BASIN else "") + ("CUT_MOTION=1 " if CUT_MOTION else "") + ("GLOBAL_GAIN=1 " if GLOBAL_GAIN else "") + ("COHERENCE_ZM=1 " if COHERENCE_ZM else "") \
+        + ("BAR_REDECIDE=1 " if BAR_REDECIDE else "") + ("BAR_KEEP=1 " if BAR_KEEP else "") + ("BAR_BASIN=1 " if BAR_BASIN else "") + ("CUT_MOTION=1 " if CUT_MOTION else "") + (f"GLOBAL_GAIN={GLOBAL_GAIN} " if GLOBAL_GAIN != "0" else "") + ("COHERENCE_ZM=1 " if COHERENCE_ZM else "") \
         + ("ALIAS_APERTURE=0 " if ALIAS_CARRY and not ALIAS_APERTURE else "")     # the zero seed is the recommendation's standing state and the line never named it
     env += f"PRUNE={PRUNE} " if PRUNE != "0" else ""     # recorded so the header can rebuild the file (REPAIRS.md L9)
     env += "STICKY_CACHE=1 " if STICKY_CACHE else ""
