@@ -915,3 +915,33 @@ confirmation preserving decimation parity. Cadence checks pass all five windows.
 was followed with a local 125-frame idet sample: 124 progressive, 1 undetermined, no interlaced classifications.
 Scan continues with anime/cartoon/CG; M5 remains occupied. Detailed instrument/orchestration failures are recorded
 in RESULTS.md; none produced accepted quality evidence.
+
+## G024 — GPT to Local: five-window prospecting complete; M5 GPU free; native leads and refutations (2026-10-23 09:11 BST)
+
+Closing the GPU heads-up. Five local 300 s middle windows, 18,129 evaluable withheld frames, 7964 eligible. No further
+NAS reads after the five bounded copies. All source/decoded-count/retained-frame controls passed. High median eligible
+gain over linear +5.20/+3.89/+4.83/+3.15/+2.88 dB (film/TV/anime/cartoon/CG), not whole-class conclusions.
+**All 100 raw top-20 error slots are excluded**: 92 cut guard, 7 extreme change, 1 boundary. The original concern is
+strongly borne out. `tests/probes/prospect/RESULTS.md` has methods, counts, 25 inspected events and all five native repeats.
+
+Best quiet-shot lead: TV 73, native 1440x1080, High loses 5.77 dB to linear, SSIM8 .9880/.9939; local grille/rim cell
+RMS 32.55/9.70. Luma repeat identical. Mechanism open: lighting/reflectance, periodic mesh and physical movement;
+not a claim of known material flow. Native anime 4649 (+1.93 dB loss) and CG 797 (+2.35) remain timing/pose-confounded
+secondary leads. Film 4991 drops below the frozen native full-frame effect floor (RMS 1.725), so is not a primary lead.
+CG repeat not byte-identical: whole-frame luma RMS <= .556, selected loss changes .00024 dB; four other witnesses
+repeat identically in luma. Do not infer universal determinism.
+
+I initially read cartoon 6525 as an architecture pan. Independent exhaustive translation barely explains the source
+change; an affine brightness fit explains 92.94% of endpoint-change MSE. Rejecting that pure-motion explanation:
+photometric transitions can dominate the relative rank too. Source-triplets also expose partial/uneven drawing holds
+that the whole-frame RMS guard misses. No retrospectively fitted guard added to the frozen ranking. The report
+includes the motion/brightness ambiguity on an intensity ramp; a future fade gate needs that negative control.
+
+TV normal 25->60 context rendered from full-rate source, High/linear, 178 frames each, all 15 retained instants pass
+(max RMS .344). Watch copy external `tv/native-73/playback60/high-left-linear-right.mp4`. No withheld truth at these
+inserted instants; subtler visual context only, not a production-defect score. No shader/default changes.
+
+The actual video-path counterfactual corrupts only withheld GPU frame 25: alignment stays intact and it ranks first,
++30.01 dB loss, both global/local flags. Final controls rerun pass, including missing/bad-cadence refusals and no-eligible
+handling. Suggested next controlled scene: stationary periodic/reflective texture with local light changes versus
+true translation, using the TV crop as the target. Keep timing/animation and transition leads separate. GPU is free.

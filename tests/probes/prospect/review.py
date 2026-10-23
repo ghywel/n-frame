@@ -4,6 +4,7 @@
 review.py sheets OUT [ID]             all ranked events; columns ref/High/linear
 review.py confirm OUT ID FRAME        3 s native window, High twice and linear
 review.py timing OUT                  decoded native PTS cadence, local only
+review.py anchors OUT ID FRAME        input A / withheld B / input C
 
 Uses the same frozen scorer and exact input-frame parity. Native confirmations
 are separate observations; do not transfer a width-640 diagnosis automatically.
@@ -18,7 +19,7 @@ import numpy as np
 import reconstruct as r
 
 
-def sheets(root, candidates=None, name='sheet'):
+def sheets(root, candidates=None, name='sheet', crop=None):
     if candidates is None:
         candidates = json.loads((root/'ranked.json').read_text())['candidates']
     by_frame = {x['frame']: x for x in candidates}
@@ -26,7 +27,8 @@ def sheets(root, candidates=None, name='sheet'):
     if not ns:
         return
     expr = '+'.join(f'eq(n,{n})' for n in ns)
-    filters = [f"[{i}:v]select='{expr}',setpts=N/TB,scale=640:-2,setsar=1[x{i}]" for i in range(3)]
+    cut = '' if crop is None else ',crop=' + ':'.join(str(x) for x in crop)
+    filters = [f"[{i}:v]select='{expr}',setpts=N/TB{cut},scale=640:-2,setsar=1[x{i}]" for i in range(3)]
     filters += [f'[x0][x1][x2]hstack=inputs=3,tile=1x{len(ns)}[o]']
     cmd = [r.FF, '-nostdin', '-y', '-v', 'warning']
     for n in ['ref', 'high', 'linear']:
@@ -35,6 +37,12 @@ def sheets(root, candidates=None, name='sheet'):
     r.call(cmd, root, f'{name}.log')
     r.save(root/f'{name}.json', dict(columns=['withheld original', 'High', 'linear'],
                                      rows=[by_frame[n] for n in ns]))
+
+
+def anchors(root, n, name='source-triplet'):
+    r.call([r.FF, '-nostdin', '-y', '-v', 'warning', '-i', str(root/'ref.mkv'), '-vf',
+            f"select='between(n,{n-1},{n+1})',scale=640:-2,setsar=1,tile=3x1",
+            '-frames:v', '1', '-update', '1', str(root/f'{name}.png')], root, f'{name}.log')
 
 
 def confirm(out, sid, n):
@@ -60,15 +68,19 @@ def confirm(out, sid, n):
     for x, y in zip(r.frames(root/'high.mkv', w, h), r.frames(root/'high2.mkv', w, h), strict=True):
         diff.append(r.rms(x, y))
     result = dict(source_id=sid, source_local_frame=n, confirmation_start_frame=start,
-                  original_seconds=src['start']+n/fps, candidate=a, repeat_candidate=b,
+                  original_seconds_approx=src['start']+n/fps, candidate=a, repeat_candidate=b,
                   repeat_max_rms=max(diff), repeat_median_rms=float(np.median(diff)),
                   width=w, height=h, count=one['frames'], retained_max=one['retained_max'])
     r.save(root/'confirmation.json', result)
     # Show candidate and its two neighbouring withheld moments as context.
     sheets(root, [x for x in one['rows'] if x['frame'] in (n-start-2, n-start, n-start+2)], 'native-sheet')
-    r.call([r.FF, '-nostdin', '-y', '-v', 'warning', '-i', str(root/'ref.mkv'), '-vf',
-            f"select='between(n,{n-start-1},{n-start+1})',scale=640:-2,setsar=1,tile=3x1",
-            '-frames:v', '1', '-update', '1', str(root/'source-triplet.png')], root, 'source-triplet.log')
+    tw, th = w//16, h//16
+    cw, ch = min(w, 4*tw)//2*2, min(h, 4*th)//2*2
+    cx, cy = (a['tile_xy'][0]+.5)*tw, (a['tile_xy'][1]+.5)*th
+    x = max(0, min(w-cw, int(cx-cw/2)))//2*2
+    y = max(0, min(h-ch, int(cy-ch/2)))//2*2
+    sheets(root, [a], 'native-crop', crop=(cw,ch,x,y))
+    anchors(root, n-start)
     print(json.dumps(result), flush=True)
 
 
@@ -85,7 +97,7 @@ def timing(out):
         # Matroska rounding is tolerated; a dropped/duplicated interval is not.
         ok = bool(np.all(np.abs(dt-period) < .0011))
         result[src['id']] = dict(frames=len(times), min_dt=float(dt.min()), max_dt=float(dt.max()),
-                                 nominal_period=period, cfr_with_ms_rounding=ok)
+                                 first_pts=float(times[0]), nominal_period=period, cfr_with_ms_rounding=ok)
         if not ok:
             raise ValueError(f'{src["id"]}: cadence refusal; see native packet PTS')
     r.save(out/'cadence-check.json', result)
@@ -94,7 +106,7 @@ def timing(out):
 
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('command', choices=['sheets', 'confirm', 'timing'])
+    p.add_argument('command', choices=['sheets', 'confirm', 'timing', 'anchors'])
     p.add_argument('out', type=Path)
     p.add_argument('id', nargs='?')
     p.add_argument('frame', type=int, nargs='?')
@@ -103,6 +115,8 @@ if __name__ == '__main__':
         timing(out)
     elif a.command == 'confirm':
         confirm(out, a.id, a.frame)
+    elif a.command == 'anchors':
+        anchors(out/a.id, a.frame, f'anchors-{a.frame}')
     else:
         for path in sorted(out.glob('*/ranked.json')):
             if not a.id or path.parent.name == a.id:

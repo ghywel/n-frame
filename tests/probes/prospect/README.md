@@ -49,3 +49,9 @@ High twice and linear, and reads the same withheld-frame measurement. It writes 
 and a sheet. Native confirmation has its own 3 s exclusion context; its percentile bucket is not the original 300 s
 bucket. Reduced-resolution rankings are not scale-invariant. Run normal-rate interpolation separately before claiming
 that a doubled-motion decimation failure occurs in ordinary playback; that playback has no withheld ground truth.
+
+The additional `fault_control.py OUT` corrupts one withheld synthetic GPU output while preserving retained frames;
+it must rank that frame first without tripping alignment. `pan_witness.py ROOT FRAME` is an exploratory independent
+global-translation/photometric check on a selected candidate. Its model can fail; it does not change the frozen rank.
+`playback.py OUT` makes the TV witness's normal 25->60 comparison with retained checks and a watch copy; it deliberately
+requires that 25 fps witness. Preview columns and source bracketing are saved in JSON; no inserted-frame truth exists.

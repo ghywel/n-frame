@@ -301,6 +301,8 @@ def controls(out):
     s = shortlist(dict(rows=rs))
     assert all(s['counts'].get(k) for k in ['cut', 'hold', 'low', 'extreme'])
     assert s['candidates'][0]['regression'] and s['candidates'][0]['seconds'] == 10
+    empty = shortlist(dict(rows=[dict(ordinary, hold=True)]))
+    assert empty['median_eligible_gain_db'] is None and not empty['candidates']
     # Smooth moving synthetic: oracle midpoint known analytically, not a
     # duplicated frame. Distinct texture in both directions, no clipping.
     raw = root / 'moving.gray'
@@ -338,9 +340,15 @@ def controls(out):
 
 
 def scan(out, only=None):
+    cadence_path = out/'cadence-check.json'
+    if not cadence_path.exists():
+        raise ValueError('run review.py timing OUT before scanning; native cadence is not verified')
+    cadence = json.loads(cadence_path.read_text())
     for src in json.loads((out / 'sources.json').read_text()):
         if only and src['id'] != only:
             continue
+        if not cadence.get(src['id'], {}).get('cfr_with_ms_rounding'):
+            raise ValueError('native cadence refused: '+src['id'])
         root = out / src['id']; rate = src['meta']['r_frame_rate']
         if (root / 'metrics.json').exists():
             continue
@@ -365,7 +373,9 @@ def score(out):
         result['shader_sha256'] = sha
         result['sources'][p.parent.name] = dict(frames=m['frames'], retained_max=m['retained_max'], **s)
         save(p.parent / 'ranked.json', s)
-        print(p.parent.name, s['counts'], f'median gain {s["median_eligible_gain_db"]:.2f} dB', flush=True)
+        gain = s['median_eligible_gain_db']
+        label = 'none (no eligible midpoints)' if gain is None else f'{gain:.2f} dB'
+        print(p.parent.name, s['counts'], 'median gain '+label, flush=True)
         for r in s['candidates']:
             print(f'  {r["lane"]:8} frame {r["frame"]:5d} @{r["seconds"]:7.3f} '
                   f'RMS {r["shader"]:.2f}/{r["linear"]:.2f}, loss {r["loss_db"]:+.2f} dB '
