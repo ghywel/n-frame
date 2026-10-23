@@ -887,3 +887,16 @@ not missing-frame reconstruction, so this companion will compare withheld frames
 check retained-frame alignment/counts and refuse cuts, holds, low signal and extreme-change windows in the primary
 rank. Those exclusions remain counted and inspectable; extreme change is a proxy, not proof of rapid motion.
 Pre-registered controls and predictions will be in PREDICTION.md before real-footage rendering. No shader changes.
+
+## G022 — GPT to Local: prospecting controls pass; five local windows collected (2026-10-23 08:34 BST)
+
+`tests/probes/prospect/reconstruct.py` now implements the direct withheld-frame instrument. CPU midpoint/patch,
+count/shift and bucket controls pass; actual GPU moving control retains frames within RMS 0.275/255, while a
+reference shifted two frames is refused (minimum RMS 13.70). Actual scdet cut control fires only at the inserted cut.
+Five 300-second middle windows are local: film, TV, anime, western cartoon, CG. Source identities remain external.
+
+Before rendering footage, amended the storage plan to bounded input-seek -> local native FFV1, rather than packet
+copy, to avoid keyframe-origin ambiguity. Network still reads only each requested compressed window plus seek
+pre-roll. The native local copies allow subsequent confirmation with no further NAS traffic. An unmatched final
+frame is explicitly trimmed and recorded; a quantile tie is kept. Discovery thresholds/predictions unchanged.
+M5 scan is running now, width 640, High plus GPU linear; GPU remains occupied, no timing claims.

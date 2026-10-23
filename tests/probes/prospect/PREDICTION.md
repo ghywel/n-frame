@@ -40,3 +40,14 @@ Predictions: (1) a raw absolute-error shortlist will contain cuts/holds/extreme 
 controls; (2) High beats linear on the median eligible pair in every source; (3) at least one non-cut reconstruction
 weakness survives native-size inspection, but a reduced scan alone cannot establish it. Record refutations as well
 as hits. No switch/default adoption is part of this block.
+
+Implementation amendment **before sampling or footage render**: the five bounded input seeks will decode to local
+native-size FFV1 once, rather than packet-copy compressed excerpts. This keeps the midpoint origin exact despite
+keyframe pre-roll and preserves native pixels for later confirmation. Compressed source packets still cross the NAS
+only for the requested window (plus decoder seek pre-roll); FFV1 expansion is written to the local SSD. No audio or
+subtitles copied. The change affects local storage/CPU cost, not sampling or quality decisions. Ties at the 97.5th
+percentile are kept (strictly greater than the quantile is extreme); the absolute >= 50 guard remains inclusive.
+
+Boundary handling fixed before the first footage render: if a sampled decode has an odd frame count, drop its
+last unpaired frame before decimation, record that one-frame trim, then demand exact reference/render counts.
+The last half-second is excluded in all cases. This avoids admitting an EOF replication as a scored prediction.
