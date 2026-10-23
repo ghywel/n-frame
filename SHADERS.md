@@ -623,8 +623,9 @@ Each file's banner names its switches but leaves out the seventh argument,
 the base; without it the generator builds on the stock base and does not
 reproduce the file. With the base given, every file of the line regenerates
 byte-identical (checked 2026-10-01; the `-4k` twins apart from the date in
-their header). Every switch is off by default, and with all of them off the
-output is the recommendation.
+their header). Every switch is off by default but `ALIAS_APERTURE` (on: the
+carry's build 5, and inert without `ALIAS_CARRY`), and with all of them at their
+defaults the output is the recommendation.
 
 Every switch's purpose, implementation, evidence and defaults per host, in full: [SWITCH-AUDIT.md](SWITCH-AUDIT.md) (GPT, 2026-10-23); the table below is the compact form.
 
