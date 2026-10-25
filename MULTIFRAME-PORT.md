@@ -292,3 +292,32 @@ science was read:**
   build, and **every ladder reading of Form Q is made twice, against High and against Form Q with the correction off**
   (same window, same lead-in, so that difference is the correction and nothing else). The kill lines are unchanged and
   apply to both readings.
+
+### Form Q on the ladder (2026-10-25, 20:09): T1 passes, T2 KILLS it on fast stairs
+
+Three shaders in one tree (`~/np-scratch-int/formq-20261025/ladder.txt`). Capped headline means: High 39.08, Form Q with
+the correction off 39.05, **Form Q 39.05**. Scored on the interior outputs only (frames 8 to n-8, the source instants
+excluded, capped at 40), where the four-frame lead-in is out of it: High 38.489, zero 38.487 (every case within 0.07 dB
+of High: the lead-in and warm-up explain the whole-clip difference), **Form Q 38.479**.
+
+| reading | oscillation O1-O6 | best elsewhere | worst |
+|---|---|---|---|
+| Form Q - High, whole clip | **+2.03 mean**, every case up (+0.38 to +3.81) | A7 +0.95, A6 +0.73 | H2x -4.15, P3 -3.33, V3x -2.95 (lead-in in every case) |
+| Form Q - zero, whole clip (the correction alone) | **+2.67 mean** (+1.15 to +4.04) | A7 +2.11, A6 +1.78 | **H2x -2.83, P3 -1.91, V3x -1.70** |
+| Form Q - High, interior | +2.28 to +4.97 (O2-O6) | A7 +1.73 | **H2x -5.82**, P3 -1.35, V3x -1.33, V2x -0.81 |
+
+**T1 PASSES** (mean +2.03 against the 2 dB line, every case up; against the zero form +2.67). **T2 KILLS** Form Q: three
+cases down more than 1 dB on every reading, all fast stairs and bars (H2x, P3, V3x), where the correction itself does
+the damage (it is off-reading against the zero form). The prediction of about +4 dB on oscillation also MISSED (+2.0
+to +2.7; the bare quad-m1 had +4.6 over High, so High's own flow and warp carry less of the quad's gain than assumed).
+
+**Why, located before any third try:** on fast periodic stairs the plain outer chains (slots 0-1 and 2-3) alias, and the
+agreement gate looks only at the MIDDLE pair (plain against High), which agrees there; the acceleration is fitted from
+aliased outer flows and bends a correct High warp. **A correction to this record's pre-registration:** it said the
+correction was "gated by its residual and round trips, exactly as the quad computes it"; reading the quad's code, in
+`QUAD_MODE 1` the least-squares residual is computed but only displayed (`TRI_DIAG 6`), never applied: the acceleration
+is gated by the three links' round trips alone. So the measured-confidence signal that motivated choosing mode 1 is
+not in the warp. **The next design** (not built): High's middle flow in the fit in place of the plain one (Form Q's
+cheaper form, which also drops the plain middle chain), and the residual applied as a gate, so an outer flow that
+disagrees with High's middle flow (an alias) shows as residual and turns the correction off. The cage, the content test
+and the cost runs continue as registered (they inform that design).
