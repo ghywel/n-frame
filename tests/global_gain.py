@@ -21,7 +21,10 @@ GLOBAL_GAIN=1 was KILLED by its pre-registered ladder test (PLAN.md: translating
 change, H2x -4.6 dB). GLOBAL_GAIN=2 (F1b) keeps the fit and accepts it only where it explains the frames: a second grid
 pass sums the frames' zero-motion difference over the same taps raw and compensated, and the gain is used only if the
 compensated sum is under GG_ACCEPT (0.7) of the raw one, else identity.
-    global_gain.add(t, accept=False) -> (t, changed passes, reads)      every changed pass counted and asserted
+LOCAL_LIGHT=1 (import 1, IMPORTS-TO-INTERPOLATION.md; needs GLOBAL_GAIN): two passes more, a 64 x 36 grid of each cell's
+mean change and mean absolute change, and the local offset where the change is coherent (|mean dI| / mean |dI| over 3 x 3
+cells, weighted smoothstep(0.6, 0.9) and ignored under 1.5 codes); every matcher read of B then subtracts it.
+    global_gain.add(t, accept=False, local=False) -> (t, changed passes, reads)      every changed pass counted and asserted
 """
 import re
 
@@ -142,13 +145,67 @@ vec4 hook() {
     return comp < GG_ACCEPT * raw ? vec4(gg, 0.0, 0.0) : vec4(1.0, 0.0, 0.0, 0.0);
 }
 """
+LIGHT = """
+//!HOOK FRAME_MIX
+//!BIND HOOKED
+//!BIND NEXT
+//!BIND GLOBAL_GAIN
+//!SAVE LIGHT_GRID
+//!WIDTH 64
+//!HEIGHT 36
+//!COMPONENTS 2
+//!DESC [light] each cell's mean change and mean absolute change, frame B with the global gain taken out
+vec4 hook() {
+    vec2 c = floor(gl_FragCoord.xy);
+    vec2 gg = texelFetch(GLOBAL_GAIN_raw, ivec2(0), 0).rg;
+    float sd = 0.0, sa = 0.0;
+    for (int j = 0; j < 6; j++) {
+        for (int i = 0; i < 6; i++) {
+            vec2 uv = (c + (vec2(float(i), float(j)) + 0.5) / 6.0) / vec2(64.0, 36.0);
+            float a = dot(HOOKED_tex(uv).rgb, vec3(0.299, 0.587, 0.114));
+            float b = (dot(NEXT_tex(uv).rgb, vec3(0.299, 0.587, 0.114)) - gg.y) / gg.x;
+            sd += b - a; sa += abs(b - a);
+        }
+    }
+    return vec4(sd / 36.0, sa / 36.0, 0.0, 0.0);
+}
+
+//!HOOK FRAME_MIX
+//!BIND LIGHT_GRID
+//!SAVE LOCAL_LIGHT
+//!WIDTH 64
+//!HEIGHT 36
+//!COMPONENTS 1
+//!DESC [light] the local offset where the change is coherent: |mean dI| / mean |dI| over 3 x 3 cells, gated
+const float LL_C0 = 0.6;
+const float LL_C1 = 0.9;
+const float LL_FLOOR = 1.5 / 255.0;
+vec4 hook() {
+    ivec2 c = ivec2(gl_FragCoord.xy);
+    float sd = 0.0, sa = 0.0, n = 0.0;
+    for (int dy = -1; dy <= 1; dy++) {
+        for (int dx = -1; dx <= 1; dx++) {
+            ivec2 q = c + ivec2(dx, dy);
+            if (q.x < 0 || q.y < 0 || q.x >= 64 || q.y >= 36) continue;
+            vec2 s = texelFetch(LIGHT_GRID_raw, q, 0).rg;
+            sd += s.x; sa += s.y; n += 1.0;
+        }
+    }
+    sd /= n; sa /= n;
+    float cue = abs(sd) / (sa + 1.0e-4);
+    float w = smoothstep(LL_C0, LL_C1, cue) * smoothstep(LL_FLOOR, 2.0 * LL_FLOOR, abs(sd));
+    return vec4(w * sd, 0.0, 0.0, 0.0);
+}
+"""
+HELPER_LOCAL = ("float ll_b(float l, vec2 uv) { vec2 gg = texelFetch(GLOBAL_GAIN_raw, ivec2(0), 0).rg; "
+                "return (l - gg.y) / gg.x - LOCAL_LIGHT_tex(uv).r; }  // GLOBAL_GAIN + LOCAL_LIGHT\n")
 HELPER = ("float gg_b(float l) { vec2 gg = texelFetch(GLOBAL_GAIN_raw, ivec2(0), 0).rg; return (l - gg.y) / gg.x; }  "
           "// GLOBAL_GAIN\n")
 PAT = re.compile(r"dot\(NEXT_tex\(([^;]*?)\)\.rgb, vec3\(0\.299, 0\.587, 0\.114\)\)")
 
 
-def add(t, accept=False):
-    passes = PASSES.replace('{FIT}', 'GAIN_FIT' if accept else 'GLOBAL_GAIN') + (CHECK if accept else '')
+def add(t, accept=False, local=False):
+    passes = PASSES.replace('{FIT}', 'GAIN_FIT' if accept else 'GLOBAL_GAIN') + (CHECK if accept else '') + (LIGHT if local else '')
     i = t.index("//!HOOK")
     blocks = t[i:].split("\n//!HOOK")
     out, changed, reads = [], [], 0
@@ -158,12 +215,16 @@ def add(t, accept=False):
         n = len(PAT.findall(blk))
         if n and not any(s in desc for s in KEEP):
             assert "//!BIND NEXT\n" in blk, f"global_gain: a pass reads NEXT without binding it: {desc}"
-            blk = PAT.sub(lambda m: f"gg_b(dot(NEXT_tex({m.group(1)}).rgb, vec3(0.299, 0.587, 0.114)))", blk)
-            blk = blk.replace("//!BIND NEXT\n", "//!BIND NEXT\n//!BIND GLOBAL_GAIN\n", 1)
+            if local:
+                blk = PAT.sub(lambda m: f"ll_b(dot(NEXT_tex({m.group(1)}).rgb, vec3(0.299, 0.587, 0.114)), {m.group(1)})", blk)
+                blk = blk.replace("//!BIND NEXT\n", "//!BIND NEXT\n//!BIND GLOBAL_GAIN\n//!BIND LOCAL_LIGHT\n", 1)
+            else:
+                blk = PAT.sub(lambda m: f"gg_b(dot(NEXT_tex({m.group(1)}).rgb, vec3(0.299, 0.587, 0.114)))", blk)
+                blk = blk.replace("//!BIND NEXT\n", "//!BIND NEXT\n//!BIND GLOBAL_GAIN\n", 1)
             lines = blk.split("\n"); j = 0
             while j < len(lines) and lines[j].startswith("//!"):
                 j += 1
-            lines.insert(j, HELPER.rstrip("\n"))
+            lines.insert(j, (HELPER_LOCAL if local else HELPER).rstrip("\n"))
             blk = "\n".join(lines)
             changed.append(desc); reads += n
         out.append(blk)

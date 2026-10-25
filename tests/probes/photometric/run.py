@@ -30,7 +30,7 @@ def frames(path, chain, w, h, hw):
 
 
 def truth(scene):
-    return 0.0 if scene.startswith('fade') else 6.0 if scene.startswith('pan') else 4.0 if scene.startswith(('ramp', 'sheet')) else None
+    return 0.0 if scene.startswith(('fade', 'light')) else 6.0 if scene.startswith('pan') else 4.0 if scene.startswith(('ramp', 'sheet')) else None
 
 
 def main():

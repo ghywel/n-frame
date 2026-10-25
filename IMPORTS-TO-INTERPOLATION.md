@@ -136,3 +136,27 @@ Tests (High + LOCAL_LIGHT against the shipped High, the M5):
   640 px, the same withheld frames. Predicted: target cells (High twice the blend's error and visibly wrong) down 20% or
   more on television and cartoon, the total error not up by more than 1% on any window.
 - **T6, cost** on Metal and libplacebo, reported.
+
+### LOCAL_LIGHT=1: T1 and T2 pass, KILLED by T3 (2026-10-25, 17:20); LOCAL_LIGHT=2 registered before it is built
+
+| test | shipped High | High + LOCAL_LIGHT | (Low / Low + LOCAL_LIGHT) |
+|---|---|---|---|
+| T1 still toaster, a highlight swinging +-10%: PSNR, invented flow over 1 px | 48.61, 4.7% | **50.96, 0.6%** | 46.81 / 50.81 |
+| T2 TV 73 frame 39: PSNR, worst cell RMS | 35.52, 36.26 | **38.96, 15.50 (-57%)** | 33.67 / 37.32 |
+| T2 cartoon 6525 frame 37 | 44.45 | 44.45 | 42.10 / 42.10 |
+| T3 textured pan, no fade: PSNR, median flow (truth +6) | 51.34, +4.95 | **49.62, +4.30** | 48.88 / 47.53 |
+| T3 ramp / 256-px ramp / GPT's moving sheet | 65.98 / 65.81 / 61.94 | 65.98 / 65.81 / 65.79 | |
+
+**T1 and T2 pass** (the toaster's worst cell cut 57% against the 30% line F2 missed at 29.4%). **T3 KILLS it**: the plain
+pan loses 1.72 dB. The instrument check before the tests had shown why: the cue fired on 11% of the pan's frame (up to
+19 codes), because a bright edge moving over a dark flat ground is a one-signed change across its neighbourhood, as
+coherent as a light change. Motion and light again (GPT's identifiability, now local).
+
+**LOCAL_LIGHT=2, the cue on the residual after motion** (registered now, before it is built). The same two passes, moved
+to after the 1/8 level's final flow (`FLOW_E_AB`, after the three-way data check): the grid takes each cell's mean and
+mean absolute value of B(x + v) - A(x), B sampled where the 1/8 flow says A's pixel went; the offset is formed as before
+and applied only to the reads from the 1/4 level down (the quarter and half pyramids, the variational and lattice reads),
+never the coarse levels it was measured from. A correctly matched moving edge leaves a residual near zero (incoherent);
+a light change leaves itself (coherent). Tests: T1-T6 exactly as registered for LOCAL_LIGHT=1, the same kill lines.
+Predicted: T3 passes (the pan's residual is small); T1 and T2 weaken (where the 1/8 flow is already wrong on the grille,
+the residual is partly the alias) but pass.

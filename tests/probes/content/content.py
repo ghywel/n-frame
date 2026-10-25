@@ -92,13 +92,13 @@ RATES = {'24000/1001': ('24000/1001', '12000/1001'), '24/1': ('24', '12'), '25/1
 
 HIGH_ENV = dict(GLOBAL_SEED='1', QZERO_MOIRE='1', COHERENCE_GATE='1', COARSE_ENERGY='1', COARSE_ENERGY_WS='8',
                 COARSE_ENERGY_WE='1', ALIAS_PRIOR='1', ALIAS_CARRY='1', OUTLINE_ADOPT='1', PRINT_LATTICE='1',
-                CUT_MOTION='1', PRUNE='2')
-OFF = ['PHASE_FETCH', 'PHASE_FETCH_E', 'PHASE_GATE', 'BAR_REDECIDE', 'BAR_KEEP', 'BAR_BASIN', 'STICKY_CACHE', 'EDGE_PROP',
+                CUT_MOTION='1', GLOBAL_GAIN='2', PRUNE='2')      # GLOBAL_GAIN=2 in the tiers since 2026-10-23
+OFF = ['LOCAL_LIGHT', 'COHERENCE_ZM', 'PHASE_FETCH', 'PHASE_FETCH_E', 'PHASE_GATE', 'BAR_REDECIDE', 'BAR_KEEP', 'BAR_BASIN', 'STICKY_CACHE', 'EDGE_PROP',
        'LOCAL_CENTRE', 'TRUST_GATE', 'ZERO_SEED']
 SHIPPED = {'low': 'bidirectional-interpolation-variational-propagated-cut',
            'standard': 'bidirectional-interpolation-variational-propagated-global-cage-energy-carry-adopt-cut',
            'high': 'bidirectional-interpolation-variational-propagated-global-cage-energy-carry-adopt-lattice-cut'}
-TIER_ENV = {'low': dict(CUT_MOTION='1', PRUNE='2'),
+TIER_ENV = {'low': dict(CUT_MOTION='1', GLOBAL_GAIN='2', PRUNE='2'),
             'standard': {k: v for k, v in HIGH_ENV.items() if k != 'PRINT_LATTICE'},
             'high': HIGH_ENV}
 ANIM_OLD, ANIM_NEW = 'const float PROP_DISAGREE     = 1.5;', 'const float PROP_DISAGREE     = 0.75;'
