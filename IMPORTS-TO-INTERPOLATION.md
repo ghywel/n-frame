@@ -109,3 +109,30 @@ right than it gains where High was wrong. So the cue is information, not a decis
    six-frame window can see; the two-frame tiers would need a small history in storage) and interpolate those regions
    between their drawings rather than between frames. Target: western cartoon first.
 3. **The median plate** waits for a cue that picks its cells (D3).
+
+## Import 1, LOCAL_LIGHT: the coherent-change cue inside the matcher (pre-registered 2026-10-25, before it is built)
+
+The owner's word: "build import 1 (the coherent-change cue inside the matcher, pre-registered, tested by the full gate),
+then per-region cadence after it." Built on the shipped High (GLOBAL_GAIN=2), as a switch `LOCAL_LIGHT=1` in
+`tests/global_gain.py` (it needs GLOBAL_GAIN): a 64 x 36 grid pass takes each cell's mean change B - A and mean absolute
+change (B with the global gain already out, 6 x 6 taps a cell); a second pass forms D1b's cue over 3 x 3 cells,
+|mean dI| / mean |dI| (about 90 px at 1080p), and where it is coherent keeps the cells' mean change as a local offset,
+weighted smoothstep(0.6, 0.9, cue) and ignored under 1.5 code values; every read of frame B's luma for matching then
+subtracts that offset, sampled bilinearly at the same place. Where change is not coherent (moving texture, moving bars)
+the offset is zero. The thresholds come from the cue's meaning (1 for a pure brightness change, near 0 for moving
+texture), not from any outcome. The warp and the cut statistics keep the true frames.
+
+Tests (High + LOCAL_LIGHT against the shipped High, the M5):
+- **T1, the isolated defect, a LOCAL light change:** the toaster still with a soft highlight (a Gaussian of 120 px
+  radius on the grille) whose brightness swings +-10% over a six-frame cycle, nothing moving; truth flow zero. Predicted:
+  invented flow over 1 px halved or better, and the withheld frames +2 dB or more. KILL if neither.
+- **T2, the real frames:** GPT's TV 73 (frame 39): the worst cell's RMS cut by 30% or more (the line F2 missed at 29.4%);
+  cartoon 6525 (frame 37) not worse than the shipped High by more than 0.2 dB. KILL on TV 73's line.
+- **T3, motion survives:** the textured pan with no fade within 0.1 dB of High, its flow unchanged within 0.1 px; the
+  ramp and GPT's moving sheet and 256-px ramp within 0.5 dB in picture. KILL if the pan moves.
+- **T4, the full gate:** the 45-case ladder (none down 1 dB, capped means within 0.05), the content test's 40 windows
+  (no class mean down more than 0.05), the cage C1-C4 (none down 0.5), the build gate's five film segments (within 0.05).
+- **T5, the prospecting windows** (in-sample: the cue was found there): High + LOCAL_LIGHT over all five 300 s windows at
+  640 px, the same withheld frames. Predicted: target cells (High twice the blend's error and visibly wrong) down 20% or
+  more on television and cartoon, the total error not up by more than 1% on any window.
+- **T6, cost** on Metal and libplacebo, reported.
