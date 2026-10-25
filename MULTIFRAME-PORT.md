@@ -272,3 +272,23 @@ the 45 ladder cases (the renaming, the frame shift and the final pass proven, no
 - **T5, cost:** frame time on libplacebo (and Metal if `gen_metal.py` translates it), reported against High's.
 Predicted: T1 passes with about +4 dB (the bare quad-m1's lead over High on the family is +4.63, and High's flow should
 not cost it); T2 passes; T3 passes small; T5 roughly twice High's time.
+
+### Form Q's instrument checks (2026-10-25, 20:06, before any of T1-T5 is read)
+
+**Compiles and runs:** 158 passes (High's 78, renamed, beside the quad's), one skipped hook at each end of a clip (the
+four-frame lead-in), no compile or disable line; the prune removes nothing. **The zero-correction check, as registered
+("within 0.01 dB of High on every one of the 45 cases"), FAILS as stated, for a reason found and proven before any
+science was read:**
+- On the 1-second ladder clips, Form Q with `QH_CORR=0` differs from High on the first three and last four outputs on
+  every case (the four-frame window's lead-in, the builtin mixer drawing them, as for every four-frame shader) and on a
+  few outputs after the lead-in on 22 cases (up to 0.81 dB on one frame of V3x): High's carried state (the alias carry,
+  the global shift's memory) starts a few source frames later in Form Q, because its first windows are not full.
+- **Proof that the renaming, the frame shift and the final pass are exact:** both shaders are deterministic (two runs
+  each, bit-identical), and on 3-second renders of H1, A5 and V3x Form Q with the correction off is **bit-identical to
+  High on every output from frame 10, 8 and 50 respectively to the end** (L1 on its 1-second clip from frame 8). One
+  thing not isolated: on the 1-second clips of H1 and A5 a few scattered mid-clip outputs also differ slightly
+  (0.01-0.1 dB), which the 3-second renders of the same scenes do not show.
+- **So the check's form is amended** (here, before T1-T5): the steady-state bit-identity above is the proof of the
+  build, and **every ladder reading of Form Q is made twice, against High and against Form Q with the correction off**
+  (same window, same lead-in, so that difference is the correction and nothing else). The kill lines are unchanged and
+  apply to both readings.
