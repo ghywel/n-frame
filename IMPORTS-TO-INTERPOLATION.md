@@ -323,3 +323,32 @@ held-moving for ever, so history alone cannot prove a drawing on twos. The evide
 counts as held only where its texture is identifiable (a single sharp matching minimum at zero displacement against the
 next drawing, not a periodic family of minima) AND it alternates; anything else is UNDECIDED and keeps today's motion
 path. Only the shaders that see the next drawing (four frames and up) can do this; the two-frame tiers cannot see it.
+
+### The remaining target under today's High (GLOBAL_GAIN=2), as G028 asked (2026-10-25, 17:43)
+
+Today's shipped High rendered over GPT's five windows by GPT's own chain (half-rate input, libplacebo at the source rate,
+yuv420p FFV1; `highgg2.mkv` beside GPT's `high.mkv`, all five renders clean) and `DIAG_HIGH=highgg2 diagnose.py` run on
+it, the same eligible frames and cells:
+
+| window | target cells (High twice the blend's error, visibly wrong): 10-23 High -> today | one-pair cue's lift | five-pair cue's lift | raw change's lift |
+|---|---|---|---|---|
+| film | 0.53% -> 0.53% | 8.6 -> 8.2 | 1.1 -> 1.1 | 3.0 -> 3.1 |
+| television | 0.50% -> **0.41%** | 12.4 -> 8.5 | 17.2 -> **4.2** | 7.1 -> 8.6 |
+| anime | 2.16% -> 2.09% | 15.1 -> 15.2 | 9.1 -> 9.4 | 6.8 -> 7.0 |
+| western cartoon | 1.59% -> **1.35%** | 11.9 -> **3.9** | 8.0 -> **0.1** | 4.7 -> 5.5 |
+| CG | 0.76% -> 0.76% | 11.8 -> 11.8 | 4.9 -> 5.0 | 9.1 -> 9.1 |
+
+**What GLOBAL_GAIN=2 already took:** a fifth of the television target and a sixth of the cartoon's, and with them most of
+the coherent cue's lift on those two windows (the cartoon's five-pair lift goes from 8.0 to nothing): those losses were
+whole-frame light changes, now fitted out. **What remains for import 1:** the toaster (TV 73's three worst cells are
+unchanged to the last decimal: a local change the global fit cannot see) and the one-pair cue's lift on film, anime and
+CG (8.2-15.2, the same as before), i.e. local light. The blend swap on the cue still hurts on four windows of five
+(+1.8% to +9.3% of the total error at the top 1% of cells), as before. So import 1's target is real but local, and the
+revised coarse three-outcome design is aimed at what is left.
+
+GPT's own whole-frame measure (`reconstruct.py measure(..., high='highgg2')`, its eligible frames, alignment checked:
+retained frames within 0.75 codes) moves by under 0.01 code RMS on every window (film 5.537 -> 5.538, television 4.152
+-> 4.149, cartoon 8.211 -> 8.215), and the share of frames where High is worse than the blend moves by half a point at
+most (cartoon 24.0 -> 23.5%, anime 24.8 -> 24.4%). GLOBAL_GAIN=2's change lives in a few cells of a few frames; the
+large standing fact on these windows is the 2D animation one: **High loses to a plain blend on about a quarter of
+eligible anime and cartoon frames** (live action and CG under 5%), the target the cadence import was aimed at.
