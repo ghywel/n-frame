@@ -1,0 +1,109 @@
+#!/usr/bin/env python3
+"""Imports-to-interpolation diagnostics D1-D3 (IMPORTS-TO-INTERPOLATION.md, pre-registered at 8d9b76b before this ran).
+
+    diagnose.py <prospect-root> [window ...]        default: film tv anime cartoon cg; writes <root>/imports.json
+
+Streams each window's three decoded videos (ref, high, linear: GPT's 640-wide renders, tests/probes/prospect/) in
+lockstep, frame index for frame index, with a rolling buffer of eleven ref frames. For every eligible withheld frame n
+(GPT's metrics: not a cut, a hold, low signal or a boundary), on GPT's 16 x 16 grid of cells, from the RETAINED frames
+n-5 .. n+5 only: coherent change, oscillation, raw change (D1), and the six retained frames' per-pixel median (D3); the
+truth, High and the blend score each cell. D2 runs over every adjacent pair of ref frames.
+"""
+import collections
+import json
+import os
+import subprocess
+import sys
+
+import numpy as np
+
+FF = os.path.expanduser('~/np-build/ffmpeg/ffmpeg')
+G = 16
+
+
+def stream(path, w, h):
+    p = subprocess.Popen([FF, '-nostdin', '-v', 'error', '-i', path, '-f', 'rawvideo', '-pix_fmt', 'gray', '-'],
+                         stdout=subprocess.PIPE)
+    n = w * h
+    while True:
+        b = p.stdout.read(n)
+        if len(b) < n:
+            break
+        yield np.frombuffer(b, np.uint8).reshape(h, w).astype(np.float32)
+
+
+def cells(a, ch, cw):
+    """mean over each cell of a (H, W) array cropped to the grid"""
+    return a[:ch * G, :cw * G].reshape(G, ch, G, cw).mean(axis=(1, 3))
+
+
+def window(root, name):
+    m = json.load(open(f'{root}/{name}/metrics.json'))
+    w, h = m['width'], m['height']; ch, cw = h // G, w // G
+    elig = {r['frame'] for r in m['rows'] if not (r['cut'] or r['hold'] or r['low'] or r['boundary'])}
+    ref, hi, li = (stream(f'{root}/{name}/{s}.mkv', w, h) for s in ('ref', 'high', 'linear'))
+    buf = collections.deque(maxlen=11); hb = collections.deque(maxlen=11); lb = collections.deque(maxlen=11)
+    t = np.array([-5, -3, -1, 1, 3, 5], np.float32); tc = t - t.mean()
+    out = collections.defaultdict(list)
+    d2 = {'pairs': 0, 'moving': 0, 'mixed': 0}
+    prev = None
+    for i, (r, a, b) in enumerate(zip(ref, hi, li)):
+        buf.append(r); hb.append(a); lb.append(b)
+        if prev is not None:                                                  # D2: every adjacent pair
+            d = r - prev
+            rms = np.sqrt(cells(d * d, ch, cw)); sd = np.sqrt(np.maximum(cells(r * r, ch, cw) - cells(r, ch, cw) ** 2, 0))
+            if np.sqrt((d * d).mean()) < 40:                                  # not a cut
+                tex = sd > 4
+                if tex.sum() >= 0.1 * G * G:
+                    mv, held = (rms > 3.0) & tex, (rms < 1.0) & tex
+                    d2['pairs'] += 1
+                    if mv.sum() >= 0.1 * tex.sum():
+                        d2['moving'] += 1
+                        if held.sum() >= 0.1 * tex.sum():
+                            d2['mixed'] += 1
+        prev = r
+        n = i - 5                                                             # the withheld frame at the buffer's centre
+        if len(buf) < 11 or n not in elig:
+            continue
+        R = np.stack([buf[k] for k in (0, 2, 4, 6, 8, 10)])                   # n-5, n-3, n-1, n+1, n+3, n+5
+        truth, H_, L_ = buf[5], hb[5], lb[5]
+        mh, ml = cells((H_ - truth) ** 2, ch, cw), cells((L_ - truth) ** 2, ch, cw)
+        med = np.median(R, axis=0); mm = cells((med - truth) ** 2, ch, cw)
+        D = np.diff(R, axis=0)
+        coh = np.mean([np.abs(cells(D[j], ch, cw)) / (cells(np.abs(D[j]), ch, cw) + 1e-3) for j in range(5)], axis=0)
+        slope = np.tensordot(tc, R - R.mean(0), axes=1) / (tc ** 2).sum()
+        resid = R - R.mean(0) - slope[None] * tc[:, None, None]
+        tot = ((R - R.mean(0)) ** 2).mean(0)
+        osc = cells(np.where(tot > 1.0, (resid ** 2).mean(0) / np.maximum(tot, 1e-6), 0.0), ch, cw)
+        raw = cells(np.abs(R[3] - R[2]), ch, cw)
+        target = (mh > 2 * ml) & (np.sqrt(mh) > 3.0)
+        for k, v in (('coh', coh), ('osc', osc), ('raw', raw), ('target', target), ('med_beats_high', mm < mh),
+                     ('mh', mh), ('ml', ml)):
+            out[k].append(v.ravel())
+        out['frame'].append(np.full(G * G, n)); out['cell'].append(np.arange(G * G))
+    A = {k: np.concatenate(v) for k, v in out.items()}
+    res = {'eligible_frames': len(out['frame']), 'cells': int(A['target'].size), 'base_rate': float(A['target'].mean())}
+    for f in ('coh', 'osc', 'raw'):
+        top = A[f] >= np.quantile(A[f], 0.99)
+        res[f'lift_{f}'] = float(A['target'][top].mean() / max(A['target'].mean(), 1e-9))
+    res['d3_med_beats_high_target'] = float(A['med_beats_high'][A['target']].mean()) if A['target'].any() else None
+    res['d3_med_beats_high_all'] = float(A['med_beats_high'].mean())
+    res['d2'] = d2; res['d2_mixed_share_of_moving'] = d2['mixed'] / max(d2['moving'], 1)
+    if name == 'tv':                                                          # GPT's TV 73 at 640 px: its cell, as a check
+        sel = A['frame'] == 73
+        if sel.any():
+            res['tv73'] = {f: [round(float(x), 3) for x in A[f][sel][np.argsort(-A['mh'][sel])[:3]]] for f in ('coh', 'osc', 'raw', 'mh', 'ml')}
+    return res
+
+
+def main():
+    root = sys.argv[1]; names = sys.argv[2:] or ['film', 'tv', 'anime', 'cartoon', 'cg']
+    allres = {}
+    for nm in names:
+        allres[nm] = r = window(root, nm)
+        print(nm, json.dumps(r), flush=True)
+    json.dump(allres, open(f'{root}/imports.json', 'w'), indent=1)
+
+
+if __name__ == '__main__':
+    main()
