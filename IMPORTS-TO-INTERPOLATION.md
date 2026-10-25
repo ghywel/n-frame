@@ -181,3 +181,27 @@ rather than tried a third time today): decide light against motion AT the coarse
 candidate's cost against the zero-motion cost with the cell's offset taken out, and take the offset only where the
 offset explains the cell at least as well as any motion does. A moving edge is explained by its motion; a highlight's
 swing is not explained by any shift. That is the local form of the anchor GPT asked for in G025.
+
+## Import 2, LOCAL_CADENCE: per-region cadence in the four-frame shader (pre-registered 2026-10-25, before it is built)
+
+The quad's existing cadence branch (`CADENCE=1`, tests/gen_quaddirectional.py, 2026-09-19) re-times the output across a
+held drawing, but only when the WHOLE coarse frame is a held copy (the largest coarse difference under 0.02), so a
+character on twos over a background panning on ones (D2b: 18% of the western cartoon's moving stretches) never fires
+it. `LOCAL_CADENCE=1` (with CADENCE=1) keeps the branch's two re-timing cases and decides them PER PIXEL: a pair of slots
+is held at a pixel when the mean |difference| over a 5 x 5 grid of taps 6 px apart around it is under 0.012; the cut
+test stays global. A region on ones (the panning background) fails the held test and takes the plain path; a held
+character is re-timed across its drawing. The two-frame tiers Cadence ships cannot do this (the next drawing is outside
+a two-frame window); this is a four-frame import.
+
+Tests (a new synthetic scene made exactly in numpy, `tests/probes/imports/cadence_scenes.py`, 1280 x 720, 24 -> 60
+against the exact 60 fps truth: a textured background panning +3 px a source frame on ones, and a textured disc of
+radius 80 moving +8 px a frame drawn ON TWOS (+16 every second frame, held between); the truth puts the disc at its
+smooth 8 px a frame, the convention of the existing branch):
+- **C1, the mixed scene:** the disc's region (the truth's disc dilated 24 px) and the frame, synthesized frames only.
+  Predicted: the quad + LOCAL_CADENCE cuts the disc region's error by half or more against the plain quad and the
+  quad + CADENCE (which should not fire, the frame never being held whole). KILL if under a third.
+- **C2, the control on ones** (the same scene, the disc on ones): within 0.1 dB of the plain quad on the frame and the
+  disc (the held test must not fire on ones). KILL if not.
+- **C3, the whole frame on twos** (background and disc both on twos): not worse than the quad + CADENCE by more than
+  0.3 dB (the per-pixel test must do what the global one does where everything is held).
+- **C4, the ladder on the quad:** the 45 cases not down 1 dB against the quad + CADENCE (content on ones never holds).
