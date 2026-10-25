@@ -132,3 +132,32 @@ at most half what `quad` loses against biprop (the residual gate suppressing fal
 lose less than the field forms, as the tri did. (3) Stairs, prints, translations: no multi-frame form reaches High
 (the estimator, not the window). The content test follows for the two best forms on the ladder, chosen by the capped
 headline mean and the oscillation family together, not by any single case.
+
+## Step 1, the real-footage half (2026-10-25, 19:06): three frames buy +0.03 to +0.13 dB on live action and CG, and cost 0.18 on cartoons
+
+The content test's 40 windows, `INTERIOR=1`, the four new shaders beside the earlier tri and today's tiers (scores in
+`~/np-scratch-int/content-20261023/scores-interior.json`; one alignment alarm, on the 10-23 Low label, not a shader in
+this chain). PSNR Y, mean over segments:
+
+| class (segments) | High | biprop | D1 tri - tri-noaccel | D2 tri-pic - tri | D3 tri-pic-noaccel - biprop | D4 High - biprop |
+|---|---|---|---|---|---|---|
+| film (10) | 34.17 | 32.06 | +0.028 | -0.009 | -0.000 | +2.11 |
+| television (6) | 36.18 | 35.22 | +0.065 | -0.041 | -0.000 | +0.96 |
+| anime (10) | 42.71 | 41.82 | -0.058 | -0.178 | +0.009 | +0.89 |
+| western cartoon (8) | 29.18 | 28.65 | **-0.184** | -0.017 | +0.000 | +0.53 |
+| CG (6) | 35.88 | 34.44 | **+0.125** | -0.024 | -0.000 | +1.44 |
+
+**Against the predictions:** D1 within +-0.10 in every class: MISSED on two (CG +0.125, cartoon -0.184). D2 0.00 to
++0.30: MISSED (picture mode is slightly WORSE on real footage, -0.01 to -0.18: the sub-pixel refinement helps real
+pictures even though it hurts the ladder's clean translation). D3 -0.10 to -0.40: MISSED (the tri's structure, its
+full-resolution level and plain final pass, costs nothing measurable on real footage: within 0.01 dB everywhere). D4
+reproduces the tier gap: PASS (film +2.11, CG +1.44, less on television and animation).
+
+**So on real footage the whole gap between the tri and High is the lineage** (D4), the tri's own structure costs nothing
+(D3), and the third frame's acceleration is a small real gain on live action and CG and a loss on cartoons, where
+drawings held on twos make a held pair and a moving pair look like a change of speed. **The registered rule** (D1 of
++0.10 or more in any class: the full port first) **selects Form F**, the slot-keyed port, on CG's +0.125. Which window
+it goes onto, the tri's or the quad's or the quint's, waits for step 1b (running): the owner expects more from four and
+five frames, and the record's mechanism (a checkable acceleration) says the same. The cartoon loss is a pass line for
+any form: the port must not take the acceleration where drawings are held (the cadence branch's held-pair test already
+exists in the quad).
