@@ -8,6 +8,12 @@ reasonable size. Might this method be a real solution to the anime / cartoon int
 introduce some form of real object detection, machine learning or apple's neural network to make better decisions?"
 A design record and its first measurements, nothing built.*
 
+> **HELD by the owner, 2026-10-25 18:26** ("Hold and save state on 2 pass for now", as the effects and imports lines
+> are held), while the multi-frame family gets the High lineage. **State:** the design, the oracle ceilings and the
+> literature are below; nothing is built or pre-registered. **To resume:** pre-register and run "First steps" 1-4 in
+> order (self-calibration with a guard first); the content test's renders in `np-scratch-int/content-20261023` are the
+> inputs for step 1, and Apple's `VTFrameProcessor` headers are in the macOS SDK for step 3.
+
 ## The one principle
 
 The real-time pass already sees eight frames and keeps unlimited notes in storage. What it can never have is **the
