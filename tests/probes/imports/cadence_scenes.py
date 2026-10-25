@@ -10,6 +10,7 @@ any fractional time, is exact. Scenes:
   mixed   background on ONES, disc drawn ON TWOS (its drawing advances 16 px every second source frame, held between)
   ones    both on ones (the control: nothing is ever held)
   twos    both on twos (the whole frame held every second frame: what the existing global cadence branch handles)
+  still   the disc on ones over a STILL background (added for LOCAL_CADENCE=2: the control the first form lacked)
 The truth at 60 fps puts both at their smooth positions, background 3 tau and disc 8 tau (tau in source frames): the
 existing cadence branch's convention, the span from the first copy of a drawing to the next drawing.
 Scored on the synthesized outputs only (every fifth 60 fps output sits on a source frame), the first and last ten
@@ -53,10 +54,11 @@ def write(path, frames, rate):
 
 def make(out):
     held = lambda k: 2 * (k // 2)
-    for name, tb, td in (('mixed', lambda k: k, held), ('ones', lambda k: k, lambda k: k), ('twos', held, held)):
+    for name, tb, td in (('mixed', lambda k: k, held), ('ones', lambda k: k, lambda k: k), ('twos', held, held),
+                         ('still', lambda k: 0, lambda k: k)):          # the control LOCAL_CADENCE=1 lacked (C2b)
         d = f'{out}/{name}'; os.makedirs(d, exist_ok=True)
         write(f'{d}/src24.mkv', [frame(tb(k), td(k))[0] for k in range(N24)], '24')
-        tr = [frame(m * 24 / 60, m * 24 / 60) for m in range(N24 * 60 // 24)]
+        tr = [frame(0 if name == 'still' else m * 24 / 60, m * 24 / 60) for m in range(N24 * 60 // 24)]
         write(f'{d}/truth60.mkv', [f for f, _ in tr], '60')
         np.save(f'{d}/disc60.npy', np.stack([m > 0 for _, m in tr]))
         print('made', name)
@@ -70,7 +72,7 @@ def read(path):
 def score(out, shaders):
     from scipy.ndimage import binary_dilation
     env = dict(os.environ, MVK_CONFIG_USE_METAL_ARGUMENT_BUFFERS='0', MVK_CONFIG_MAX_ACTIVE_METAL_COMMAND_BUFFERS_PER_QUEUE='1')
-    for scene in ('mixed', 'ones', 'twos'):
+    for scene in ('mixed', 'ones', 'twos', 'still'):
         d = f'{out}/{scene}'; truth = read(f'{d}/truth60.mkv'); mask = np.load(f'{d}/disc60.npy')
         rows = []
         for name, sh in shaders.items():

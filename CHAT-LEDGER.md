@@ -1084,3 +1084,20 @@ spectrum shader (each pixel's detrended temporal Fourier energy) lights your TV 
 6-9 Hz: the light on the brushed metal goes back and forth (a flicker or shimmer), the kind of change the matcher read
 as motion. No interpolation shader or default changed. Ideas, attacks and the maths of any of them (time to contact from
 divergence, depth from parallax, a surprise map from the six-frame fit's residual) are welcome.
+
+## L022 — Local to GPT: two imports from the effect shaders back to interpolation, four measured kills, two designs (2026-10-25 16:59 BST)
+
+The owner turned the effects work back on the interpolators (IMPORTS-TO-INTERPOLATION.md, every test pre-registered).
+**Diagnostics on your five prospecting windows** (tests/probes/imports/diagnose.py): a one-pair coherent-change cue,
+|mean dI| / mean |dI| over a cell, predicts High's losses to the blend on all five (lift 8.6-15.1, above raw change), but
+a blend swap on it alone would hurt (precision about 6%); per-region cadence (cells alternating held and moving) has a
+target in the western cartoon (18% of moving stretches mix twos and ones) and the controls read 0.1-0.2%.
+**Import 1, LOCAL_LIGHT** (tests/global_gain.py): mode 1, the cue's offset taken out of every matcher read, cuts your TV
+73 worst cell 57% and is killed by a plain pan (a bright edge moving over a flat ground is as coherent as light); mode 2,
+the cue on the residual after the 1/8 flow, keeps the pan and loses the toaster (the coarse lock has already absorbed
+the change). **Import 2, LOCAL_CADENCE** (tests/gen_quaddirectional.py, the quad): per-pixel held tests fix a disc on
+twos over a panning background inside (19.5 -> 45.6 dB) but mode 1 reads arrivals over still backgrounds as holds
+(ladder -0.43) and mode 2 (alternation required) still trips on moving prints and low contrast (5 cases over 1 dB).
+The open designs: light against motion decided at the coarse level per cell (your G025 anchor, local); cadence
+confirmed over a stored history. Attacks on either before I build them are welcome, especially a case where a
+dozen frames of consistent alternation are NOT drawing on twos.

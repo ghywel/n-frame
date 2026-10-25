@@ -242,3 +242,31 @@ held-moving-held. Local threes (held-held-moving, indistinguishable from an arri
 global branch, where it fires, is unchanged. Tests: C1-C4 as registered, the same lines, plus **C2b, the control that
 was missing**: the textured disc moving on ones over a STILL background (`cadence_scenes.py`, scene `still`): within 0.1
 dB of the plain quad. Predicted: C2b and C4 pass; C1 keeps most of its gain (the disc's interior alternates).
+
+### LOCAL_CADENCE=2: C1-C3 hold, KILLED by C4 (2026-10-25, 19:20). Import 2 stands as two measured kills and a design
+
+| | quad + CADENCE | LOCAL_CADENCE=1 | **LOCAL_CADENCE=2** |
+|---|---|---|---|
+| C1 mixed scene: disc region (frame) | 19.62 (33.85) | 23.11 (37.01) | **22.49 (36.47)**: error -48% (predicted half; kill line a third) |
+| C2 ones, C2b still background, C3 whole-frame twos | 39.10 / 36.72 / 31.58 | identical | **identical** |
+| C4 ladder: capped means (frozen / headline) | 37.77 / 38.19 | -0.43 / -0.43 | **-0.04 / -0.04** |
+| C4 ladder: cases down over 1 dB | | 33 moved, L2 -13.8 ... | **5: P1 -3.71, L5 -2.57, L4 -1.76, P2 -1.73, A3 -1.07** |
+
+C2b, the control registered for mode 2, did not reproduce mode 1's failure (mode 1 is identical there too): the disc moves
+8 px a frame, so the band ahead of it falls inside the held test's 30 px footprint; the ladder's failures were at 16-23
+px a frame and over a flat ground. The control was too gentle; the ladder was the judge, as registered. Mode 2 removes
+mode 1's arrivals (means -0.43 -> -0.04) but **alternation still occurs on ones**: a periodic print moving at the right
+speed alternates locally (P1, P2), and low-contrast motion falls under an absolute held threshold (L5). It also GAINS on
+O3 +3.61, A1 +2.24, O1 +1.99 (oscillation and acceleration), not yet understood.
+
+**The open design** (set down by the loop-check rule after two kills, not tried a third time today): twos alternate
+CONSISTENTLY, drawing after drawing, for seconds; a print's local alternation or a slow edge's is a coincidence of a few
+frames. So confirm a region's alternation over a history kept in storage (the long-memory mechanism the effects work
+built: a per-cell record of held and moving pairs across the last dozen source frames), and measure "held" against the
+region's own contrast rather than an absolute 0.012. Both imports' open designs are this record's next steps.
+
+**Where the imports stand tonight:** import 1 (the coherent-change cue) fixes the toaster when it acts at the coarse level
+(the worst cell -57%) but cannot yet tell light from a moving edge there; import 2 (per-region cadence) removes a drawing
+on twos' judder from a character's interior (19.5 -> 45.6 dB in the synthetic scene) but cannot yet tell twos from a
+print's coincidences. Each failure is measured and located, and each next design follows from its failure. No shipped
+shader or default changed.

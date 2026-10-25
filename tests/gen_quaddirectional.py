@@ -102,7 +102,9 @@ CADENCE_BRANCH = os.environ.get("CADENCE", "0") == "1"
 # LOCAL_CADENCE=1 (2026-10-25; with CADENCE=1; import 2, IMPORTS-TO-INTERPOLATION.md): the cadence branch decided PER
 # PIXEL -- a pair of slots is held where the mean |difference| over a 5 x 5 grid of taps 6 px apart is under LC_DUP --
 # so a character drawn on twos over a background on ones is re-timed while the background is not. Byte-identical off.
-LOCAL_CADENCE = os.environ.get("LOCAL_CADENCE", "0") == "1"
+LOCAL_CADENCE = os.environ.get("LOCAL_CADENCE", "0")      # "1" killed (C4: arrivals read as holds); "2" alternation required
+assert LOCAL_CADENCE in ("0", "1", "2")
+LOCAL_CADENCE = int(LOCAL_CADENCE)
 assert CADENCE_BRANCH or not LOCAL_CADENCE, "LOCAL_CADENCE qualifies CADENCE: it needs CADENCE=1"
 
 HERE = pathlib.Path(__file__).resolve().parent
@@ -423,6 +425,11 @@ def main():
                              ("SCENE_DIFF_CD_tex(vec2(0.5)).g < CADENCE_DUP_MAX", "lc_d23(HOOKED_pos) < LC_DUP")):
                     assert branch.count(g) == 1, f"LOCAL_CADENCE: the held test '{g}' found {branch.count(g)} times"
                     branch = branch.replace(g, l)
+                if LOCAL_CADENCE == 2:     # the twos' alternation across the window's three pairs, never an arrival
+                    for g, l in (("        if (dup12 && !dup23 && cut23 <= SCENE_CUT_DIFF) {", "        if (!dup01 && dup12 && !dup23 && cut23 <= SCENE_CUT_DIFF) {"),
+                                 ("        if (!dup12 && dup01 && cut12 <= SCENE_CUT_DIFF) {", "        if (!dup12 && dup01 && dup23 && cut12 <= SCENE_CUT_DIFF) {")):
+                        assert branch.count(g) == 1, f"LOCAL_CADENCE=2: the case test '{g.strip()}' found {branch.count(g)} times"
+                        branch = branch.replace(g, l)
             nb = FINAL_PASS.replace("@@CADENCE_CONSTANTS@@", (CADENCE_CONSTANTS + (LOCAL_CADENCE_CONSTANTS if LOCAL_CADENCE else "")) if CADENCE_BRANCH else "") \
                            .replace("@@CADENCE_BRANCH@@", branch if CADENCE_BRANCH else "")
 
@@ -482,7 +489,7 @@ def main():
     # matching, and the cadence file's banner said "CADENCE=1 ./tests/gen_quaddirectional.py" with no arguments --
     # which, followed, overwrites the stock quad.
     if CADENCE_BRANCH:
-        header = header.replace("//   ./tests/gen_quaddirectional.py", "//   CADENCE=1 " + ("LOCAL_CADENCE=1 " if LOCAL_CADENCE else "") + "./tests/gen_quaddirectional.py", 1)
+        header = header.replace("//   ./tests/gen_quaddirectional.py", "//   CADENCE=1 " + (f"LOCAL_CADENCE={LOCAL_CADENCE} " if LOCAL_CADENCE else "") + "./tests/gen_quaddirectional.py", 1)
     text = READING.add_tail(header + result)
     if os.environ.get("STICKY_CACHE", "0") == "1":   # patch stage 2 (tests/sticky_cache.py): needs the 2026-10-22 patch
         import sticky_cache
