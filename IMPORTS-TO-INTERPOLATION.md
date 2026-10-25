@@ -160,3 +160,24 @@ never the coarse levels it was measured from. A correctly matched moving edge le
 a light change leaves itself (coherent). Tests: T1-T6 exactly as registered for LOCAL_LIGHT=1, the same kill lines.
 Predicted: T3 passes (the pan's residual is small); T1 and T2 weaken (where the 1/8 flow is already wrong on the grille,
 the residual is partly the alias) but pass.
+
+### LOCAL_LIGHT=2: T3 passes, KILLED by T1 and T2 (2026-10-25, 17:50). Import 1 stands as two measured kills and a design
+
+| test | shipped High | LOCAL_LIGHT=1 | **LOCAL_LIGHT=2** |
+|---|---|---|---|
+| T1 swinging highlight: PSNR, invented flow over 1 px | 48.61, 4.7% | 50.96, 0.6% | **49.30, 4.4%** (lines: +2 dB or flow halved) |
+| T2 TV 73: worst cell RMS | 36.26 | 15.50 (-57%) | **35.04 (-3%)** (line: -30%) |
+| T3 textured pan: PSNR | 51.34 | 49.62 | **51.34** |
+
+Instrument check before the tests: the residual cue no longer fires on the pan (0.3% of the frame, under 5 codes) and
+still fires on the grille (mean -6.3 codes), but on the moving staircase H2x it fires MORE than mode 1 (8.6% of the
+frame): where the 1/8 flow is an alias, the residual after it is coherent too.
+
+**What the two kills say, together:** the toaster's false motion is decided at the coarsest level. Taking the light out
+there fixes it (mode 1: the worst cell -57%) but cannot tell a light change from a bright edge moving over a flat ground;
+measuring after the 1/8 flow is safe for moving edges (mode 2) but too late, the wrong coarse motion having already
+absorbed the change. **The open design** (not built, a third variant on this line; set down by the loop-check rule
+rather than tried a third time today): decide light against motion AT the coarse level, per cell: the best motion
+candidate's cost against the zero-motion cost with the cell's offset taken out, and take the offset only where the
+offset explains the cell at least as well as any motion does. A moving edge is explained by its motion; a highlight's
+swing is not explained by any shift. That is the local form of the anchor GPT asked for in G025.

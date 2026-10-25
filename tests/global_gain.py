@@ -197,6 +197,13 @@ vec4 hook() {
     return vec4(w * sd, 0.0, 0.0, 0.0);
 }
 """
+LIGHT2 = LIGHT.replace("//!BIND GLOBAL_GAIN\n//!SAVE LIGHT_GRID", "//!BIND GLOBAL_GAIN\n//!BIND FLOW_E_AB\n//!SAVE LIGHT_GRID").replace(
+    "//!DESC [light] each cell's mean change and mean absolute change, frame B with the global gain taken out",
+    "//!DESC [light] each cell's mean and mean absolute RESIDUAL after the 1/8 flow, B(x + v) - A(x), the global gain out").replace(
+    "            float b = (dot(NEXT_tex(uv).rgb, vec3(0.299, 0.587, 0.114)) - gg.y) / gg.x;",
+    "            vec2 v = FLOW_E_AB_tex(uv).xy * 8.0 * HOOKED_pt;      // 1/8-level texels -> full px -> uv\n"
+    "            float b = (dot(NEXT_tex(uv + v).rgb, vec3(0.299, 0.587, 0.114)) - gg.y) / gg.x;")
+assert LIGHT2.count("FLOW_E_AB_tex(uv)") == 1 and LIGHT2.count("//!BIND FLOW_E_AB") == 1
 HELPER_LOCAL = ("float ll_b(float l, vec2 uv) { vec2 gg = texelFetch(GLOBAL_GAIN_raw, ivec2(0), 0).rg; "
                 "return (l - gg.y) / gg.x - LOCAL_LIGHT_tex(uv).r; }  // GLOBAL_GAIN + LOCAL_LIGHT\n")
 HELPER = ("float gg_b(float l) { vec2 gg = texelFetch(GLOBAL_GAIN_raw, ivec2(0), 0).rg; return (l - gg.y) / gg.x; }  "
@@ -204,18 +211,29 @@ HELPER = ("float gg_b(float l) { vec2 gg = texelFetch(GLOBAL_GAIN_raw, ivec2(0),
 PAT = re.compile(r"dot\(NEXT_tex\(([^;]*?)\)\.rgb, vec3\(0\.299, 0\.587, 0\.114\)\)")
 
 
-def add(t, accept=False, local=False):
-    passes = PASSES.replace('{FIT}', 'GAIN_FIT' if accept else 'GLOBAL_GAIN') + (CHECK if accept else '') + (LIGHT if local else '')
+def add(t, accept=False, local=0):
+    local = int(local)
+    passes = PASSES.replace('{FIT}', 'GAIN_FIT' if accept else 'GLOBAL_GAIN') + (CHECK if accept else '') + (LIGHT if local == 1 else '')
     i = t.index("//!HOOK")
     blocks = t[i:].split("\n//!HOOK")
     out, changed, reads = [], [], 0
+    # LOCAL_LIGHT=2: the residual grid runs after the 1/8 level's final flow, so it goes in front of the quarter level, and
+    # only the passes from there on read B through ll_b; the coarse levels it was measured from keep gg_b
+    k0 = None
+    if local == 2:
+        k0 = [k for k, b in enumerate(blocks) if "//!DESC [high] downsample frame A to 1/4" in b]
+        assert len(k0) == 1, f"global_gain: the quarter level's first pass found {len(k0)} times"
+        k0 = k0[0]
     for k, blk in enumerate(blocks):
         blk = blk if k == 0 else "//!HOOK" + blk
         desc = (re.search(r"^//!DESC (.*)$", blk, re.M) or [None, ""])[1]
         n = len(PAT.findall(blk))
+        use_local = local == 1 or (local == 2 and k >= k0)
+        if local == 2 and k == k0:
+            out.append(LIGHT2.strip("\n") + "\n")
         if n and not any(s in desc for s in KEEP):
             assert "//!BIND NEXT\n" in blk, f"global_gain: a pass reads NEXT without binding it: {desc}"
-            if local:
+            if use_local:
                 blk = PAT.sub(lambda m: f"ll_b(dot(NEXT_tex({m.group(1)}).rgb, vec3(0.299, 0.587, 0.114)), {m.group(1)})", blk)
                 blk = blk.replace("//!BIND NEXT\n", "//!BIND NEXT\n//!BIND GLOBAL_GAIN\n//!BIND LOCAL_LIGHT\n", 1)
             else:
@@ -224,7 +242,7 @@ def add(t, accept=False, local=False):
             lines = blk.split("\n"); j = 0
             while j < len(lines) and lines[j].startswith("//!"):
                 j += 1
-            lines.insert(j, (HELPER_LOCAL if local else HELPER).rstrip("\n"))
+            lines.insert(j, (HELPER_LOCAL if use_local else HELPER).rstrip("\n"))
             blk = "\n".join(lines)
             changed.append(desc); reads += n
         out.append(blk)
