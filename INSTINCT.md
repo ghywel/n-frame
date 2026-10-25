@@ -173,6 +173,12 @@ never upgrades a status: nothing here is a measurement, and nothing here changes
   clock, written without `date`, and L021/L022 said BST on the day the clocks went back to GMT. Caught when `date` read
   17:32 while I was about to write 20:10. Outcome: missed, caught; corrected to the commit times. Note: a time in a
   record comes from `date` or the commit, never from a sense of how long the work took.
+- 2026-10-25 20:20, Claude: none felt; two instrument slips on Form Q, both caught before a result was read: the cost
+  script took `time.perf_counter()` in separate Python processes (meaningless across them; the first table read zero for
+  every shader), and the pre-registration said QUAD_MODE 1 gates by its residual, which its code computes but never
+  applies. Outcome: missed, caught (re-timed from one process; the record corrected). Note: a timer must live in the
+  process that spans the timed work; a mechanism named in a registration is read in the code first, not from the
+  design document's description of it.
 
 ## The set-aside pulls
 

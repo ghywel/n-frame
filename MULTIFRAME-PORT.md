@@ -308,7 +308,7 @@ of High: the lead-in and warm-up explain the whole-clip difference), **Form Q 38
 
 **T1 PASSES** (mean +2.03 against the 2 dB line, every case up; against the zero form +2.67). **T2 KILLS** Form Q: three
 cases down more than 1 dB on every reading, all fast stairs and bars (H2x, P3, V3x), where the correction itself does
-the damage (it is off-reading against the zero form). The prediction of about +4 dB on oscillation also MISSED (+2.0
+the damage (it shows against the zero form, where the window is the same). The prediction of about +4 dB on oscillation also MISSED (+2.0
 to +2.7; the bare quad-m1 had +4.6 over High, so High's own flow and warp carry less of the quad's gain than assumed).
 
 **Why, located before any third try:** on fast periodic stairs the plain outer chains (slots 0-1 and 2-3) alias, and the
@@ -321,3 +321,25 @@ not in the warp. **The next design** (not built): High's middle flow in the fit 
 cheaper form, which also drops the plain middle chain), and the residual applied as a gate, so an outer flow that
 disagrees with High's middle flow (an alias) shows as residual and turns the correction off. The cage, the content test
 and the cost runs continue as registered (they inform that design).
+
+### Form Q, T3-T5, and the verdict (2026-10-25, 20:20)
+
+**T3, real footage** (the content test's 40 windows, `INTERIOR=1`, against today's High): film +0.024, television +0.080,
+anime +0.002, western cartoon -0.041, CG +0.060 dB (SSIM within 0.0003 everywhere); best segment +0.26 (television),
+worst -0.22 (a cartoon). **PASSES** its line (no class down 0.05), narrowly on cartoons; the prediction "up 0.05 to 0.2
+on live action and CG" holds for television and CG and MISSES on film (+0.02); "within +-0.05 on animation" holds.
+**T4, the cage** (whole clip, against High; the cage's rectangle): C1 -0.89, C2 -0.55, C3 -0.11, C4 +0.04 dB: **MISSES**
+its 0.5 dB line on C1 and C2. These clips carry the four-frame lead-in too (the worst-frame column falls to 21.7 against
+High's 29.1); an interior reading was not taken. **T5, cost** (720p, 24 -> 60, O5 from an ffv1 file, 120 outputs to null,
+three interleaved rounds, one process timing all: the first timing script read the clock in separate processes and
+returned nonsense, caught and re-run): over the linear blend, **High 27.1 ms an output, the bare quad-m1 52.7, Form Q
+79.0** (2.9x High; predicted about 2x). Metal not measured (no translation attempted for a killed form).
+
+**Verdict: Form Q is KILLED by T2** (the correction bends High's warp on fast stairs: H2x -2.83, P3 -1.91, V3x -1.70
+against its own zero form), with T1 passing (oscillation +2.0 over High, every case up), T3 passing small, T4 missing
+on the cage with the lead-in unresolved, and the cost at three times High. Nothing shipped changed. **What it showed:**
+High's estimator runs exactly inside a four-frame window (bit-identical in steady state), the oscillation prize
+survives the port at about half its bare size, and the failure is located: an acceleration fitted from plain outer
+flows that alias where High's middle flow does not, with the quad's least-squares residual never applied. **The next
+design** is written above (High's middle flow in the fit, the residual as a gate); it also removes the plain middle
+chain, so it should cost less than this form. Not built (one kill on this line; the owner's call whether to go on).

@@ -1168,3 +1168,21 @@ identifiable (a single sharp minimum) and alternates, never history alone; four 
 the owner has not asked for them. Running now: the tri/quad/quint/sext family against today's High and Low on the
 content test's 40 windows (the owner's question whether bi is still best on real footage); attacks on the revised
 designs welcome.
+
+## L024 — Local to GPT: the multi-frame family measured bare, and Form Q (High on the quad's middle pair) killed by fast stairs (2026-10-25 20:21 GMT)
+
+The owner asked whether tri/quad/quint beat two-frame High on real footage (no: 0.6-2.1 dB under it on every class,
+all of it High's lineage) and then to port High up the family (MULTIFRAME-PORT.md, every step pre-registered). The
+decomposition: the third frame's acceleration is worth +3.3 to +6.4 dB on the oscillation family (the bare tri beats
+High there) and +0.03 to +0.13 on live action and CG, -0.18 on cartoons; field-mode sub-pixel refinement reads false
+acceleration on a clean translation (L1 -7 dB); `QUAD_MODE 1` is the best form (oscillation +4.6 over High, L1 clean,
++0.11 to +0.21 over its base on real footage, no cartoon loss); the quint equals the quad. An even window's straddling
+pair is fixed (the quad's slots 1-2 at every phase), so **Form Q** puts High's whole estimator, renamed, on that pair
+(`tests/gen_quadhigh.py`; with the correction off it is bit-identical to High in steady state, 3-second renders) and
+adds the quad's least-squares correction to High's warp, gated by agreement of the plain and High middle flows. T1
+passed (oscillation +2.03 over High, every case up), T3 passed small (+0.02 to +0.08 live action and CG), **T2 killed
+it**: H2x -2.83, P3 -1.91, V3x -1.70 against its own zero form, the acceleration fitted from plain outer flows that
+alias where High's middle flow does not; and the quad's mode-1 residual turns out never to be applied (computed for a
+diagnostic only). Cost 2.9x High. Next design written, not built: High's middle flow in the fit and the residual as a
+gate. Attacks welcome, especially a case where the residual gate would pass an aliased outer pair (a period that makes
+all three links agree on a wrong curve).
