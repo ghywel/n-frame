@@ -5721,3 +5721,34 @@ exactly affine motion, and caching the gain passes per pair.
 **Adopted the same afternoon** on the owner's word: GLOBAL_GAIN=2 in the three `-cut` tiers and their 4K twins
 (Cadence's Low, Standard and High), every tier checked on both engines (PLAN.md, "Adopted"); Metal +1.6 to +5.3% per
 frame; lockstep PASS; Cadence's mac-tests 56/56.
+
+### The multi-frame family against today's tiers on real footage: bi still wins, by 0.6 to 2.1 dB (2026-10-25, 18:16)
+
+The owner asked whether the tri, quad or quint shaders "in their current states might actually be better" than the
+two-frame line on real footage; the last comparison was 2026-09-04 (the propagated quad 35.30 against the propagated
+two-frame base 35.28 on one clip). Run on the content test's 40 windows (`tests/probes/content/content.py`, five
+classes, decimate-and-reconstruct, synthesized frames only), today's High and Low (GLOBAL_GAIN=2, the shipped `-cut`
+files) beside the propagated tri, quad, quint and sext. **Instrument note:** the four-frame-and-up shaders' first two
+and last retained outputs miss their source frames (21-30 dB against 61; the window's lead-in, one hook skipped at
+each end), which the alignment alarm caught on 120 runs; every interior retained frame matches to the hundredth. So
+the table is scored with `INTERIOR=1` (each segment's first and last eight outputs dropped, for every shader alike; no
+interior alarm). PSNR Y, the mean over segments, deltas against today's High:
+
+| class (segments) | High | Low | tri | quad | quint | sext |
+|---|---|---|---|---|---|---|
+| film (10) | 34.17 | -1.88 | -2.07 | -2.01 | -2.01 | -2.05 |
+| television (6) | 36.18 | -0.26 | -0.84 | -0.77 | -0.77 | -0.78 |
+| anime (10) | 42.71 | -0.41 | -0.79 | -0.77 | -0.77 | -0.77 |
+| western cartoon (8) | 29.18 | -0.32 | -0.68 | -0.61 | -0.61 | -0.62 |
+| CG (6) | 35.88 | -0.69 | -1.29 | -1.22 | -1.22 | -1.24 |
+
+**Read across:** High beats every multi-frame shader on every class, and the multi-frame shader beats High by more than
+0.05 dB on one segment of 40 (a film segment). Every multi-frame shader is also under **Low**, the two-frame base with
+the cut and gain gates, by 0.1 to 0.6 dB. Among themselves the extra frames buy almost nothing: quad +0.02 to +0.07 over
+tri, and quint and sext equal to the quad within 0.04. **Why** (from the generators, not measured separately): the
+whole family is generated from the plain `bidirectional-interpolation-propagated.glsl` base, and none of the High
+lineage (variational refinement, the global seed, the cage, energy carry, outline adoption, the print lattice, the cut
+and gain gates) has been ported to it. The 09-04 finding stands, now on 40 windows: on real footage more frames on the
+same base are worth a few hundredths, and what separates the tiers is the estimator, not the window. A multi-frame
+High (the High lineage on a four-frame window) is the only form that could answer the question differently; it has
+never been built. Scores: `~/np-scratch-int/content-20261023/scores-interior.json`.

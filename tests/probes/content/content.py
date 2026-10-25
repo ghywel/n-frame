@@ -240,6 +240,8 @@ def score(out):
             for name in names:
                 for m, pat in pats.items():
                     d = read(root / f'{m}_{name}_{s:g}.log', pat) or read(root / f'{m}_{name}_{s}.log', pat)
+                    if os.environ.get('INTERIOR') and d:     # (2026-10-25) drop each segment's first and last 8 outputs:
+                        N = max(d); d = {n: v for n, v in d.items() if 8 <= n <= N - 8}   # the 4+ frame shaders' lead-in
                     syn = [v for n, v in d.items() if n % 2 == 0 and v != float('inf')]
                     thru = [v for n, v in d.items() if n % 2 == 1]
                     # The alignment alarm (AMENDED after the first scores, 2026-10-23: the first line, 45 dB, was a guess; on a
@@ -272,7 +274,7 @@ def score(out):
             r = row[n]
             print(f"  {n:16s} PSNR {r['psnr']:6.2f} ({r['d_psnr']:+.3f})  SSIM {r['ssim']:.4f} ({r['d_ssim']:+.4f})  "
                   f"up {r['segments_up']:2d} down {r['segments_down']:2d}")
-    (out / 'scores.json').write_text(json.dumps({'groups': res, 'passthrough_alarms': bad,
+    (out / ('scores-interior.json' if os.environ.get('INTERIOR') else 'scores.json')).write_text(json.dumps({'groups': res, 'passthrough_alarms': bad,
         'per_segment': {f'{k[1]}@{k[2]}': v for k, v in per.items()}}, indent=1))
     print('\npassthrough alarms:', len(bad)); [print(' ', b) for b in bad[:10]]
 
