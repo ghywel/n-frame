@@ -226,3 +226,19 @@ twos was untouched by everything but this.
 96 px 47 either way. The interior's judder is gone; a band about 40 px wide around the edge keeps it, where the held
 test's footprint (5 x 5 taps 6 px apart) straddles the held disc and the moving background and the pixel takes the plain
 path. The next refinement, a held test that respects the edge, is a new variant to be registered on its own.
+
+### LOCAL_CADENCE=1: KILLED by C4 (2026-10-25, 18:45); LOCAL_CADENCE=2 registered before it is built
+
+**C4 kills it**: against the quad + CADENCE on the 45-case ladder, L2 -13.78, L6 -12.03, L3 -10.71, M2 -8.30 dB, capped
+means -0.43 (frozen and headline); 12 of 45 cases untouched. The mechanism: an object moving on ones over a STILL
+background. A background pixel ahead of it is held, held, then the object arrives: locally exactly the pattern case A
+re-times ("a held drawing, then the new drawing"); behind it, case B's. The whole-frame test never saw this (something
+else in the frame always moved); my registered control, the disc on ones over a PANNING background, could not either.
+
+**LOCAL_CADENCE=2 (registered now, before it is built): require the twos' ALTERNATION.** Drawings A A B B C C give
+held, moving, held, moving pairs; an arriving or departing object gives held-held-moving or moving-moving-held. Case A
+fires only on moving-held-moving across the window's three pairs (0-1 moving, 1-2 held, 2-3 moving), case B only on
+held-moving-held. Local threes (held-held-moving, indistinguishable from an arrival) are given up; the whole-frame
+global branch, where it fires, is unchanged. Tests: C1-C4 as registered, the same lines, plus **C2b, the control that
+was missing**: the textured disc moving on ones over a STILL background (`cadence_scenes.py`, scene `still`): within 0.1
+dB of the plain quad. Predicted: C2b and C4 pass; C1 keeps most of its gain (the disc's interior alternates).
