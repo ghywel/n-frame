@@ -4,8 +4,10 @@
 // and 4 cycles per window (3, 6, 9 and 12 Hz at 24 fps) says how much of the change is slow and how much is fast. The
 // picture is greyed and dimmed; over it, colour shows the change's energy (brightness) and its frequency (hue: red the
 // slowest, through yellow and green, to violet at the fastest a 24 fps camera can see). A swaying branch glows red, a
-// flickering light or a vibrating string violet. Each pixel's straight-line trend is removed first, so a steady
-// pan or slide stays dark: only what goes back and forth lights up.
+// flickering light or a vibrating string violet. Each pixel's straight-line trend is removed first, so a smooth
+// steady drift stays dark; but a TEXTURE moving steadily across a pixel varies it periodically and lights too (GPT,
+// 2026-10-25): on a still subject the colour is light or vibration, on a moving one it is the texture passing. The hue
+// is the energy-weighted mean of the four bins, which are 1-4 cycles per eight frames at the source's own rate.
 // WINDOW 8
 // DESC [effects] spectrum: each pixel's temporal Fourier energy over eight frames, hue the frequency
 const float SPECTRUM_GAIN = 5.0;

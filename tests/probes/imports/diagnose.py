@@ -41,7 +41,8 @@ def window(root, name):
     m = json.load(open(f'{root}/{name}/metrics.json'))
     w, h = m['width'], m['height']; ch, cw = h // G, w // G
     elig = {r['frame'] for r in m['rows'] if not (r['cut'] or r['hold'] or r['low'] or r['boundary'])}
-    ref, hi, li = (stream(f'{root}/{name}/{s}.mkv', w, h) for s in ('ref', 'high', 'linear'))
+    HI = os.environ.get('DIAG_HIGH', 'high')     # another render of the same windows, e.g. today's High (highgg2)
+    ref, hi, li = (stream(f'{root}/{name}/{s}.mkv', w, h) for s in ('ref', HI, 'linear'))
     buf = collections.deque(maxlen=11); hb = collections.deque(maxlen=11); lb = collections.deque(maxlen=11)
     t = np.array([-5, -3, -1, 1, 3, 5], np.float32); tc = t - t.mean()
     out = collections.defaultdict(list)
@@ -100,7 +101,7 @@ def window(root, name):
             out[k].append(v.ravel())
         out['frame'].append(np.full(G * G, n)); out['cell'].append(np.arange(G * G))
     # FAIL CLOSED (GPT's G028): zip stops at the shortest stream, so the three streams must have been the same length
-    counts = [sum(1 for _ in stream(f'{root}/{name}/{s}.mkv', w, h)) for s in ('ref', 'high', 'linear')]
+    counts = [sum(1 for _ in stream(f'{root}/{name}/{s}.mkv', w, h)) for s in ('ref', HI, 'linear')]
     if len(set(counts)) != 1 or counts[0] != i + 1:
         raise SystemExit(f'REFUSED {name}: stream lengths {counts}, consumed {i + 1}')
     A = {k: np.concatenate(v) for k, v in out.items()}
@@ -134,7 +135,7 @@ def main():
     for nm in names:
         allres[nm] = r = window(root, nm)
         print(nm, json.dumps(r), flush=True)
-    json.dump(allres, open(f'{root}/imports.json', 'w'), indent=1)
+    json.dump(allres, open(f"{root}/imports{'' if os.environ.get('DIAG_HIGH', 'high') == 'high' else '-' + os.environ['DIAG_HIGH']}.json", 'w'), indent=1)
 
 
 if __name__ == '__main__':

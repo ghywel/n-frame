@@ -87,7 +87,9 @@ for s in $SEGS; do
       -i "$OUTROOT/half_$s.mkv" \
       -vf "${CHAIN},format=yuv420p" -c:v ffv1 "$OUTROOT/o_${LABEL}_$s.mkv" \
     ) 2>"$OUTROOT/${LABEL}_$s.err" || { echo "  seg $s FAILED"; continue; }
-  [ "$(grep -c "hook skipped" "$OUTROOT/${LABEL}_$s.err")" -le 2 ] || { echo "  seg $s FAILED: the hook was skipped beyond the two boundary frames (see the .err)"; continue; }
+  # SKIP_MAX (default 2): a window of five or six frames skips a few more boundary frames of a short segment, which the
+  # builtin mixer then draws (a small bias against the larger windows); raise it for them, never to hide a mid-clip skip
+  [ "$(grep -c "hook skipped" "$OUTROOT/${LABEL}_$s.err")" -le "${SKIP_MAX:-2}" ] || { echo "  seg $s FAILED: the hook was skipped beyond the ${SKIP_MAX:-2} boundary frames allowed (see the .err)"; continue; }
   ! grep -q "compile status .error" "$OUTROOT/${LABEL}_$s.err" || { echo "  seg $s FAILED: the shader did not compile and libplacebo silently used its own mixer (see the .err)"; continue; }
 
   # Compare with forced frame-index alignment.

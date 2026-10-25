@@ -43,7 +43,7 @@ all eligible cells. Predicted: 30% or more of target cells, under 5% of all cell
 
 Each is a diagnostic, not a shader: a pass only says the import has a target worth building for.
 
-## First results (2026-10-25, 16:20) and two follow-ups registered before they ran
+## First results (2026-10-25, 16:18) and two follow-ups registered before they ran
 
 | window | base rate | lift: coherent change | oscillation | raw change | D3: median beats High, target cells / all cells | D2: "mixed" pairs |
 |---|---|---|---|---|---|---|
@@ -73,7 +73,7 @@ all three. Reported per window: the share of moving cell-instances on twos, and 
 on-twos and on-ones cells coexist (mixed cadence). Predicted: on-twos 20% or more in anime and cartoon and under 3% in
 film and CG (the control that D2 lacked); mixed cadence 10% or more of moving pairs in anime and cartoon.
 
-## D1b and D2b results, and what they mean for building (2026-10-25, 16:40)
+## D1b and D2b results, and what they mean for building (2026-10-25, 16:24)
 
 | window | lift, coherent change, six frames | **one pair (n-1, n+1)** | raw change | D2b: moving cells on twos | D2b: moving stretches mixing twos and ones |
 |---|---|---|---|---|---|
@@ -137,7 +137,7 @@ Tests (High + LOCAL_LIGHT against the shipped High, the M5):
   more on television and cartoon, the total error not up by more than 1% on any window.
 - **T6, cost** on Metal and libplacebo, reported.
 
-### LOCAL_LIGHT=1: T1 and T2 pass, KILLED by T3 (2026-10-25, 17:20); LOCAL_LIGHT=2 registered before it is built
+### LOCAL_LIGHT=1: T1 and T2 pass, KILLED by T3 (2026-10-25, 16:30); LOCAL_LIGHT=2 registered before it is built
 
 | test | shipped High | High + LOCAL_LIGHT | (Low / Low + LOCAL_LIGHT) |
 |---|---|---|---|
@@ -161,7 +161,7 @@ a light change leaves itself (coherent). Tests: T1-T6 exactly as registered for 
 Predicted: T3 passes (the pan's residual is small); T1 and T2 weaken (where the 1/8 flow is already wrong on the grille,
 the residual is partly the alias) but pass.
 
-### LOCAL_LIGHT=2: T3 passes, KILLED by T1 and T2 (2026-10-25, 17:50). Import 1 stands as two measured kills and a design
+### LOCAL_LIGHT=2: T3 passes, KILLED by T1 and T2 (2026-10-25, 16:32). Import 1 stands as two measured kills and a design
 
 | test | shipped High | LOCAL_LIGHT=1 | **LOCAL_LIGHT=2** |
 |---|---|---|---|
@@ -206,7 +206,7 @@ smooth 8 px a frame, the convention of the existing branch):
   0.3 dB (the per-pixel test must do what the global one does where everything is held).
 - **C4, the ladder on the quad:** the 45 cases not down 1 dB against the quad + CADENCE (content on ones never holds).
 
-### LOCAL_CADENCE: C1-C3 pass (2026-10-25, 18:20)
+### LOCAL_CADENCE: C1-C3 pass (2026-10-25, 16:39)
 
 24 -> 60 against the exact 60 fps truth (`cadence_scenes.py`), synthesized outputs only, PSNR (frame / the disc region):
 
@@ -227,7 +227,7 @@ twos was untouched by everything but this.
 test's footprint (5 x 5 taps 6 px apart) straddles the held disc and the moving background and the pixel takes the plain
 path. The next refinement, a held test that respects the edge, is a new variant to be registered on its own.
 
-### LOCAL_CADENCE=1: KILLED by C4 (2026-10-25, 18:45); LOCAL_CADENCE=2 registered before it is built
+### LOCAL_CADENCE=1: KILLED by C4 (2026-10-25, 16:50); LOCAL_CADENCE=2 registered before it is built
 
 **C4 kills it**: against the quad + CADENCE on the 45-case ladder, L2 -13.78, L6 -12.03, L3 -10.71, M2 -8.30 dB, capped
 means -0.43 (frozen and headline); 12 of 45 cases untouched. The mechanism: an object moving on ones over a STILL
@@ -243,7 +243,7 @@ global branch, where it fires, is unchanged. Tests: C1-C4 as registered, the sam
 was missing**: the textured disc moving on ones over a STILL background (`cadence_scenes.py`, scene `still`): within 0.1
 dB of the plain quad. Predicted: C2b and C4 pass; C1 keeps most of its gain (the disc's interior alternates).
 
-### LOCAL_CADENCE=2: C1-C3 hold, KILLED by C4 (2026-10-25, 19:20). Import 2 stands as two measured kills and a design
+### LOCAL_CADENCE=2: C1-C3 hold, KILLED by C4 (2026-10-25, 16:59). Import 2 stands as two measured kills and a design
 
 | | quad + CADENCE | LOCAL_CADENCE=1 | **LOCAL_CADENCE=2** |
 |---|---|---|---|
@@ -296,3 +296,30 @@ shader is now refused); `diagnose.py` refuses unequal stream lengths. The cadenc
 read of B at uv takes the offset at uv - v(uv), v the 1/8 flow there (the field holds B(x + v) - A(x) at A's x). T1-T3
 as registered for modes 1 and 2, the same lines. **The question it answers:** if mode 3 passes T1 and T2 where mode 2
 failed, mode 2's kill was the coordinate defect; if it fails them too, "too late" stands, now isolated.
+
+### LOCAL_LIGHT=3: T3 holds, KILLED by T1 and T2 (2026-10-25, 17:32). "Too late" stands, the coordinate defect ruled out
+
+| test | shipped High | LOCAL_LIGHT=2 | **LOCAL_LIGHT=3** | line |
+|---|---|---|---|---|
+| T1 swinging highlight: PSNR, invented flow over 1 px | 48.61, 4.7% | 49.30, 4.4% | **49.23, 4.3%** | +2 dB or flow halved |
+| T2 TV 73 frame 39: worst cell RMS | 36.26 | 35.04 (-3%) | **34.48 (-5%)** | -30% |
+| T2 cartoon 6525 frame 37: PSNR | 44.45 | | **44.43** | not down 0.2 |
+| T3 textured pan: PSNR, median flow (truth +6) | 51.34, +4.95 | 51.34, +4.95 | **51.34, +4.95** | within 0.1 |
+| T3 GPT's moving sheet: PSNR | 61.94 | | **63.06** | within 0.5 |
+
+Reading the residual where it was measured changes T1 by 0.07 dB and TV 73 by two points: **mode 2's kill was not the
+coordinate defect.** The wrong motion is chosen at the 1/8 level, and a correction measured after it, in any coordinates,
+arrives too late. Import 1's working form must act at the coarse level, where mode 1 did (-57%), with the competition
+GPT's tie requires:
+
+**The revised open design (light against motion, three outcomes; not built):** at the 1/8 level, per cell, three costs:
+the best motion candidate's, the zero motion's with the cell's offset out, and the zero motion's raw. The offset is taken
+only where it beats the best motion by a margin (a highlight's swing is explained by no shift); where motion beats it,
+motion; **where they tie within the margin (a translating ramp: both exactly zero) the result is UNDECIDED and keeps
+motion**, so an affine field is never erased (the blind spot GLOBAL_GAIN=2 already has, not widened). Kill lines as T1-T6.
+
+**The revised open design for cadence (replacing "confirm over a stored history"):** GPT's periodic strip alternates
+held-moving for ever, so history alone cannot prove a drawing on twos. The evidence has to be spatial as well: a region
+counts as held only where its texture is identifiable (a single sharp matching minimum at zero displacement against the
+next drawing, not a periodic family of minima) AND it alternates; anything else is UNDECIDED and keeps today's motion
+path. Only the shaders that see the next drawing (four frames and up) can do this; the two-frame tiers cannot see it.

@@ -40,15 +40,16 @@ custom_n:custom_shader_path=<file>`), none needing motion estimation. Tried on s
 | **ghost-town** / **ghost-town-long** | 7 / 7 + a 12-frame ring | each pixel's median over time: whatever passes vanishes | Seven frames (a third of a second) erase only fast movers. The long version keeps a three-second ring in storage: a man's raised gesturing arm is replaced by his resting pose, a turning face dissolves while a still child stays |
 | **long-exposure** | 2 + storage | a running exposure kept in a storage texture: light painting (brightest, decaying) or shutter drag | Comet trails on a fight's bright edges, streaks behind a ship, a glowing trail behind a pony |
 | **pulfrich** | 5 | red eye now, cyan eye two frames ago: lateral motion becomes depth through red/cyan glasses | Clean red/cyan disparity on a ship moving across the frame and on fighters (depth itself not checkable without glasses) |
-| **spectrum** | 8 | each pixel's temporal Fourier energy, its straight-line trend removed: hue the frequency (3 to 12 Hz) | Only what goes back and forth lights. **The toaster's grille glows green**: its light goes back and forth at a few hertz (below) |
+| **spectrum** | 8 | each pixel's temporal Fourier energy, its straight-line trend removed: hue the energy-weighted mean frequency (3 to 12 Hz at 24 fps, scaling with the source rate) | Steady drift stays dark; anything varying lights, including a texture moving steadily across a pixel (GPT's counterexample, G028). **The toaster's grille glows green** (below) |
 | **tremor** | 7 | Eulerian magnification (a temporal band of the blurred frames, amplified, large motion left alone) | Gentle: temporal variation doubled in near-still areas, small motion x1.2-1.4, large motion unchanged. Seven frames cannot reach a pulse (about 1 Hz), and the noise floor caps the gain |
 
 **What the spectrum shader found.** GPT's footage prospecting (tests/probes/prospect/RESULTS.md) found its strongest quiet-shot lead
 on a nearly still toaster in a television episode (High 5.6 dB under a plain blend), and the photometric work (tests/probes/photometric/PLAN.md) showed
 that the grille's local light change fooled the matcher, but not what kind of change it was. The spectrum shader, run on
-the same shot, lights the grille, green (around 6-9 Hz), and nothing else on the toaster: the light on the brushed metal **goes back and
-forth at a few hertz**, a flicker or a shimmer, not a one-way change; exactly what a matcher that compares raw brightness
-reads as motion. A five-minute
+the same shot, lights the grille, green (around 6-9 Hz), and nothing else on the toaster. The colour alone says only that the grille
+varies in time (the shader lights moving texture too, GPT showed); what makes that variation LIGHT is that the toaster is
+still (GPT's own global fit on the shot: best displacement zero). So the light on the brushed metal **goes back and forth
+at a few hertz**, a flicker or a shimmer: exactly what a matcher that compares raw brightness reads as motion. A five-minute
 effect shader answered an open question about the interpolator. That is the strongest case for this whole direction:
 these shaders are not only toys, they are instruments that let us see what the frames contain.
 
@@ -63,7 +64,8 @@ makes possible in real time.
 - Slit-scan and time displacement: each row (or a radial band, or a gradient) taken from a different moment, so time is
   laid across the picture (Golan Levin's catalogue of slit-scan video works is the reference). With a storage ring the
   spread can be seconds, not eight frames.
-- Spectra: what oscillates and how fast (built), flicker and mains-hum detection, a "beat" map for music video.
+- Spectra: what varies in time and how fast (built; on a still subject that is light, on a moving texture it is the
+  texture passing), flicker and mains-hum detection, a "beat" map for music video.
 - Eulerian magnification (built, short): with a storage ring of a few seconds, a pulse in a face and breathing in a
   sleeper (Wu et al., SIGGRAPH 2012; phase-based, Wadhwa et al., 2013, is the cleaner form).
 - Temporal denoising where nothing moves (practical; listed, not the focus).

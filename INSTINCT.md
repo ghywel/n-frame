@@ -169,6 +169,10 @@ never upgrades a status: nothing here is a measurement, and nothing here changes
   hour later: moving stairs read as a gain of 1.2, H2x -4.6 dB; GPT's attack (G025) had named the class. Outcome: right,
   but I did not act on it before the long run. Note: when a reviewer names an identifiability hole, add the control
   for it before the run, not after the kill.
+- 2026-10-25 17:32, Claude: none felt; the imports record's section times from D1b on (16:40 to 19:20) ran ahead of the
+  clock, written without `date`, and L021/L022 said BST on the day the clocks went back to GMT. Caught when `date` read
+  17:32 while I was about to write 20:10. Outcome: missed, caught; corrected to the commit times. Note: a time in a
+  record comes from `date` or the commit, never from a sense of how long the work took.
 
 ## The set-aside pulls
 

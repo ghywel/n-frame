@@ -569,7 +569,7 @@ assert GLOBAL_GAIN in ("0", "1", "2"), "GLOBAL_GAIN is 0, 1 or 2"
 # LOCAL_LIGHT=1 (2026-10-25; import 1, IMPORTS-TO-INTERPOLATION.md; needs GLOBAL_GAIN): the coherent-change cue inside the
 # matcher -- a local brightness offset, where a region's change is coherent, taken out of frame B's luma. Byte-identical off.
 LOCAL_LIGHT = os.environ.get("LOCAL_LIGHT", "0")          # "1" killed (T3); "2" the cue on the residual after the 1/8 flow
-assert LOCAL_LIGHT in ("0", "1", "2"), "LOCAL_LIGHT is 0, 1 or 2"
+assert LOCAL_LIGHT in ("0", "1", "2", "3"), "LOCAL_LIGHT is 0-3 (3: mode 2 read in A coordinates)"
 # COHERENCE_ZM=1 (2026-10-23; with COHERENCE_GATE=1; tests/coherence_zm.py; PLAN.md F2): the coherence gate's two
 # zero-motion sums compare mean-removed patches, so a local change of brightness is not disagreement. Byte-identical off.
 COHERENCE_ZM = os.environ.get("COHERENCE_ZM", "0") == "1"

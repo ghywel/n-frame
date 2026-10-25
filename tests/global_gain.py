@@ -206,6 +206,9 @@ LIGHT2 = LIGHT.replace("//!BIND GLOBAL_GAIN\n//!SAVE LIGHT_GRID", "//!BIND GLOBA
 assert LIGHT2.count("FLOW_E_AB_tex(uv)") == 1 and LIGHT2.count("//!BIND FLOW_E_AB") == 1
 HELPER_LOCAL = ("float ll_b(float l, vec2 uv) { vec2 gg = texelFetch(GLOBAL_GAIN_raw, ivec2(0), 0).rg; "
                 "return (l - gg.y) / gg.x - LOCAL_LIGHT_tex(uv).r; }  // GLOBAL_GAIN + LOCAL_LIGHT\n")
+HELPER_LOCAL3 = ("float ll_b(float l, vec2 uv) { vec2 gg = texelFetch(GLOBAL_GAIN_raw, ivec2(0), 0).rg; "
+                 "vec2 v = FLOW_E_AB_tex(uv).xy * 8.0 * NEXT_pt; "
+                 "return (l - gg.y) / gg.x - LOCAL_LIGHT_tex(uv - v).r; }  // GLOBAL_GAIN + LOCAL_LIGHT=3 (read where measured)\n")
 HELPER = ("float gg_b(float l) { vec2 gg = texelFetch(GLOBAL_GAIN_raw, ivec2(0), 0).rg; return (l - gg.y) / gg.x; }  "
           "// GLOBAL_GAIN\n")
 PAT = re.compile(r"dot\(NEXT_tex\(([^;]*?)\)\.rgb, vec3\(0\.299, 0\.587, 0\.114\)\)")
@@ -220,7 +223,7 @@ def add(t, accept=False, local=0):
     # LOCAL_LIGHT=2: the residual grid runs after the 1/8 level's final flow, so it goes in front of the quarter level, and
     # only the passes from there on read B through ll_b; the coarse levels it was measured from keep gg_b
     k0 = None
-    if local == 2:
+    if local in (2, 3):
         k0 = [k for k, b in enumerate(blocks) if "//!DESC [high] downsample frame A to 1/4" in b]
         assert len(k0) == 1, f"global_gain: the quarter level's first pass found {len(k0)} times"
         k0 = k0[0]
@@ -228,21 +231,21 @@ def add(t, accept=False, local=0):
         blk = blk if k == 0 else "//!HOOK" + blk
         desc = (re.search(r"^//!DESC (.*)$", blk, re.M) or [None, ""])[1]
         n = len(PAT.findall(blk))
-        use_local = local == 1 or (local == 2 and k >= k0)
-        if local == 2 and k == k0:
+        use_local = local == 1 or (local in (2, 3) and k >= k0)
+        if local in (2, 3) and k == k0:
             out.append(LIGHT2.strip("\n") + "\n")
         if n and not any(s in desc for s in KEEP):
             assert "//!BIND NEXT\n" in blk, f"global_gain: a pass reads NEXT without binding it: {desc}"
             if use_local:
                 blk = PAT.sub(lambda m: f"ll_b(dot(NEXT_tex({m.group(1)}).rgb, vec3(0.299, 0.587, 0.114)), {m.group(1)})", blk)
-                blk = blk.replace("//!BIND NEXT\n", "//!BIND NEXT\n//!BIND GLOBAL_GAIN\n//!BIND LOCAL_LIGHT\n", 1)
+                blk = blk.replace("//!BIND NEXT\n", "//!BIND NEXT\n//!BIND GLOBAL_GAIN\n//!BIND LOCAL_LIGHT\n" + ("//!BIND FLOW_E_AB\n" if local == 3 and "//!BIND FLOW_E_AB\n" not in blk else ""), 1)
             else:
                 blk = PAT.sub(lambda m: f"gg_b(dot(NEXT_tex({m.group(1)}).rgb, vec3(0.299, 0.587, 0.114)))", blk)
                 blk = blk.replace("//!BIND NEXT\n", "//!BIND NEXT\n//!BIND GLOBAL_GAIN\n", 1)
             lines = blk.split("\n"); j = 0
             while j < len(lines) and lines[j].startswith("//!"):
                 j += 1
-            lines.insert(j, (HELPER_LOCAL if use_local else HELPER).rstrip("\n"))
+            lines.insert(j, ((HELPER_LOCAL3 if local == 3 else HELPER_LOCAL) if use_local else HELPER).rstrip("\n"))
             blk = "\n".join(lines)
             changed.append(desc); reads += n
         out.append(blk)
