@@ -99,6 +99,11 @@ FORESIGHT_SEED = os.environ.get("FORESIGHT", "1") == "1"
 # it was a held copy, the span began a slot earlier. A branch of the final pass alone; every cached field is
 # unchanged. Off by default: the shipped quad regenerates byte-identical without the variable.
 CADENCE_BRANCH = os.environ.get("CADENCE", "0") == "1"
+# LOCAL_CADENCE=1 (2026-10-25; with CADENCE=1; import 2, IMPORTS-TO-INTERPOLATION.md): the cadence branch decided PER
+# PIXEL -- a pair of slots is held where the mean |difference| over a 5 x 5 grid of taps 6 px apart is under LC_DUP --
+# so a character drawn on twos over a background on ones is re-timed while the background is not. Byte-identical off.
+LOCAL_CADENCE = os.environ.get("LOCAL_CADENCE", "0") == "1"
+assert CADENCE_BRANCH or not LOCAL_CADENCE, "LOCAL_CADENCE qualifies CADENCE: it needs CADENCE=1"
 
 HERE = pathlib.Path(__file__).resolve().parent
 # The base to generate from. Default is the shipped bidirectional shader;
@@ -411,8 +416,15 @@ def main():
             continue
 
         elif save == "FRAME_MIX":
-            nb = FINAL_PASS.replace("@@CADENCE_CONSTANTS@@", CADENCE_CONSTANTS if CADENCE_BRANCH else "") \
-                           .replace("@@CADENCE_BRANCH@@", CADENCE_BRANCH_CODE if CADENCE_BRANCH else "")
+            branch = CADENCE_BRANCH_CODE
+            if LOCAL_CADENCE:
+                for g, l in (("SCENE_DIFF_tex(vec2(0.5)).g    < CADENCE_DUP_MAX", "lc_d01(HOOKED_pos) < LC_DUP"),
+                             ("SCENE_DIFF_BC_tex(vec2(0.5)).g < CADENCE_DUP_MAX", "lc_d12(HOOKED_pos) < LC_DUP"),
+                             ("SCENE_DIFF_CD_tex(vec2(0.5)).g < CADENCE_DUP_MAX", "lc_d23(HOOKED_pos) < LC_DUP")):
+                    assert branch.count(g) == 1, f"LOCAL_CADENCE: the held test '{g}' found {branch.count(g)} times"
+                    branch = branch.replace(g, l)
+            nb = FINAL_PASS.replace("@@CADENCE_CONSTANTS@@", (CADENCE_CONSTANTS + (LOCAL_CADENCE_CONSTANTS if LOCAL_CADENCE else "")) if CADENCE_BRANCH else "") \
+                           .replace("@@CADENCE_BRANCH@@", branch if CADENCE_BRANCH else "")
 
         out.append(nb)
 
@@ -470,7 +482,7 @@ def main():
     # matching, and the cadence file's banner said "CADENCE=1 ./tests/gen_quaddirectional.py" with no arguments --
     # which, followed, overwrites the stock quad.
     if CADENCE_BRANCH:
-        header = header.replace("//   ./tests/gen_quaddirectional.py", "//   CADENCE=1 ./tests/gen_quaddirectional.py", 1)
+        header = header.replace("//   ./tests/gen_quaddirectional.py", "//   CADENCE=1 " + ("LOCAL_CADENCE=1 " if LOCAL_CADENCE else "") + "./tests/gen_quaddirectional.py", 1)
     text = READING.add_tail(header + result)
     if os.environ.get("STICKY_CACHE", "0") == "1":   # patch stage 2 (tests/sticky_cache.py): needs the 2026-10-22 patch
         import sticky_cache
@@ -496,6 +508,13 @@ CADENCE_CONSTANTS = '''
 // which holds it: harmless.
 const int   CADENCE_RETIME  = 1;
 const float CADENCE_DUP_MAX = 0.02;
+'''
+LOCAL_CADENCE_CONSTANTS = '''// ---- LOCAL_CADENCE (2026-10-25, import 2): the held test per pixel ----
+const float LC_DUP = 0.012;
+float lc_l(vec4 c) { return dot(c.rgb, vec3(0.299, 0.587, 0.114)); }
+float lc_d01(vec2 p) { float s = 0.0; for (int j = -2; j <= 2; j++) for (int i = -2; i <= 2; i++) { vec2 q = p + vec2(float(i), float(j)) * 6.0 * HOOKED_pt; s += abs(lc_l(HOOKED_tex(q)) - lc_l(FRAME1_tex(q))); } return s / 25.0; }
+float lc_d12(vec2 p) { float s = 0.0; for (int j = -2; j <= 2; j++) for (int i = -2; i <= 2; i++) { vec2 q = p + vec2(float(i), float(j)) * 6.0 * HOOKED_pt; s += abs(lc_l(FRAME1_tex(q)) - lc_l(FRAME2_tex(q))); } return s / 25.0; }
+float lc_d23(vec2 p) { float s = 0.0; for (int j = -2; j <= 2; j++) for (int i = -2; i <= 2; i++) { vec2 q = p + vec2(float(i), float(j)) * 6.0 * HOOKED_pt; s += abs(lc_l(FRAME2_tex(q)) - lc_l(FRAME3_tex(q))); } return s / 25.0; }
 '''
 
 CADENCE_BRANCH_CODE = '''    // ---- the cadence: the drawing changes less often than the frame ----

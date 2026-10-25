@@ -205,3 +205,24 @@ smooth 8 px a frame, the convention of the existing branch):
 - **C3, the whole frame on twos** (background and disc both on twos): not worse than the quad + CADENCE by more than
   0.3 dB (the per-pixel test must do what the global one does where everything is held).
 - **C4, the ladder on the quad:** the 45 cases not down 1 dB against the quad + CADENCE (content on ones never holds).
+
+### LOCAL_CADENCE: C1-C3 pass (2026-10-25, 18:20)
+
+24 -> 60 against the exact 60 fps truth (`cadence_scenes.py`), synthesized outputs only, PSNR (frame / the disc region):
+
+| scene | blend | High (two frames) | quad | quad + CADENCE | **quad + LOCAL_CADENCE** |
+|---|---|---|---|---|---|
+| mixed: disc on twos, background on ones | 32.61 / 18.99 | 32.77 / 18.26 | 33.85 / 19.62 | 33.85 / 19.62 | **37.01 / 23.11** |
+| ones (control) | 33.72 / 20.41 | 51.80 / 39.41 | 45.00 / 39.10 | 45.00 / 39.10 | **45.00 / 39.10** |
+| twos (whole frame) | 26.69 / 18.80 | 27.03 / 18.08 | 27.25 / 19.48 | 44.22 / 31.58 | **44.22 / 31.58** |
+
+**C1 passes:** the disc region's error falls 55% (+3.49 dB; the line was half) where the global branch never fires.
+**C2 passes:** identical to the quad on ones. **C3 passes:** identical to the global branch where the whole frame is held.
+Every shader we had, the two-frame High included, sat at the blend on the mixed scene's disc: the judder of a drawing on
+twos was untouched by everything but this.
+
+**Where the rest of the error is** (by distance from the disc's centre, the plain quad against LOCAL_CADENCE): inside
+40 px 19.5 -> **45.6 dB**, 40-64 px 19.5 -> 34.0, the rim 64-84 px 15-19 -> 16-22 (barely moved), the background beyond
+96 px 47 either way. The interior's judder is gone; a band about 40 px wide around the edge keeps it, where the held
+test's footprint (5 x 5 taps 6 px apart) straddles the held disc and the moving background and the pixel takes the plain
+path. The next refinement, a held test that respects the edge, is a new variant to be registered on its own.
