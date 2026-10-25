@@ -161,3 +161,57 @@ it goes onto, the tri's or the quad's or the quint's, waits for step 1b (running
 five frames, and the record's mechanism (a checkable acceleration) says the same. The cartoon loss is a pass line for
 any form: the port must not take the acceleration where drawings are held (the cadence branch's held-pair test already
 exists in the quad).
+
+## Even windows are centred on the gap: why the quad is the natural home for High (2026-10-25, design note)
+
+From `gen_quaddirectional.py`'s own window analysis: a four-frame window is always {k-1, k, k+1, k+2} at 24 -> 60,
+**the straddling pair is slots 1 and 2 at every phase**, and the window changes exactly when the straddling pair does. A
+three- or five-frame window re-centres as the output crosses mid-interval, so its straddling pair rotates within a
+fixed window (the tri's slot-keying exists for that reason). Odd windows are centred on a frame (the anchor's symmetry,
+which is what the quint's jerk stencil wants); even windows are centred on the gap being filled.
+
+That changes the cost of a port. **Form Q, a quad-High:** High's whole estimator on the fixed straddling pair (1, 2),
+cached by `pair_changed` exactly as in two-frame High (role and slot coincide), plus only the plain propagated chains on
+the outer pairs (0, 1) and (2, 3), which feed nothing but the acceleration and jerk; High's final pass (cut gate,
+support, gain) with the quad's cubic correction added. About High plus two plain chains (86 + roughly 2 x 13 passes),
+not two or three Highs. The tri's Form F needs High on both its pairs; Form M stays the cheap past-side variant. The
+held-pair test the cartoon loss calls for is already in the quad (its cadence branch's statistic). Which form is built
+follows step 1b's numbers.
+
+## Step 1b results, the ladder (2026-10-25, 19:29): `QUAD_MODE 1` is the best multi-frame form; the quint adds nothing over the quad
+
+Capped headline means: biprop 38.28, **High 39.08**, quad 38.22, **quad-m1 38.24**, quad-pic 38.18, quad-pic-m1 38.14,
+quint 38.22, quint-pic 38.17 (the tri forms as in step 1). The capped mean again hides the families; selected cases
+(`~/np-scratch-int/port-20261025/ladder2.txt` has all 45):
+
+| case | biprop | High | tri | quad | quad-m1 | quad-pic | quint |
+|---|---|---|---|---|---|---|---|
+| O1_osc_gentle | 48.06 | 50.31 | 52.08 | 52.20 | **52.37** | 50.90 | 52.20 |
+| O3_osc_hard | 41.83 | 41.40 | 45.86 | 47.39 | **47.57** | 46.79 | 47.28 |
+| O5_osc_textured | 41.87 | 42.49 | 48.38 | 48.72 | **48.99** | 48.20 | 48.76 |
+| A7_accel_tex_a167 | 47.61 | 49.57 | 50.50 | **51.14** | 51.10 | 49.82 | 51.07 |
+| L1_trans_8px | **77.59** | 75.32 | 70.72 | 70.49 | **77.55** | 77.28 | 70.43 |
+| L2_trans_16px | **62.42** | 55.56 | 60.04 | 61.65 | 61.63 | 61.07 | 61.61 |
+| L6_flat_large | **65.27** | 49.42 | 64.68 | 64.61 | 64.98 | 64.62 | 64.57 |
+| V3x_stairs_cov_v12 | 27.24 | **45.14** | 22.20 | 20.08 | 19.90 | 20.09 | 19.69 |
+| P1_stairs_along_v4 | 43.35 | **53.77** | 43.50 | 43.19 | 43.22 | 43.14 | 43.15 |
+
+Over the oscillation family, against High: tri +4.01 dB on average (+1.77 to +5.89), quad +4.43, **quad-m1 +4.63 (+2.06 to
++6.50)**, quint +4.47. Over acceleration (A1-A7, F2) every form averages about -0.9 against High (High's lineage wins
+A1-A3 and F2 by 2-4 dB; the multi-frame forms win A6-A7).
+
+**Against the predictions:** (1) every quad and quint form at or above the tri on five of six oscillation cases: PASS
+for the field forms (quad, quad-m1, quint: all six), MISSED for the picture forms (quad-pic under the tri on five); the
+quint 1 dB above the quad on O3 and O5: MISSED (-0.11 and +0.04: the quint's symmetric quartic buys nothing here over
+the quad's cubic). (2) quad-m1 losing at most half of quad's constant-velocity loss: PASS on L1 (quad -7.10 against
+biprop, quad-m1 -0.04: the least-squares residual gate removes the false acceleration), MISSED on L2 (-0.77 and -0.79).
+(3) no multi-frame form reaching High on stairs, prints or translations: PASS on stairs and prints, MISSED on the
+translations, where **High itself is below the plain base** (L1 -2.27, L2 -6.86, L6 -15.85: High's lineage costs the
+clean large translations what it wins elsewhere; the capped mean, at 40, does not see any of it).
+
+**What it says for the port:** the quad in `QUAD_MODE 1` takes the oscillation prize without the tri's false acceleration,
+and its straddling pair is fixed (the design note above), so **Form Q (High's estimator on the fixed middle pair, plain
+chains outside, the least-squares quadratic with its residual gate in the final pass)** is the cheapest full port and the
+best-placed one. A ported form must keep High's stairs, prints and acceleration wins AND the base's clean translations,
+which High alone does not. The quad-m1 content run (real footage) is running; the quad and quint content scores are
+already on disk.
