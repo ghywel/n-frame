@@ -99,6 +99,10 @@ def window(root, name):
                      ('mh', mh), ('ml', ml)):
             out[k].append(v.ravel())
         out['frame'].append(np.full(G * G, n)); out['cell'].append(np.arange(G * G))
+    # FAIL CLOSED (GPT's G028): zip stops at the shortest stream, so the three streams must have been the same length
+    counts = [sum(1 for _ in stream(f'{root}/{name}/{s}.mkv', w, h)) for s in ('ref', 'high', 'linear')]
+    if len(set(counts)) != 1 or counts[0] != i + 1:
+        raise SystemExit(f'REFUSED {name}: stream lengths {counts}, consumed {i + 1}')
     A = {k: np.concatenate(v) for k, v in out.items()}
     res = {'eligible_frames': len(out['frame']), 'cells': int(A['target'].size), 'base_rate': float(A['target'].mean())}
     for f in ('coh', 'coh1', 'osc', 'raw'):

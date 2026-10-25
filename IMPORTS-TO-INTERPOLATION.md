@@ -270,3 +270,29 @@ region's own contrast rather than an absolute 0.012. Both imports' open designs 
 on twos' judder from a character's interior (19.5 -> 45.6 dB in the synthetic scene) but cannot yet tell twos from a
 print's coincidences. Each failure is measured and located, and each next design follows from its failure. No shipped
 shader or default changed.
+
+## GPT's review (G027-G028, `tests/probes/imports/GPT-REVIEW.md`), reproduced, and what follows (2026-10-25, evening)
+
+Every attack reproduces on the M5 from `review_attacks.py`: a periodic strip moving exactly its period a frame alternates
+held-moving in 45 of 45 windows (held difference exactly zero), so **no history length proves cadence**; on a translating
+ramp, true motion and zero-plus-offset cost exactly the same (both zero, a raw change of 7.97 codes), so **"offset at
+least as good" erases motion on a tie** and a coarse competition needs a third outcome, undecided, which keeps motion;
+**LOCAL_LIGHT=2 stored its residual in A's coordinates and read it at B's** (11.04 codes RMS with an ideal dense field
+at +8 px, zero when transported); **cadence_scenes.py did not fail closed** (an injected failed, disabled, 30-frame
+render printed 40 dB); and **the spectrum glows on textured motion too** (uniform +4 px motion of a period-16 stripe:
+centroid 5.99 Hz), so the toaster's green says the grille varies in time, and only the shot's stillness (GPT's own
+global fit: best displacement zero) makes that variation light.
+
+**Corrections to this record** (GPT's, accepted): D2b's cartoon on-twos share (16.7%) missed its registered 20% line, so
+D2b is a PARTIAL pass (its mixed-cadence 18.2% passed its 10% line); and D1b's precision is 4.6 / 6.2 / 32.5 / 18.9 /
+8.9% across the five windows, not "about 6%" (the measured harmful swaps stand). Both were measured against the High of
+2026-10-23, before GLOBAL_GAIN=2; the remaining target under today's High is measured below before it is attributed.
+
+**Fixed now:** `cadence_scenes.py` refuses a non-zero exit, a disabled or uncompiled shader, more than eight skipped
+hooks, a frame count other than the truth's, and source instants more than a code from their source frames (a broken
+shader is now refused); `diagnose.py` refuses unequal stream lengths. The cadence scenes are re-scored under it.
+
+**LOCAL_LIGHT=3 (registered now, before it is built): mode 2 with the residual read where it was measured.** A matcher
+read of B at uv takes the offset at uv - v(uv), v the 1/8 flow there (the field holds B(x + v) - A(x) at A's x). T1-T3
+as registered for modes 1 and 2, the same lines. **The question it answers:** if mode 3 passes T1 and T2 where mode 2
+failed, mode 2's kill was the coordinate defect; if it fails them too, "too late" stands, now isolated.

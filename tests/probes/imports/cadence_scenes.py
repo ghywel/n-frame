@@ -81,9 +81,22 @@ def score(out, shaders):
             r = subprocess.run([FF, '-nostdin', '-v', 'warning', '-y', '-init_hw_device', 'vulkan=vk', '-filter_hw_device', 'vk',
                                 '-i', f'{d}/src24.mkv', '-vf', f'libplacebo=fps=60:frame_mixer={mix}', '-c:v', 'ffv1', '-pix_fmt',
                                 'yuv444p16le', o], capture_output=True, text=True, env=env)
-            if 'compile status' in r.stderr.lower():
-                sys.exit(f'{name}: shader failed')
-            im = read(o); n = min(len(im), len(truth))
+            # FAIL CLOSED (2026-10-25, GPT's G028: the first form printed 40 dB for a failed, disabled, 30-frame render):
+            # a non-zero exit, a disabled or uncompiled shader, more than a window's lead-in of skipped hooks, a frame
+            # count other than the truth's, or source instants that do not reproduce the source all refuse the scene
+            err = r.stderr.lower()
+            if r.returncode or any(s in err for s in ('compile status', 'disabling', 'failed to', 'error reinit')):
+                sys.exit(f'REFUSED {scene} {name}: render failed or shader disabled (rc {r.returncode})')
+            if err.count('skipped') > 8:
+                sys.exit(f'REFUSED {scene} {name}: {err.count("skipped")} skipped hooks')
+            im = read(o)
+            if len(im) != len(truth):
+                sys.exit(f'REFUSED {scene} {name}: {len(im)} frames, the truth has {len(truth)}')
+            src = read(f'{d}/src24.mkv')
+            worst = max(np.sqrt(((im[m] - src[m * 24 // 60]) ** 2).mean()) * 255 for m in range(10, len(im) - 10, 5))
+            if worst > 1.0:
+                sys.exit(f'REFUSED {scene} {name}: a source instant is {worst:.2f} codes from its source frame (alignment)')
+            n = len(im)
             keep = [m for m in range(10, n - 10) if m % 5 != 0]
             ef, ed = [], []
             for m in keep:
