@@ -46,13 +46,30 @@ def window(root, name):
     t = np.array([-5, -3, -1, 1, 3, 5], np.float32); tc = t - t.mean()
     out = collections.defaultdict(list)
     d2 = {'pairs': 0, 'moving': 0, 'mixed': 0}
+    # D2b (registered at 3ecb870): held drawings by their alternation over three consecutive pairs; "coexist" = at least
+    # 2% of the textured cells on twos and 2% on ones in the same triple (fixed here before the first D2b run)
+    d2b = {'triples': 0, 'moving_cells': 0, 'twos_cells': 0, 'ones_cells': 0, 'moving_triples': 0, 'mixed_triples': 0}
+    hist = collections.deque(maxlen=3)
     prev = None
     for i, (r, a, b) in enumerate(zip(ref, hi, li)):
         buf.append(r); hb.append(a); lb.append(b)
         if prev is not None:                                                  # D2: every adjacent pair
             d = r - prev
             rms = np.sqrt(cells(d * d, ch, cw)); sd = np.sqrt(np.maximum(cells(r * r, ch, cw) - cells(r, ch, cw) ** 2, 0))
-            if np.sqrt((d * d).mean()) < 40:                                  # not a cut
+            cut = np.sqrt((d * d).mean()) >= 40
+            hist.append(None if cut else rms)
+            if len(hist) == 3 and all(x is not None for x in hist):
+                r0, r1, r2 = hist; tx = sd > 4
+                mv_any = tx & (np.maximum(np.maximum(r0, r1), r2) > 3.0)
+                twos = tx & (((r0 > 3) & (r1 < 1) & (r2 > 3)) | ((r0 < 1) & (r1 > 3) & (r2 < 1)))
+                ones = tx & (r0 > 3) & (r1 > 3) & (r2 > 3)
+                d2b['triples'] += 1; d2b['moving_cells'] += int(mv_any.sum())
+                d2b['twos_cells'] += int(twos.sum()); d2b['ones_cells'] += int(ones.sum())
+                if mv_any.sum() >= 0.1 * max(tx.sum(), 1):
+                    d2b['moving_triples'] += 1
+                    if twos.sum() >= 0.02 * tx.sum() and ones.sum() >= 0.02 * tx.sum():
+                        d2b['mixed_triples'] += 1
+            if not cut:                                                       # not a cut
                 tex = sd > 4
                 if tex.sum() >= 0.1 * G * G:
                     mv, held = (rms > 3.0) & tex, (rms < 1.0) & tex
@@ -76,19 +93,30 @@ def window(root, name):
         tot = ((R - R.mean(0)) ** 2).mean(0)
         osc = cells(np.where(tot > 1.0, (resid ** 2).mean(0) / np.maximum(tot, 1e-6), 0.0), ch, cw)
         raw = cells(np.abs(R[3] - R[2]), ch, cw)
+        coh1 = np.abs(cells(D[2], ch, cw)) / (cells(np.abs(D[2]), ch, cw) + 1e-3)    # D1b: the one pair n-1 -> n+1
         target = (mh > 2 * ml) & (np.sqrt(mh) > 3.0)
-        for k, v in (('coh', coh), ('osc', osc), ('raw', raw), ('target', target), ('med_beats_high', mm < mh),
+        for k, v in (('coh', coh), ('coh1', coh1), ('osc', osc), ('raw', raw), ('target', target), ('med_beats_high', mm < mh),
                      ('mh', mh), ('ml', ml)):
             out[k].append(v.ravel())
         out['frame'].append(np.full(G * G, n)); out['cell'].append(np.arange(G * G))
     A = {k: np.concatenate(v) for k, v in out.items()}
     res = {'eligible_frames': len(out['frame']), 'cells': int(A['target'].size), 'base_rate': float(A['target'].mean())}
-    for f in ('coh', 'osc', 'raw'):
+    for f in ('coh', 'coh1', 'osc', 'raw'):
         top = A[f] >= np.quantile(A[f], 0.99)
         res[f'lift_{f}'] = float(A['target'][top].mean() / max(A['target'].mean(), 1e-9))
+    # sizing (exploratory, after D1b): replace High by the blend in the top q of cells by a cue; the change in the
+    # window's total squared error, and in the failed cells' (negative = better)
+    tot = A['mh'].sum()
+    for f in ('coh1', 'coh', 'raw'):
+        for q in (0.005, 0.01, 0.02, 0.05):
+            g = A[f] >= np.quantile(A[f], 1 - q)
+            res[f'swap_{f}_{q}'] = float((A['ml'][g] - A['mh'][g]).sum() / tot)
     res['d3_med_beats_high_target'] = float(A['med_beats_high'][A['target']].mean()) if A['target'].any() else None
     res['d3_med_beats_high_all'] = float(A['med_beats_high'].mean())
     res['d2'] = d2; res['d2_mixed_share_of_moving'] = d2['mixed'] / max(d2['moving'], 1)
+    res['d2b'] = d2b
+    res['d2b_twos_share_of_moving_cells'] = d2b['twos_cells'] / max(d2b['moving_cells'], 1)
+    res['d2b_mixed_share_of_moving_triples'] = d2b['mixed_triples'] / max(d2b['moving_triples'], 1)
     if name == 'tv':                                                          # GPT's TV 73 at 640 px: its cell, as a check
         sel = A['frame'] == 73
         if sel.any():

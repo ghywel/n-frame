@@ -72,3 +72,40 @@ when the pattern is moving-held-moving or held-moving-held (moving over 3 codes,
 all three. Reported per window: the share of moving cell-instances on twos, and the share of moving pairs where
 on-twos and on-ones cells coexist (mixed cadence). Predicted: on-twos 20% or more in anime and cartoon and under 3% in
 film and CG (the control that D2 lacked); mixed cadence 10% or more of moving pairs in anime and cartoon.
+
+## D1b and D2b results, and what they mean for building (2026-10-25, 16:40)
+
+| window | lift, coherent change, six frames | **one pair (n-1, n+1)** | raw change | D2b: moving cells on twos | D2b: moving stretches mixing twos and ones |
+|---|---|---|---|---|---|
+| film | 1.1 | **8.6** | 3.0 | 0.1% | 0.4% |
+| television | 17.2 | **12.4** | 7.1 | 0.2% | 0.6% |
+| anime | 9.1 | **15.1** | 6.8 | 8.5% | 2.0% |
+| western cartoon | 8.0 | **11.9** | 4.7 | **16.7%** | **18.2%** |
+| CG | 4.9 | **11.8** | 9.1 | 0.1% | 0.3% |
+
+("Coexist" in D2b: at least 2% of a stretch's textured cells on twos and 2% on ones, fixed in the tool before its first
+run; the registration had left it open.)
+
+**D1b PASSES on all five windows, and my prediction was wrong in direction:** the cue from the single pair a two-frame
+tier sees is STRONGER than the six-frame one on four of five (a coherent change between the two frames a warp joins is
+the direct sign). So Cadence's two-frame tiers have the cue for free. **D2b is now valid** (controls 0.1-0.2%) and passes
+for the western cartoon (17% of moving cells on twos, 18% of moving stretches mixing twos and ones) but not for this
+anime window (8.5%, 2.0%: its holds are mostly whole-frame, which the player's cadence stage already removes). Per-region
+cadence has a real target in western cartoon; this one anime window does not show it.
+
+**Sizing, exploratory (computed after D1b on the same data): a blend swap on the cue alone would HURT.** Replacing
+High's warp with the blend in the top 0.5% / 1% / 2% / 5% of cells by the one-pair cue changes each window's total
+squared error by: film +8.3 / +9.3 / +14.7 / +33.5%; television +3.4 / +5.6 / +9.9 / +19.9%; anime +2.0 / +1.8 / +1.6 /
++3.8%; cartoon -0.2 / -0.1 / 0.0 / +1.5%; CG +1.1 / +1.9 / +5.0 / +9.6% (raw change, the control, is far worse:
++6 to +140%). The cue's precision is about 6% (lift times base rate); the blend loses more in the cells where High was
+right than it gains where High was wrong. So the cue is information, not a decision.
+
+**What to build, in order** (each pre-registered when built, tested by the full gate):
+1. **The coherent-change cue inside the matcher, not instead of it**: where a cell's change between the two frames is
+   coherent, compare them with the cell's own brightness offset taken out (a local, cue-gated form of GLOBAL_GAIN, which
+   cannot be fooled by moving bars where the change is not coherent), or let the cue be one vote in the coherence gate.
+   Target: the television, anime and cartoon failures, with film and CG left as they are.
+2. **Per-region cadence for drawn animation**: find cells on twos from their alternation (D2b's test, which a four- or
+   six-frame window can see; the two-frame tiers would need a small history in storage) and interpolate those regions
+   between their drawings rather than between frames. Target: western cartoon first.
+3. **The median plate** waits for a cue that picks its cells (D3).
