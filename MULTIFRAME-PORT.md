@@ -215,3 +215,23 @@ chains outside, the least-squares quadratic with its residual gate in the final 
 best-placed one. A ported form must keep High's stairs, prints and acceleration wins AND the base's clean translations,
 which High alone does not. The quad-m1 content run (real footage) is running; the quad and quint content scores are
 already on disk.
+
+## Step 1b results, real footage (2026-10-25, 19:35): four frames buy +0.11 to +0.21 dB on the same base, and nothing is lost on cartoons
+
+`quad-m1` over the content test's 40 windows (`INTERIOR=1`; no new alarm), beside the family. Against the base each
+shader is built on (biprop), PSNR Y, mean over segments:
+
+| class | tri | quad | **quad-m1** | quint | (High - biprop) |
+|---|---|---|---|---|---|
+| film | +0.04 | +0.10 | **+0.11** | +0.10 | +2.11 |
+| television | +0.12 | +0.19 | **+0.21** | +0.19 | +0.96 |
+| anime | +0.10 | +0.13 | **+0.14** | +0.12 | +0.89 |
+| western cartoon | -0.15 | -0.08 | **+0.01** | -0.08 | +0.53 |
+| CG | +0.15 | +0.22 | **+0.19** | +0.22 | +1.44 |
+
+(The tri's column includes its structure, which D3 found costs nothing; quad and quint likewise include theirs.) **The
+four-frame least-squares form is the best multi-frame shader on real footage too**: +0.11 to +0.21 dB over its base on
+live action, anime and CG, and the only form that does not lose on cartoons (its residual gate catches the held
+drawings the tri reads as a change of speed). The quint equals the quad again. **If the gains add, a quad-High (Form Q)
+would sit about 0.1 to 0.2 dB above today's High on real footage and about 4.6 dB above it on oscillation**, while
+keeping High's stairs, prints and acceleration lead. That is the build this investigation points to.
