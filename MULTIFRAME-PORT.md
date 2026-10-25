@@ -235,3 +235,40 @@ live action, anime and CG, and the only form that does not lose on cartoons (its
 drawings the tri reads as a change of speed). The quint equals the quad again. **If the gains add, a quad-High (Form Q)
 would sit about 0.1 to 0.2 dB above today's High on real footage and about 4.6 dB above it on oscillation**, while
 keeping High's stairs, prints and acceleration lead. That is the build this investigation points to.
+
+## Form Q, pre-registered (2026-10-25 19:47, the owner's word: "build Form Q ... pre-registered, full gate"; before it is built)
+
+**What is built** (`tests/gen_quadhigh.py`, from two generated files and nothing hand-edited):
+- **The whole four-frame least-squares quad** (`QUAD_MODE 1`, the propagated base, field settings as shipped): its three
+  slot pairs' plain chains and full-resolution level, which feed only the acceleration fit.
+- **Today's shipped High, every pass, renamed into the quad's middle pair:** each texture it defines takes an `HI_`
+  prefix (so nothing collides with the quad's), its frame A reads become slot 1 (`FRAME1`) and its frame B reads slot 2
+  (`FRAME2`). Its pair caches are keyed by `pair_changed`, which in a four-frame window changes exactly when the middle
+  pair does, so every cache keeps its meaning. High's reading tail is not carried; the quad's is.
+- **The final pass is High's** (the motion-aware cut gate, the support and agreement fallback, the warp along High's
+  half-resolution flow) **with the quad's correction added to both warp coordinates**, `corr = s(1-s) a/2`, the
+  acceleration fitted by least squares over the quad's three anchor flows and gated by its residual and round trips,
+  exactly as the quad computes it. One new gate, the consistency check: the correction is taken only where the quad's
+  plain middle-pair flow agrees with High's within 1 px (where High has repaired an alias the plain chain still has,
+  the plain acceleration is meaningless, and the output is High's). A pre-pass packs the five cut statistics into one
+  texture (a pass binds at most 16). Outside the interior windows (the straddling pair not slots 1-2: clip edges), the
+  nearer source frame. Then `prune_passes` over the result.
+- This is the conservative form: a superset of High wherever the correction is off. **Its cost is about High plus the
+  whole quad**, not High plus two outer chains (the design note's estimate assumed High's own flows would feed the fit);
+  the cheaper form, High's middle-pair flows in the fit and the quad's plain middle chain dropped, is the follow-up if
+  this one passes.
+
+**Instrument checks, before any science** (fail any and nothing is measured): it compiles and runs with no skipped hooks
+beyond the quad's lead-in; with the correction forced to zero it reproduces today's High within 0.01 dB on every one of
+the 45 ladder cases (the renaming, the frame shift and the final pass proven, not assumed).
+
+**Tests** (Form Q against today's High unless stated):
+- **T1, the prize:** the oscillation family O1-O6 up by 2 dB or more on average, every case up. KILL if the mean gain is
+  under 1 dB.
+- **T2, nothing of High lost:** no ladder case down more than 1 dB, capped headline mean not down more than 0.05.
+- **T3, real footage:** the content test's 40 windows (`INTERIOR=1`), no class down more than 0.05 dB; predicted up 0.05
+  to 0.2 on live action and CG, within +-0.05 on animation.
+- **T4, the cage** C1-C4: none down more than 0.5 dB.
+- **T5, cost:** frame time on libplacebo (and Metal if `gen_metal.py` translates it), reported against High's.
+Predicted: T1 passes with about +4 dB (the bare quad-m1's lead over High on the family is +4.63, and High's flow should
+not cost it); T2 passes; T3 passes small; T5 roughly twice High's time.
