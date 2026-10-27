@@ -343,3 +343,34 @@ survives the port at about half its bare size, and the failure is located: an ac
 flows that alias where High's middle flow does not, with the quad's least-squares residual never applied. **The next
 design** is written above (High's middle flow in the fit, the residual as a gate); it also removes the plain middle
 chain, so it should cost less than this form. Not built (one kill on this line; the owner's call whether to go on).
+
+## Form Q2, pre-registered (2026-10-27 15:52, the owner's word: "build the revised Form Q (High's middle flow in the fit, the least-squares residual applied as a gate, the plain middle chain dropped), pre-registered, full gate"; before it is built)
+
+**What changes from Form Q** (`tests/gen_quadhigh.py`, `QH_FORM=2`; Form Q stays reproducible as `QH_FORM=1`):
+- **High's middle flow in the fit.** The anchor's middle-pair displacement is High's half-resolution flow at the output
+  texel (slot 1 -> 2 for anchor 1; its negative for anchor 2, the same at-the-output-texel convention High's warp and
+  the quad's fit already use); the outer links (slots 0-1, 2-3) stay the quad's plain full-resolution flows. The
+  middle link's round trip is taken as passed (High's own support fallback already blends where High fails).
+- **The quad's plain middle chain dropped** (its 1/16 to full-resolution BC/CB passes and the agreement gate that read
+  them), and the quad's reading tail not carried (it read the plain middle flows and would keep them alive through the
+  prune); the cut statistics stay.
+- **The least-squares residual applied:** the acceleration is multiplied by 1 - smoothstep(0.5, 1.0, r), r the fit's
+  largest residual over the three displacements in pixels (computed in true pixels; the quad's diagnostic divides by
+  the diagonal texel length). The 0.5-1 px scale is the agreement gate's, chosen before any number.
+
+**The risk, stated before the run:** the record has the mode-1 residual equal to (3/11)|jerk| per texel (QUADDIRECTIONAL.md,
+P4). Real oscillation has large jerk: on O3_osc_hard (44 px peak, six samples a period) the residual is of order 14 px, so
+a 1 px gate is expected to turn the correction OFF on the fast oscillation cases, the prize, while turning it off on
+the aliased stairs, the defect. **So one isolating variant runs in the same sitting** (one change per reading):
+`QH_FORM=2 QH_RESID=0` (High's flow in the fit, the plain middle chain dropped, no residual gate). Shaders: High,
+Q2 with `QH_CORR=0` (the paired zero form), Q2, Q2-noresid.
+
+**Predictions:** Q2: the stairs cases H2x, P3, V3x within 0.5 dB of its zero form (the defect gone); the oscillation
+gain over the zero form under 1 dB on O2-O5 and kept partly on O1 and O6 (gentle, small jerk): **T1 at risk of the kill
+line (mean gain under 1 dB)**. Q2-noresid: oscillation at or above Form Q's (+2.67 over its zero form), the stairs still
+down more than 1 dB (the aliased outer links are still in the fit). Cost: Q2 below Form Q's 79 ms an output.
+
+**Tests:** T1-T5 exactly as registered for Form Q, the lines unchanged, read against High and against Q2's zero form.
+One change from Form Q's practice, set now: every ladder and cage figure is ALSO reported on the interior outputs
+(frames 8 to n-8), since the whole-clip figures carry the four-frame lead-in; **T4's line is judged on the interior**
+(the cage's whole-clip figure reported beside it), T1 and T2 on both readings as before.
