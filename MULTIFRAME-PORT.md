@@ -428,3 +428,33 @@ the fit must take all three links from ONE estimator. **The next design** (not b
 pairs too (the slot 0-1 and 2-3 chains High's, not plain), so the fit sees no estimator bias; it costs about three
 Highs (75-80 ms an output, Form Q's cost), and Q2-noresid's +5.3 dB oscillation prize says what a consistent fit might
 keep. The owner's call.
+
+## Form Q3, pre-registered (2026-10-27 17:26, the owner's word: "build Form Q3 (High's estimator on all three pairs so the fit sees one estimator), pre-registered, full gate"; before it is built)
+
+**What is built** (`tests/gen_quadhigh.py`, `QH_FORM=3`; Forms Q and Q2 stay reproducible):
+- **Three copies of today's High estimator, one per slot pair**, each renamed with its own prefix and frames: `HA_` on
+  slots 0-1 (`HOOKED`, `FRAME1`), `HI_` on slots 1-2 (`FRAME1`, `FRAME2`, as in Q and Q2), `HC_` on slots 2-3 (`FRAME2`,
+  `FRAME3`). Each window's three pairs are functions of the window, so every copy's `pair_changed` cache keeps its
+  meaning; each copy keeps its own carried state. **None of the quad's plain chains remain.**
+- **The fit, every link a High flow** at the output texel (High's own convention): anchor 1 takes slot 1 -> 0 as the
+  negative of `HA`'s flow, slot 1 -> 2 as `HI`'s, and the composed far link through `HC`'s at the moved texel; anchor 2
+  the mirror. High keeps no half-resolution reverse flow, so the round trips are not taken; instead **a link is believed
+  only where its own High does not fall back** (the acceleration times 1 minus the larger of the outer pairs' support
+  fallback weights, High's own formula), and the least-squares residual gate of Q2 (0.5-1 px, true pixels) stays on.
+- The cut statistics from the three Highs' own (the middle pair's motion-aware verdict for the hold, the raw
+  statistics for the acceleration's cut gates), High's warp and support fallback as in Q and Q2, then the prune.
+- Same sitting: Q3, **Q3-noresid** (`QH_RESID=0`, the isolating variant again), Q3 with `QH_CORR=0` (the zero form),
+  and High.
+
+**Instrument checks** (before any test is read): it compiles and runs with the four-frame lead-in only; Q3's zero form
+reproduces High's interior pattern as Q and Q2's did (it must, the middle copy and warp are unchanged); and on P3 the
+diagnostic acceleration falls below Q2's (median 0.60 px on 7.8% of texels): if one estimator removes the bias, the
+false acceleration should all but vanish.
+
+**Predictions:** P3 within 0.5 dB of the zero form (the bias gone); H2x and V3x no worse than Q2 (each outer pair now
+gets High's alias repairs); oscillation at or above Q2's (+2.60 over the zero form). **Q3-noresid** passes T2 too (with
+one estimator, the stairs need no residual) and keeps most of Q2-noresid's +5.34. Real footage at or above Q2. Cost
+about three Highs, 75-80 ms an output (High 25.3).
+
+**Tests:** T1-T5 exactly as registered for Form Q and read as for Q2 (against the zero form and High; interior and
+whole clip; T4 judged on the interior).
