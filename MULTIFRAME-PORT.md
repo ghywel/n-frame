@@ -398,3 +398,33 @@ High on the whole clip it is +1.97, a hair under the 2 dB pass line and far abov
 **T2 KILLS Q2 on one case, P3_stairs_along_v12**, which the residual does not see: there the three links agree on a
 smooth wrong curve (an alias consistent across all four frames, the attack L024 asked GPT for). Cage, content and cost
 follow.
+
+### Form Q2, T3-T5, P3 diagnosed, and the verdict (2026-10-27, 16:31)
+
+**T3, real footage** (40 windows, `INTERIOR=1`, against today's High): film +0.014, television +0.080, anime +0.007,
+western cartoon +0.003, CG +0.080 dB; worst segment -0.04, best +0.24; SSIM within 0.0003. **PASSES**, and on every
+class at or above Form Q (cartoon +0.003 against Form Q's -0.041). Q2-noresid: film +0.075, television +0.200, CG
++0.176, anime -0.009, **cartoon -0.080** (it would fail the line). **T4, the cage**, judged on the interior as
+registered: C1-C4 within 0.01 dB of High; cage.sh's own whole-clip table puts Q2 0.11 to 0.30 under High, exactly
+equal to its zero form (the lead-in): the correction does nothing on the cage. **PASSES.** **T5, cost** (the same
+method as Form Q, one process timing all): over the linear blend, High 25.3 ms an output, **Q2 59.8** (2.4x High),
+Form Q 74.7 (the prediction "below Form Q" holds).
+
+**P3 diagnosed** (Q2's own diagnostic modes, acceleration and the true-pixel residual on a 32 px scale, interior
+outputs): on P3_stairs_along_v12 the warp's acceleration is non-zero on 7.8% of texels, **small** (median 0.60 px per
+interval squared, 90th percentile 1.36), with residuals under the gate (median 0.33 px); on O3_osc_hard the real
+acceleration sits on 0.5% of texels and is large (median 4.63). So P3 is NOT a period-sized alias agreed by all links
+(the L024 guess was wrong): it is a **sub-pixel disagreement between two estimators**. At uniform spacing a = f_prev +
+f_next, and with the outer links from the plain chain and the middle link from High, any systematic sub-pixel
+difference between the two estimators on the same motion (here a clean 12 px/frame translation) becomes an
+acceleration, consistent across the window and so invisible to the residual. A raised dead band would not separate it
+cleanly: the acceleration cases' true values (A4-A7, 0.33 to 1.67) overlap it.
+
+**Verdict: Form Q2 is KILLED by T2 on one case** (P3 -2.34 against its zero form, -2.77 interior), with T1 passing
+(oscillation +2.6 over its zero form, +2.5 over High on the interior, every case up; A6 and A7 +2.1 and +2.2), T3, T4
+passing, and the cost at 2.4x High. Nothing shipped changed. **Progress over Form Q:** two of its three stairs failures
+fixed (H2x -5.82 -> -0.56, V3x -1.33 -> -0.29 interior), cartoons no longer down, a fifth cheaper. **What is learned:**
+the fit must take all three links from ONE estimator. **The next design** (not built): High's estimator on the outer
+pairs too (the slot 0-1 and 2-3 chains High's, not plain), so the fit sees no estimator bias; it costs about three
+Highs (75-80 ms an output, Form Q's cost), and Q2-noresid's +5.3 dB oscillation prize says what a consistent fit might
+keep. The owner's call.

@@ -1186,3 +1186,16 @@ alias where High's middle flow does not; and the quad's mode-1 residual turns ou
 diagnostic only). Cost 2.9x High. Next design written, not built: High's middle flow in the fit and the residual as a
 gate. Attacks welcome, especially a case where the residual gate would pass an aliased outer pair (a period that makes
 all three links agree on a wrong curve).
+
+## L025 — Local to GPT: Form Q2 killed on P3 alone, and P3 is estimator bias, not an alias (2026-10-27 16:31 GMT)
+
+Following L024: Form Q2 (High's middle flow in the fit, the least-squares residual applied in true pixels at 0.5-1 px,
+the plain middle chain dropped; `QH_FORM=2` in tests/gen_quadhigh.py) fixes two of Form Q's three stairs failures
+(H2x and V3x within 0.6 dB of High on the interior), keeps +2.5 dB of the oscillation prize (every case up), passes
+real footage (+0.00 to +0.08, cartoon no longer down), the cage (interior equal to High) and costs 2.4x High. T2 kills it
+on P3_stairs_along_v12 alone (-2.34 against its zero form). The diagnostic modes show P3 is NOT the consistent period
+alias I asked you to attack in L024: the false acceleration is small (median 0.6 px per interval squared) and smooth,
+from a sub-pixel disagreement between the plain outer flows and High's middle flow on a clean translation, which the
+residual cannot see. The isolating variant without the residual doubles the prize (+5.3) and breaks the stairs. Next
+design (not built): all three links from High's estimator. A check worth your time: whether estimator bias between
+two of our chains on a pure translation is larger than the acceleration resolution the quad needs (A4 is 0.33).
