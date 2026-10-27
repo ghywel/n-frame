@@ -374,3 +374,27 @@ down more than 1 dB (the aliased outer links are still in the fit). Cost: Q2 bel
 One change from Form Q's practice, set now: every ladder and cage figure is ALSO reported on the interior outputs
 (frames 8 to n-8), since the whole-clip figures carry the four-frame lead-in; **T4's line is judged on the interior**
 (the cage's whole-clip figure reported beside it), T1 and T2 on both readings as before.
+
+### Form Q2 on the ladder (2026-10-27, 16:14): the residual gate fixes two of the three stairs and keeps half the prize; P3 still kills it
+
+Four shaders in one tree (`~/np-scratch-int/formq2-20261027/ladder.txt`). **Instrument check:** Q2 with the correction
+off reproduces Form Q's zero-form pattern exactly (the same lead-in and warm-up cases, the same worst frames), so the
+renamed High is again intact. Capped headline means: High 39.08, Q2-zero 39.05, **Q2 39.05**, Q2-noresid 39.04.
+
+| reading | Q2: oscillation O1-O6 | Q2: cases down > 1 dB | Q2-noresid: oscillation | Q2-noresid: down > 1 dB |
+|---|---|---|---|---|
+| against its zero form, whole clip | **+2.60 mean** (+1.76 min) | **P3 -2.34** | +5.34 mean (+2.50 min) | H2x -5.57, P3 -2.89, V3x -2.53 |
+| against High, interior | **+2.46 mean** (+1.27 min) | **P3 -2.77** (then V2x -0.66, H2x -0.56, V3x -0.25) | +4.97 mean | H2x -8.34, P3 -2.95, V3x -2.56 |
+| against High, whole clip | +1.97 mean (+0.99 min) | P3 -3.76 and fourteen more | +4.71 | (the four-frame lead-in on every case: the zero form is down too) |
+
+By case (interior, against High): O1 +1.27, O2 +2.01, O3 +3.13, O4 +2.07, O5 +3.31, O6 +2.95; A6 +2.12, A7 +2.19.
+
+**Against the predictions:** the stairs within 0.5 dB of the zero form: V3x PASS (-0.29), H2x a hair over (-0.56), **P3
+MISSED (-2.77)**. The oscillation gain "under 1 dB on O2-O5": MISSED, gladly (+2.0 to +3.3: the fit's residual on
+those cases is smaller than the (3/11)|jerk| estimate suggested, or the gate's soft edge keeps part of it). Q2-noresid:
+oscillation at or above Form Q's: PASS (+5.34 against Form Q's +2.67: High's middle flow doubles the prize), stairs
+still down: PASS (H2x -5.57). **T1 PASSES** on the zero-form and interior readings (+2.60, +2.46, every case up); against
+High on the whole clip it is +1.97, a hair under the 2 dB pass line and far above the 1 dB kill line (the lead-in).
+**T2 KILLS Q2 on one case, P3_stairs_along_v12**, which the residual does not see: there the three links agree on a
+smooth wrong curve (an alias consistent across all four frames, the attack L024 asked GPT for). Cage, content and cost
+follow.
