@@ -35,6 +35,11 @@ HIGH = SHADERS / "bidirectional-interpolation-variational-propagated-global-cage
 DST = pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else SHADERS / "quadhigh-interpolation.glsl"
 QH_CORR = os.environ.get("QH_CORR", "1")
 assert QH_CORR in ("0", "1"), "QH_CORR is 1 (the correction) or 0 (the instrument check: High exactly)"
+# FORM Q2 (2026-10-27, MULTIFRAME-PORT.md): High's middle flow in the fit, the quad's plain middle chain and reading tail
+# dropped, and the least-squares residual applied as a gate (QH_RESID=0 leaves it off: the isolating variant)
+QH_FORM = os.environ.get("QH_FORM", "1")
+QH_RESID = os.environ.get("QH_RESID", "1")
+assert QH_FORM in ("1", "2") and QH_RESID in ("0", "1"), "QH_FORM is 1 or 2; QH_RESID is 0 or 1"
 
 SUFFIX = r"(?:_tex|_pos|_pt|_size|_raw|_mul)?\b"     # a texture's name as a bare word or with its accessor suffixes
 
@@ -173,7 +178,43 @@ def final_pass(quad_final, sup_expr):
                  f"    float unwarped = {sup_expr};\n"
                  "    if (unwarped <= 0.0) return warped;\n"
                  "    return mix(warped, mix(FRAME1_tex(HOOKED_pos), FRAME2_tex(HOOKED_pos), s), unwarped);\n", 1)
+    if QH_FORM == "2":
+        code = form2(code)
     assert sum(l.startswith("//!BIND") for l in code.split("\n")) <= 16, "the final pass binds more than 16"
+    return code
+
+
+def form2(code):
+    """Form Q2: High's middle flow in the fit in place of the plain one, the agreement gate gone with the plain middle
+    chain, and the least-squares residual (in true pixels) applied to the acceleration."""
+    for b in ("FLOW_H_BC", "FLOW_F_BC", "FLOW_F_CB"):         # the plain middle chain: no longer read
+        code = sub_n(code, rf"^//!BIND {b}\n", "", 1, re.M)
+    code = sub_n(code, r"    vec2 f_plain = FLOW_H_BC_tex\(HOOKED_pos\)\.xy \* 2\.0 \* HOOKED_pt;   // the quad's own, for the agreement gate\n", "", 1)
+    code = sub_n(code, r"    // FORM Q: the plain fit is believed only.*?\n.*?\n    corr \*= 1\.0 - smoothstep\(QH_AGREE_LO, QH_AGREE_HI, length\(\(f_fwd - f_plain\) / HOOKED_pt\)\);\n",
+                 "", 1, re.S)
+    code = sub_n(code, r"const float QH_AGREE_LO = 0\.5;.*?\nconst float QH_AGREE_HI = 1\.0;.*?\n",
+                 "const float QH_RESID_LO = 0.5;  // px: the least-squares fit's largest residual, fully trusted under this\n"
+                 "const float QH_RESID_HI = 1.0;  // px: no correction past this (Form Q2; the agreement gate's scale)\n"
+                 f"const int QH_RESID = {QH_RESID};            // 0 = the isolating variant: the residual not applied\n", 1)
+    # anchor 1: the middle displacement is High's (slot 1 -> 2); its round trip is High's support's business
+    code = sub_n(code, r"        f_next = FLOW_F_BC_tex\(HOOKED_pos\)\.xy \* HOOKED_pt;\n",
+                 "        f_next = f_fwd;                                  // FORM Q2: High's middle flow\n", 1)
+    code = sub_n(code, r"        vec2 rn = FLOW_F_CB_tex\(HOOKED_pos \+ f_next\)\.xy \* HOOKED_pt;\n        rt_next = length\(f_next \+ rn\) / length\(HOOKED_pt\);\n",
+                 "        rt_next = 0.0;                                   // High's link: its support fallback covers it\n", 1)
+    # anchor 2: slot 2 -> 1 is High's flow reversed, at the output texel like everything else here
+    code = sub_n(code, r"        f_prev = FLOW_F_CB_tex\(HOOKED_pos\)\.xy \* HOOKED_pt;\n",
+                 "        f_prev = -f_fwd;                                 // FORM Q2: High's middle flow, reversed\n", 1)
+    code = sub_n(code, r"        vec2 rp = FLOW_F_BC_tex\(HOOKED_pos \+ f_prev\)\.xy \* HOOKED_pt;\n        rt_prev = length\(f_prev \+ rp\) / length\(HOOKED_pt\);\n",
+                 "        rt_prev = 0.0;                                   // High's link: its support fallback covers it\n", 1)
+    # the residual in true pixels, and the gate
+    code = sub_n(code, r"(    float resid = 0\.0;\n)", r"\1    float resid_px = 0.0;\n", 1)
+    code = sub_n(code, r"(            resid = max\(length\(rp2\), max\(length\(rn2\), length\(rf2\)\)\)\n                  / length\(HOOKED_pt\);\n)",
+                 r"\1            resid_px = max(length(rp2 / HOOKED_pt), max(length(rn2 / HOOKED_pt), length(rf2 / HOOKED_pt)));\n", 1)
+    code = sub_n(code, r"(        accel \*= g3;\n)",
+                 r"\1        if (QH_RESID == 1)                               // FORM Q2: the fit's own residual as a gate\n"
+                 r"            accel *= 1.0 - smoothstep(QH_RESID_LO, QH_RESID_HI, resid_px);\n", 1)
+    code = code.replace("(Form Q)", "(Form Q2)", 1)
+    assert "FLOW_F_BC" not in code and "FLOW_F_CB" not in code and "FLOW_H_BC" not in code, "a plain middle read survived"
     return code
 
 
@@ -186,8 +227,8 @@ HEADER = """\
 // (today's High, renamed into the window's fixed middle pair, slots 1-2).
 //
 // Four frames: High's whole estimator on the straddling pair, the quad's plain chains for the least-squares
-// acceleration through all four, High's final warp with the quad's correction s(1-s)a/2, gated by the quad's
-// residual and round trips and by agreement between the quad's plain middle flow and High's (within 0.5-1 px).
+// acceleration through all four, High's final warp with the quad's correction s(1-s)a/2, gated by the outer
+// links' round trips and {gate}.
 // Where the correction is off the output is High's. The window's first and last outputs fall back to the
 // builtin mixer, as for every four-frame shader.
 // =====================================================================
@@ -198,13 +239,19 @@ def main():
     est, cut_ratio, cut_diff, sup_expr = high_estimator()
     q_est, q_final, q_tail = quad_parts()
     cut = CUT_PACK.replace("@CUTRATIO@", cut_ratio).replace("@CUTDIFF@", cut_diff)
+    if QH_FORM == "2":
+        q_tail = ""                                           # the quad's tail reads the plain middle flows: not carried
     text = q_est.rstrip("\n") + "\n\n" + est.rstrip("\n") + "\n\n" + cut + "\n" + final_pass(q_final, sup_expr) + q_tail
     text, _ = prune_passes.prune(text, twins=True, report=sys.stderr)
     code = "\n".join(l for l in text.split("\n") if not l.lstrip().startswith("//"))
     assert code.count("{") == code.count("}") and code.count("(") == code.count(")"), "unbalanced"
     assert "//!BIND FRAME3" in text, "four frames not declared"
-    env = "QH_CORR=0 " if QH_CORR == "0" else ""
-    DST.write_text(HEADER.format(env=env) + text, newline="\n")
+    env = ("QH_FORM=2 " if QH_FORM == "2" else "") + ("QH_RESID=0 " if QH_FORM == "2" and QH_RESID == "0" else "") \
+        + ("QH_CORR=0 " if QH_CORR == "0" else "")
+    gate = ("High's middle flow in the fit, the fit's least-squares residual applied (0.5-1 px)" if QH_RESID == "1"
+            else "High's middle flow in the fit, the residual NOT applied (the isolating variant)") if QH_FORM == "2" \
+        else "agreement between the quad's plain middle flow and High's (within 0.5-1 px)"
+    DST.write_text(HEADER.format(env=env, gate=gate) + text, newline="\n")
     print(f"  {DST.name}: {text.count('//!HOOK')} passes (High {est.count('//!HOOK')} + the quad's), OK")
 
 
