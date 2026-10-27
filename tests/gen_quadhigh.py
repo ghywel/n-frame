@@ -39,7 +39,8 @@ assert QH_CORR in ("0", "1"), "QH_CORR is 1 (the correction) or 0 (the instrumen
 # dropped, and the least-squares residual applied as a gate (QH_RESID=0 leaves it off: the isolating variant)
 QH_FORM = os.environ.get("QH_FORM", "1")
 QH_RESID = os.environ.get("QH_RESID", "1")
-assert QH_FORM in ("1", "2") and QH_RESID in ("0", "1"), "QH_FORM is 1 or 2; QH_RESID is 0 or 1"
+assert QH_FORM in ("1", "2", "3") and QH_RESID in ("0", "1"), "QH_FORM is 1, 2 or 3; QH_RESID is 0 or 1"
+# FORM Q3 (2026-10-27): High's estimator on all three slot pairs (HA_ on 0-1, HI_ on 1-2, HC_ on 2-3), no plain chains
 
 SUFFIX = r"(?:_tex|_pos|_pt|_size|_raw|_mul)?\b"     # a texture's name as a bare word or with its accessor suffixes
 
@@ -50,16 +51,17 @@ def sub_n(text, pat, rep, n, flags=0):
     return out
 
 
-def high_estimator():
-    """High's passes up to (not including) its final pass, renamed into slots 1 and 2 of a four-frame window."""
+def high_estimator(prefix="HI_", fa="FRAME1", fb="FRAME2"):
+    """High's passes up to (not including) its final pass, renamed (prefix) onto one slot pair of a four-frame window:
+    frame A read from fa, frame B from fb (slots 1 and 2 for Forms Q and Q2; Q3 adds 0-1 and 2-3)."""
     text = READING.strip_tail(HIGH.read_text())
     text = text[text.index("//!"):]                              # its file header describes a two-frame shader
     est, final = text[:READING.final_pass(text)], text[READING.final_pass(text):]
     names = sorted(set(re.findall(r"^//!(?:SAVE|TEXTURE) (\S+)", est, re.M)))
     assert "FRAME_MIX" not in names and len(names) > 60, f"High defines {len(names)} textures?"
     for n in names:
-        est = re.sub(rf"\b{n}(?={SUFFIX})", "HI_" + n, est)
-        final = re.sub(rf"\b{n}(?={SUFFIX})", "HI_" + n, final)
+        est = re.sub(rf"\b{n}(?={SUFFIX})", prefix + n, est)
+        final = re.sub(rf"\b{n}(?={SUFFIX})", prefix + n, final)
     # the frames: A is slot 1, B is slot 2. Reads move; geometry stays on HOOKED (every slot has the same geometry),
     # and the size directives (HOOKED.w) are left alone. Pass by pass, so each gains exactly the binds it now reads.
     passes = re.split(r"(?=^//!(?:HOOK|TEXTURE) )", est, flags=re.M)
@@ -68,16 +70,16 @@ def high_estimator():
         if not p.startswith("//!HOOK"):
             out.append(p)
             continue
-        reads_a = "HOOKED_tex(" in p
+        reads_a = "HOOKED_tex(" in p and fa != "HOOKED"            # slot 0 IS the hooked frame: nothing to move
         reads_b = re.search(r"\bNEXT_", p) is not None
-        p = p.replace("HOOKED_tex(", "FRAME1_tex(")
-        p = p.replace("NEXT_tex(", "FRAME2_tex(")
+        p = p.replace("HOOKED_tex(", fa + "_tex(")
+        p = p.replace("NEXT_tex(", fb + "_tex(")
         p = re.sub(r"\bNEXT_(pos|pt|size)\b", r"HOOKED_\1", p)
         binds = []
         if reads_a:
-            binds.append("FRAME1")
+            binds.append(fa)
         if reads_b:
-            binds.append("FRAME2")
+            binds.append(fb)
             if "//!BIND HOOKED\n" not in p:
                 binds.append("HOOKED")                            # the geometry the shifted reads now use
         p = p.replace("//!BIND NEXT\n", "")
@@ -92,10 +94,10 @@ def high_estimator():
     est = "".join(out)
     code = "\n".join(l for l in est.split("\n") if not l.lstrip().startswith("//") or l.startswith("//!"))
     assert "NEXT_" not in code and "BIND NEXT" not in code, "a two-frame NEXT reference survived in High's estimator"
-    assert "HOOKED_tex(" not in code, "a frame-A read was not moved to slot 1"
+    assert fa == "HOOKED" or "HOOKED_tex(" not in code, "a frame-A read was not moved to its slot"
     assert not re.search(r"\bmix_t\b", code), "mix_t is only valid for two frames"
     # High's cut rule, read from its own final pass so it cannot drift
-    m = re.search(r"if \(HI_SCENE_DIFF_tex\(vec2\(0\.5\)\)\.r > SCENE_CUT_DIFF && cut_res\.r > ([0-9.]+) \* cut_res\.g\)", final)
+    m = re.search(rf"if \({prefix}SCENE_DIFF_tex\(vec2\(0\.5\)\)\.r > SCENE_CUT_DIFF && cut_res\.r > ([0-9.]+) \* cut_res\.g\)", final)
     assert m, "High's motion-aware cut rule not found in its final pass"
     cut_ratio = m.group(1)
     m = re.search(r"const float SCENE_CUT_DIFF = ([0-9.]+);", final)
@@ -127,6 +129,14 @@ vec4 hook() {
     return vec4(high_cut, SCENE_DIFF_tex(vec2(0.5)).r, SCENE_DIFF_BC_tex(vec2(0.5)).r, SCENE_DIFF_CD_tex(vec2(0.5)).r);
 }
 """
+
+
+CUT_PACK3 = CUT_PACK.replace("//!BIND SCENE_DIFF\n//!BIND SCENE_DIFF_BC\n//!BIND SCENE_DIFF_CD\n",
+                              "//!BIND HA_SCENE_DIFF\n//!BIND HC_SCENE_DIFF\n") \
+    .replace("SCENE_DIFF_tex(vec2(0.5)).r, SCENE_DIFF_BC_tex(vec2(0.5)).r, SCENE_DIFF_CD_tex(vec2(0.5)).r",
+             "HA_SCENE_DIFF_tex(vec2(0.5)).r, HI_SCENE_DIFF_tex(vec2(0.5)).r, HC_SCENE_DIFF_tex(vec2(0.5)).r") \
+    .replace("the quad's three pairs", "the three Highs' raw statistics (Form Q3)")
+assert "HA_SCENE_DIFF_tex" in CUT_PACK3 and "SCENE_DIFF_BC" not in CUT_PACK3
 
 
 def quad_parts():
@@ -178,8 +188,10 @@ def final_pass(quad_final, sup_expr):
                  f"    float unwarped = {sup_expr};\n"
                  "    if (unwarped <= 0.0) return warped;\n"
                  "    return mix(warped, mix(FRAME1_tex(HOOKED_pos), FRAME2_tex(HOOKED_pos), s), unwarped);\n", 1)
-    if QH_FORM == "2":
+    if QH_FORM in ("2", "3"):
         code = form2(code)
+    if QH_FORM == "3":
+        code = form3(code, sup_expr)
     assert sum(l.startswith("//!BIND") for l in code.split("\n")) <= 16, "the final pass binds more than 16"
     return code
 
@@ -218,6 +230,60 @@ def form2(code):
     return code
 
 
+FORM3_ANCHORS = """\
+    // FORM Q3: every link is a High estimate, read at the output texel as High's own warp reads its flow: slots 0-1
+    // from HA_, 1-2 from HI_ (f_fwd), 2-3 from HC_. High keeps no half-resolution reverse flow, so there are no round
+    // trips; a link is believed only where its own High does not fall back (below), and the residual gates the fit.
+    vec2 f01 = HA_FLOW_H_AB_tex(HOOKED_pos).xy * 2.0 * HOOKED_pt;
+    vec2 f23 = HC_FLOW_H_AB_tex(HOOKED_pos).xy * 2.0 * HOOKED_pt;
+    rt_prev = 0.0;
+    rt_next = 0.0;
+    rt_far  = 0.0;
+    if (anchor == 1) {
+        f_prev = -f01;
+        f_next = f_fwd;
+        // Composed two-interval flow: slot1 -> slot2 -> slot3.
+        vec2 link = HC_FLOW_H_AB_tex(HOOKED_pos + f_next).xy * 2.0 * HOOKED_pt;
+        f_far  = f_next + link;
+        tau_p = (rts_mix[0] - rts_mix[1]) / L;
+        tau_n = (rts_mix[2] - rts_mix[1]) / L;
+        tau_f = (rts_mix[3] - rts_mix[1]) / L;
+        cut_adj  = max(cut01, cut12);
+        cut_link = cut23;
+    } else {
+        f_prev = -f_fwd;
+        f_next = f23;
+        // Composed two-interval flow: slot2 -> slot1 -> slot0.
+        vec2 link = -HA_FLOW_H_AB_tex(HOOKED_pos + f_prev).xy * 2.0 * HOOKED_pt;
+        f_far  = f_prev + link;
+        tau_p = (rts_mix[1] - rts_mix[2]) / L;
+        tau_n = (rts_mix[3] - rts_mix[2]) / L;
+        tau_f = (rts_mix[0] - rts_mix[2]) / L;
+        cut_adj  = max(cut12, cut23);
+        cut_link = cut01;
+    }
+    float link_fallback = max(qh_unwarped(HA_SUPPORT_tex(HOOKED_pos).rgb), qh_unwarped(HC_SUPPORT_tex(HOOKED_pos).rgb));
+"""
+
+
+def form3(code, sup_expr):
+    """Form Q3: the outer links from the HA_ and HC_ Highs in place of the quad's plain full-resolution flows."""
+    for b in ("FLOW_F_AB", "FLOW_F_BA", "FLOW_F_CD", "FLOW_F_DC"):
+        code = sub_n(code, rf"^//!BIND {b}\n", "", 1, re.M)
+    code = sub_n(code, r"^(//!BIND HI_SUPPORT\n)", r"\1//!BIND HA_FLOW_H_AB\n//!BIND HA_SUPPORT\n//!BIND HC_FLOW_H_AB\n//!BIND HC_SUPPORT\n", 1, re.M)
+    code = sub_n(code, r"    if \(anchor == 1\) \{\n        f_prev = .*?        cut_link = cut01;\n    \}\n",
+                 FORM3_ANCHORS.replace("\\", "\\\\"), 1, re.S)
+    code = sub_n(code, r"(            accel \*= 1\.0 - smoothstep\(QH_RESID_LO, QH_RESID_HI, resid_px\);\n)",
+                 r"\1        accel *= 1.0 - link_fallback;                     // FORM Q3: an outer High that falls back is not believed\n", 1)
+    code = sub_n(code, r"(\nvec4 hook\(\) \{\n)",
+                 "\nfloat qh_unwarped(vec3 sup) {   // High's own support fallback weight, copied from its final pass\n"
+                 f"    return {sup_expr};\n}}\n" + r"\1", 1)
+    code = code.replace("(Form Q2)", "(Form Q3)", 1)
+    for gone in ("FLOW_F_AB", "FLOW_F_BA", "FLOW_F_CD", "FLOW_F_DC", "FLOW_F_BC", "FLOW_F_CB"):
+        assert gone not in code, f"{gone} survived in Form Q3's final pass"
+    return code
+
+
 HEADER = """\
 // =====================================================================
 // GENERATED FILE -- DO NOT EDIT BY HAND.  Form Q (MULTIFRAME-PORT.md):
@@ -238,18 +304,24 @@ HEADER = """\
 def main():
     est, cut_ratio, cut_diff, sup_expr = high_estimator()
     q_est, q_final, q_tail = quad_parts()
-    cut = CUT_PACK.replace("@CUTRATIO@", cut_ratio).replace("@CUTDIFF@", cut_diff)
-    if QH_FORM == "2":
+    cut = (CUT_PACK3 if QH_FORM == "3" else CUT_PACK).replace("@CUTRATIO@", cut_ratio).replace("@CUTDIFF@", cut_diff)
+    if QH_FORM in ("2", "3"):
         q_tail = ""                                           # the quad's tail reads the plain middle flows: not carried
+    if QH_FORM == "3":                                        # three Highs, no plain chain: the quad gives only its final pass
+        ha, _, _, _ = high_estimator("HA_", "HOOKED", "FRAME1")
+        hc, _, _, _ = high_estimator("HC_", "FRAME2", "FRAME3")
+        q_est = ha.rstrip("\n") + "\n\n" + hc
     text = q_est.rstrip("\n") + "\n\n" + est.rstrip("\n") + "\n\n" + cut + "\n" + final_pass(q_final, sup_expr) + q_tail
     text, _ = prune_passes.prune(text, twins=True, report=sys.stderr)
     code = "\n".join(l for l in text.split("\n") if not l.lstrip().startswith("//"))
     assert code.count("{") == code.count("}") and code.count("(") == code.count(")"), "unbalanced"
     assert "//!BIND FRAME3" in text, "four frames not declared"
-    env = ("QH_FORM=2 " if QH_FORM == "2" else "") + ("QH_RESID=0 " if QH_FORM == "2" and QH_RESID == "0" else "") \
+    env = (f"QH_FORM={QH_FORM} " if QH_FORM != "1" else "") + ("QH_RESID=0 " if QH_FORM != "1" and QH_RESID == "0" else "") \
         + ("QH_CORR=0 " if QH_CORR == "0" else "")
-    gate = ("High's middle flow in the fit, the fit's least-squares residual applied (0.5-1 px)" if QH_RESID == "1"
-            else "High's middle flow in the fit, the residual NOT applied (the isolating variant)") if QH_FORM == "2" \
+    gate = (("all three links from High's estimator (HA_, HI_, HC_), each outer link gated by its High's fallback, "
+             if QH_FORM == "3" else "High's middle flow in the fit, ")
+            + ("the fit's least-squares residual applied (0.5-1 px)" if QH_RESID == "1"
+               else "the residual NOT applied (the isolating variant)")) if QH_FORM in ("2", "3") \
         else "agreement between the quad's plain middle flow and High's (within 0.5-1 px)"
     DST.write_text(HEADER.format(env=env, gate=gate) + text, newline="\n")
     print(f"  {DST.name}: {text.count('//!HOOK')} passes (High {est.count('//!HOOK')} + the quad's), OK")
