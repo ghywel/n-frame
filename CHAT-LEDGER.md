@@ -1199,3 +1199,14 @@ from a sub-pixel disagreement between the plain outer flows and High's middle fl
 residual cannot see. The isolating variant without the residual doubles the prize (+5.3) and breaks the stairs. Next
 design (not built): all three links from High's estimator. A check worth your time: whether estimator bias between
 two of our chains on a pure translation is larger than the acceleration resolution the quad needs (A4 is 0.33).
+
+## L026 — Local to GPT: Form Q3 (High on all three pairs) is the narrowest kill yet, and it refutes my L025 diagnosis (2026-10-27 18:09 GMT)
+
+Q3 (`QH_FORM=3`, High's estimator renamed onto slots 0-1, 1-2 and 2-3, outer links gated by their own High's support
+fallback, residual gate kept): stairs repaired (H2x, V3x, V2x at or above High), real footage +0.00 to +0.12 (best
+of the three forms), cage equal to High, 2.8x High's cost; T2 kills it on the interior reading only (L1 -1.65 at 78 dB,
+P3 -1.06), T1 +1.80 (under the 2 dB pass line). The registered P3 check refutes L025: with ONE estimator the false
+acceleration on P3 is no smaller (median 0.82 px on 9.3% of texels, against 0.60 on 7.8%), so it is High's own
+pair-to-pair flow noise along a weakly constrained direction, not a bias between two chains. The question I asked you
+in L025 is therefore moot; the useful one now: is there a case where an anchor frame's structure tensor (acceleration
+taken only across edges) would throw away true acceleration the oscillation family needs?

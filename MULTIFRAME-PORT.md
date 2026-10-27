@@ -458,3 +458,40 @@ about three Highs, 75-80 ms an output (High 25.3).
 
 **Tests:** T1-T5 exactly as registered for Form Q and read as for Q2 (against the zero form and High; interior and
 whole clip; T4 judged on the interior).
+
+### Form Q3: results and verdict (2026-10-27, 18:09)
+
+Four shaders in one tree (`~/np-scratch-int/formq3-20261027`). **Instrument checks:** Q3's zero form reproduces Q and
+Q2's zero-form pattern exactly (the middle High and the warp intact; every copy reads its own frames, checked in the
+generated file). **The registered P3 check FAILS:** with one estimator on all three pairs the false acceleration on
+P3 does not fall, it rises a little (median 0.82 px per interval squared on 9.3% of texels, against Q2's 0.60 on 7.8%;
+residuals again under the gate, median 0.32). So Q2's diagnosis, a bias BETWEEN two estimators, was wrong: High's own
+flow varies from pair to pair by a fraction of a pixel on P3, and any acceleration estimate amplifies that. On P3 the
+motion runs along the stairs' own edges, where a match is weakly constrained (the aperture problem), so that is the
+likely source; not yet isolated.
+
+| reading | Q3: oscillation O1-O6 | Q3: cases down > 1 dB | Q3-noresid: oscillation | Q3-noresid: down > 1 dB |
+|---|---|---|---|---|
+| against its zero form, whole clip | +1.80 mean (+0.82 min) | **none** | +3.70 (+1.51) | L2 -2.90, P3 -2.24, F1 -1.41, M2 -1.32 |
+| against its zero form / High, interior | +1.94 mean against High (+0.79 min) | **L1 -1.65** (78.19 -> 76.54 dB), **P3 -1.06** | +3.74 | P3 -3.53, L1 -1.65, F1 -1.61 |
+
+Stairs repaired against Q2 (interior, against High): H2x +0.28, V3x +0.12, V2x +0.02 (Q2: -0.56, -0.25, -0.66). A6 +1.68,
+A7 +1.79. **T3, real footage:** film +0.033, television +0.100, anime +0.008, cartoon +0.004, CG +0.124 dB (worst segment
+-0.07): PASSES, the best of the three forms; Q3-noresid gains more on live action (+0.17 to +0.24) and loses 0.36 on
+cartoons. **T4, the cage:** equal to High on the interior on all four (whole clip within 0.3, the lead-in): PASSES.
+**T5:** High 25.6 ms an output, Q2 59.9, **Q3 72.7** (2.8x High).
+
+**Against the predictions:** P3 within 0.5 dB of the zero form: MISSED (-1.06 interior; the whole-clip reading is
+within the line). H2x and V3x no worse than Q2: PASS. Oscillation at or above Q2's +2.60: MISSED (+1.80; the outer
+links' fallback gate and the residual take more). Q3-noresid passing T2: MISSED. Real footage at or above Q2: PASS on
+every class. Cost about three Highs: PASS (72.7).
+
+**Verdict: Form Q3 is KILLED by T2 on the interior reading** (L1 -1.65, a loss at 78 dB that is a few hundredths of a
+code value and invisible to the capped mean; P3 -1.06, just over the line), passes T2 on the whole-clip reading against
+its zero form, misses T1's 2 dB pass line (+1.80) without reaching its kill line, and passes T3 and T4. Nothing
+shipped changed. **Three forms, three kills, each narrower** (Form Q: three stairs cases to -2.8; Q2: P3 -2.3; Q3:
+P3 -1.1 and L1 -1.65 at 78 dB). **What is learned:** the remaining false acceleration is pair-to-pair flow noise where
+a match is weakly constrained, not estimator mismatch. **The next design** (not built; the loop-check rule stops a
+fourth form on this line without the owner): take the acceleration only along directions the image constrains (the
+local structure tensor of the anchor frame: along an edge, no acceleration), which is how optical-flow confidence is
+usually handled, rather than any further gate on the fit.
