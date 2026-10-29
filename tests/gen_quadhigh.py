@@ -39,7 +39,8 @@ assert QH_CORR in ("0", "1"), "QH_CORR is 1 (the correction) or 0 (the instrumen
 # dropped, and the least-squares residual applied as a gate (QH_RESID=0 leaves it off: the isolating variant)
 QH_FORM = os.environ.get("QH_FORM", "1")
 QH_RESID = os.environ.get("QH_RESID", "1")
-assert QH_FORM in ("1", "2", "3", "4") and QH_RESID in ("0", "1"), "QH_FORM is 1 to 4; QH_RESID is 0 or 1"
+assert QH_FORM in ("1", "2", "3", "4", "5") and QH_RESID in ("0", "1"), "QH_FORM is 1 to 5; QH_RESID is 0 or 1"
+# FORM Q5 (2026-10-29): Q3 with the backward links from High's own reverse flows (High generated unpruned), the grid fix
 # FORM Q4 (2026-10-29): Q3 with the acceleration kept only along directions the anchor frame constrains (structure tensor)
 # FORM Q3 (2026-10-27): High's estimator on all three slot pairs (HA_ on 0-1, HI_ on 1-2, HC_ on 2-3), no plain chains
 
@@ -52,10 +53,33 @@ def sub_n(text, pat, rep, n, flags=0):
     return out
 
 
-def high_estimator(prefix="HI_", fa="FRAME1", fb="FRAME2"):
+def unpruned_high():
+    """Today's High regenerated with PRUNE=0 (its own header's switches), so its half-resolution reverse chain exists.
+    The same switches with the header's PRUNE must reproduce the shipped file first, or the parse is wrong."""
+    import subprocess
+    import tempfile
+    head = HIGH.read_text().split("\n", 20)[:20]
+    line = next(l for l in head if "./gen_variational.py" in l)
+    env = dict(os.environ)
+    for tok in line.split("./gen_variational.py")[0].lstrip("/ ").split():
+        k, v = tok.split("=", 1)
+        env[k] = v
+    assert env.get("PRUNE") == "2", "the shipped High's header no longer says PRUNE=2"
+    tmp = pathlib.Path(tempfile.mkdtemp(prefix="quadhigh-"))
+    args = ["0,0,8,4", "0.3", "0.08", None, "0", "0,0,2,0", "bidirectional-interpolation-propagated.glsl"]
+    for prune, name in (("2", "check.glsl"), ("0", "unpruned.glsl")):
+        a = list(args); a[3] = str(tmp / name)
+        subprocess.run([sys.executable, str(HERE / "gen_variational.py")] + a, env=dict(env, PRUNE=prune), check=True,
+                       capture_output=True, cwd=HERE)
+    strip = lambda t: "\n".join(l for l in t.split("\n") if not l.startswith("//"))
+    assert strip((tmp / "check.glsl").read_text()) == strip(HIGH.read_text()), "the regenerated High is not the shipped one"
+    return tmp / "unpruned.glsl"
+
+
+def high_estimator(prefix="HI_", fa="FRAME1", fb="FRAME2", src=None):
     """High's passes up to (not including) its final pass, renamed (prefix) onto one slot pair of a four-frame window:
     frame A read from fa, frame B from fb (slots 1 and 2 for Forms Q and Q2; Q3 adds 0-1 and 2-3)."""
-    text = READING.strip_tail(HIGH.read_text())
+    text = READING.strip_tail((src or HIGH).read_text())
     text = text[text.index("//!"):]                              # its file header describes a two-frame shader
     est, final = text[:READING.final_pass(text)], text[READING.final_pass(text):]
     names = sorted(set(re.findall(r"^//!(?:SAVE|TEXTURE) (\S+)", est, re.M)))
@@ -189,12 +213,14 @@ def final_pass(quad_final, sup_expr):
                  f"    float unwarped = {sup_expr};\n"
                  "    if (unwarped <= 0.0) return warped;\n"
                  "    return mix(warped, mix(FRAME1_tex(HOOKED_pos), FRAME2_tex(HOOKED_pos), s), unwarped);\n", 1)
-    if QH_FORM in ("2", "3", "4"):
+    if QH_FORM in ("2", "3", "4", "5"):
         code = form2(code)
-    if QH_FORM in ("3", "4"):
+    if QH_FORM in ("3", "4", "5"):
         code = form3(code, sup_expr)
     if QH_FORM == "4":
         code = form4(code)
+    if QH_FORM == "5":
+        code = form5(code)
     assert sum(l.startswith("//!BIND") for l in code.split("\n")) <= 16, "the final pass binds more than 16"
     return code
 
@@ -338,6 +364,21 @@ FORM4_PROJECT = """\
 """
 
 
+def form5(code):
+    """Form Q5: Q3 with each backward link from High's own reverse flow, on the grid it is read on (the grid fix)."""
+    code = sub_n(code, r"^(//!BIND HC_SUPPORT\n)", r"\1//!BIND HA_FLOW_H_BA\n//!BIND HI_FLOW_H_BA\n", 1, re.M)
+    code = sub_n(code, r"        f_prev = -f01;\n",
+                 "        f_prev = HA_FLOW_H_BA_tex(HOOKED_pos).xy * 2.0 * HOOKED_pt;   // FORM Q5: High's own slot 1 -> 0, slot 1's grid\n", 1)
+    code = sub_n(code, r"        f_prev = -f_fwd;\n",
+                 "        f_prev = HI_FLOW_H_BA_tex(HOOKED_pos).xy * 2.0 * HOOKED_pt;   // FORM Q5: High's own slot 2 -> 1, slot 2's grid\n", 1)
+    code = sub_n(code, r"        vec2 link = -HA_FLOW_H_AB_tex\(HOOKED_pos \+ f_prev\)\.xy \* 2\.0 \* HOOKED_pt;\n",
+                 "        vec2 link = HA_FLOW_H_BA_tex(HOOKED_pos + f_prev).xy * 2.0 * HOOKED_pt;   // FORM Q5: slot 1 -> 0 at the moved texel\n", 1)
+    code = code.replace("(Form Q3)", "(Form Q5)", 1)
+    assert "-f01" not in code and "-f_fwd" not in code and "-HA_FLOW_H_AB" not in code
+    assert sum(l.startswith("//!BIND") for l in code.split("\n")) <= 16
+    return code
+
+
 def form4(code):
     """Form Q4: Q3 plus the structure-tensor projection of the acceleration."""
     code = sub_n(code, r"^(//!BIND HC_SUPPORT\n)", r"\1//!BIND QH_ST_A\n//!BIND QH_ST_B\n", 1, re.M)
@@ -372,12 +413,17 @@ HEADER = """\
 def main():
     est, cut_ratio, cut_diff, sup_expr = high_estimator()
     q_est, q_final, q_tail = quad_parts()
-    cut = (CUT_PACK3 if QH_FORM in ("3", "4") else CUT_PACK).replace("@CUTRATIO@", cut_ratio).replace("@CUTDIFF@", cut_diff)
-    if QH_FORM in ("2", "3", "4"):
+    cut = (CUT_PACK3 if QH_FORM in ("3", "4", "5") else CUT_PACK).replace("@CUTRATIO@", cut_ratio).replace("@CUTDIFF@", cut_diff)
+    if QH_FORM in ("2", "3", "4", "5"):
         q_tail = ""                                           # the quad's tail reads the plain middle flows: not carried
-    if QH_FORM in ("3", "4"):                                 # three Highs, no plain chain: the quad gives only its final pass
-        ha, _, _, _ = high_estimator("HA_", "HOOKED", "FRAME1")
-        hc, _, _, _ = high_estimator("HC_", "FRAME2", "FRAME3")
+    if QH_FORM == "5":                                        # High unpruned, for its reverse flows (pruned again below)
+        src = unpruned_high()
+        est, _, _, _ = high_estimator("HI_", "FRAME1", "FRAME2", src)
+    else:
+        src = None
+    if QH_FORM in ("3", "4", "5"):                            # three Highs, no plain chain: the quad gives only its final pass
+        ha, _, _, _ = high_estimator("HA_", "HOOKED", "FRAME1", src)
+        hc, _, _, _ = high_estimator("HC_", "FRAME2", "FRAME3", src)
         q_est = ha.rstrip("\n") + "\n\n" + hc
     if QH_FORM == "4":                                        # the two structure tensors, after High's lumas exist
         cut = st_pass("HI_LUMA_A_H", "QH_ST_A", 1) + "\n" + st_pass("HI_LUMA_B_H", "QH_ST_B", 2) + "\n" + cut
@@ -390,9 +436,10 @@ def main():
         + ("QH_CORR=0 " if QH_CORR == "0" else "")
     gate = (("all three links from High's estimator (HA_, HI_, HC_), each outer link gated by its High's fallback, "
              if QH_FORM == "3" else "all three links from High's estimator, the acceleration only along directions the anchor's "
-            "structure tensor constrains, " if QH_FORM == "4" else "High's middle flow in the fit, ")
+            "structure tensor constrains, " if QH_FORM == "4" else "all three links from High's estimator, each backward link "
+            "from High's own reverse flow on its own grid, " if QH_FORM == "5" else "High's middle flow in the fit, ")
             + ("the fit's least-squares residual applied (0.5-1 px)" if QH_RESID == "1"
-               else "the residual NOT applied (the isolating variant)")) if QH_FORM in ("2", "3", "4") \
+               else "the residual NOT applied (the isolating variant)")) if QH_FORM in ("2", "3", "4", "5") \
         else "agreement between the quad's plain middle flow and High's (within 0.5-1 px)"
     DST.write_text(HEADER.format(env=env, gate=gate) + text, newline="\n")
     print(f"  {DST.name}: {text.count('//!HOOK')} passes (High {est.count('//!HOOK')} + the quad's), OK")
