@@ -568,3 +568,27 @@ isolated; the mix of plain outer flows and High's middle flow (Q2's own diagnosi
 harmless texels) remains the suspect. **The fix** (not built, the owner's call):
 the reverse links from High's own reverse flows (`FLOW_H_BA` of the HA and HI copies, generated unpruned and pruned
 again after assembly), each on the right grid; everything else as Q3. It costs two half-resolution reverse chains.
+
+## Form Q5, pre-registered (2026-10-29 10:12, the owner's word: "Yes, build the fix"; before it is built)
+
+**One change from Q3** (`QH_FORM=5`): the fit's backward links come from High's own reverse flows, each on the grid
+it is read on. The HA and HI copies of High are taken from High generated UNPRUNED (the same switches as the shipped
+file, `PRUNE=0`; the shipped prune drops the half-resolution reverse chain only because High's warp never reads it,
+so the forward flow and everything else are unchanged), and the assembled shader is pruned again. Anchor 1's backward
+link is HA's slot 1 -> 0 flow at the output texel (slot 1's grid); anchor 2's backward link is HI's slot 2 -> 1 flow
+(slot 2's grid) and its composed far link HA's slot 1 -> 0 flow at the moved texel. The forward links, the gates
+(outer support fallback, residual), the warp and the cut statistics are Q3's exactly. Same sitting: High, Q5's zero
+form, Q5, Q5-noresid.
+
+**Instrument checks:** the zero form reproduces the earlier zero forms; and **the localisation that found the defect,
+repeated**: on P3 (16-bit, against the truth, added error over the zero form's, by phase) the anchor-1 phases fall to
+the anchor-2 level (Q3: 0.30 / 1.25 at s = 0.2 / 0.4 against 0.01 / 0.10 at 0.6 / 0.8); on L1 the added error at
+anchor 1 vanishes. If they do not, the grid error is not the whole cause and the run is read as such.
+
+**Predictions:** L1 and P3 within 0.5 dB of the zero form on every reading (T2 passes); the oscillation gain at or
+above Q3's (+1.80 over the zero form, whole clip): with the backward links right the residual gate should reject less;
+**Q5-noresid passes T2 as well** if the grid error was the stairs' cause too (Q3-noresid lost 2.2-2.9 on L2, P3, F1,
+M2), and keeps more of the oscillation prize (Q3-noresid +3.70); real footage at or above Q3; cost Q3's plus two
+half-resolution reverse chains (under 85 ms an output in Q3's sitting conditions).
+
+**Tests:** T1-T5 as registered for Form Q, read as for Q2-Q4.
