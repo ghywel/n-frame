@@ -39,7 +39,8 @@ assert QH_CORR in ("0", "1"), "QH_CORR is 1 (the correction) or 0 (the instrumen
 # dropped, and the least-squares residual applied as a gate (QH_RESID=0 leaves it off: the isolating variant)
 QH_FORM = os.environ.get("QH_FORM", "1")
 QH_RESID = os.environ.get("QH_RESID", "1")
-assert QH_FORM in ("1", "2", "3") and QH_RESID in ("0", "1"), "QH_FORM is 1, 2 or 3; QH_RESID is 0 or 1"
+assert QH_FORM in ("1", "2", "3", "4") and QH_RESID in ("0", "1"), "QH_FORM is 1 to 4; QH_RESID is 0 or 1"
+# FORM Q4 (2026-10-29): Q3 with the acceleration kept only along directions the anchor frame constrains (structure tensor)
 # FORM Q3 (2026-10-27): High's estimator on all three slot pairs (HA_ on 0-1, HI_ on 1-2, HC_ on 2-3), no plain chains
 
 SUFFIX = r"(?:_tex|_pos|_pt|_size|_raw|_mul)?\b"     # a texture's name as a bare word or with its accessor suffixes
@@ -188,10 +189,12 @@ def final_pass(quad_final, sup_expr):
                  f"    float unwarped = {sup_expr};\n"
                  "    if (unwarped <= 0.0) return warped;\n"
                  "    return mix(warped, mix(FRAME1_tex(HOOKED_pos), FRAME2_tex(HOOKED_pos), s), unwarped);\n", 1)
-    if QH_FORM in ("2", "3"):
+    if QH_FORM in ("2", "3", "4"):
         code = form2(code)
-    if QH_FORM == "3":
+    if QH_FORM in ("3", "4"):
         code = form3(code, sup_expr)
+    if QH_FORM == "4":
+        code = form4(code)
     assert sum(l.startswith("//!BIND") for l in code.split("\n")) <= 16, "the final pass binds more than 16"
     return code
 
@@ -284,6 +287,71 @@ def form3(code, sup_expr):
     return code
 
 
+def st_pass(luma, name, slot):
+    """The structure tensor of one slot from High's half-resolution luma: central-difference gradients, their products
+    over a 5 x 5 Gaussian window (sigma 1.5 texels), stored x1000 so the small values keep half-float precision."""
+    return f"""\
+//!HOOK FRAME_MIX
+//!BIND {luma}
+//!SAVE {name}
+//!WIDTH HOOKED.w 2 /
+//!HEIGHT HOOKED.h 2 /
+//!COMPONENTS 3
+//!DESC [quadhigh] structure tensor of slot {slot} (High's half-resolution luma), 5 x 5 Gaussian window, x1000 (Form Q4)
+vec4 hook() {{
+    vec2 pt = {luma}_pt;
+    vec3 acc = vec3(0.0);
+    float ws = 0.0;
+    for (int j = -2; j <= 2; j++) {{
+        for (int i = -2; i <= 2; i++) {{
+            vec2 q = {luma}_pos + vec2(float(i), float(j)) * pt;
+            float gx = 0.5 * ({luma}_tex(q + vec2(pt.x, 0.0)).r - {luma}_tex(q - vec2(pt.x, 0.0)).r);
+            float gy = 0.5 * ({luma}_tex(q + vec2(0.0, pt.y)).r - {luma}_tex(q - vec2(0.0, pt.y)).r);
+            float w = exp(-float(i * i + j * j) / (2.0 * 1.5 * 1.5));
+            acc += w * vec3(gx * gx, gx * gy, gy * gy);
+            ws += w;
+        }}
+    }}
+    return vec4(1000.0 * acc / ws, 0.0);
+}}
+"""
+
+
+FORM4_PROJECT = """\
+        // FORM Q4: the acceleration kept only along directions the anchor frame constrains (its structure tensor,
+        // Shi-Tomasi per direction): along a clean edge a match is free, and its pair-to-pair noise is not acceleration
+        {
+            vec3 st = (anchor == 1 ? QH_ST_A_tex(HOOKED_pos).xyz : QH_ST_B_tex(HOOKED_pos).xyz) * 0.001;
+            float tr = st.x + st.z;
+            float dt = st.x * st.z - st.y * st.y;
+            float disc = sqrt(max(0.25 * tr * tr - dt, 0.0));
+            float l1 = 0.5 * tr + disc;
+            float l2 = max(0.5 * tr - disc, 0.0);
+            vec2 e1 = abs(st.y) > 1.0e-12 ? normalize(vec2(st.y, l1 - st.x))
+                                          : (st.x >= st.z ? vec2(1.0, 0.0) : vec2(0.0, 1.0));
+            vec2 e2 = vec2(-e1.y, e1.x);
+            vec2 ap = accel / HOOKED_pt;
+            ap = smoothstep(QH_ST_LO, QH_ST_HI, l1) * dot(ap, e1) * e1
+               + smoothstep(QH_ST_LO, QH_ST_HI, l2) * dot(ap, e2) * e2;
+            accel = ap * HOOKED_pt;
+        }
+"""
+
+
+def form4(code):
+    """Form Q4: Q3 plus the structure-tensor projection of the acceleration."""
+    code = sub_n(code, r"^(//!BIND HC_SUPPORT\n)", r"\1//!BIND QH_ST_A\n//!BIND QH_ST_B\n", 1, re.M)
+    i = code.index("        accel *= 1.0 - link_fallback;")
+    j = code.index("\n", i) + 1
+    code = code[:j] + FORM4_PROJECT + code[j:]
+    code = sub_n(code, r"(const int QH_RESID = [01];.*?\n)",
+                 r"\1const float QH_ST_LO = 1.0e-4;   // squared luma gradient: a direction is free under this (3x grain)\n"
+                 r"const float QH_ST_HI = 4.0e-4;   // and fully constrained over this (13x grain); Form Q4\n", 1)
+    code = code.replace("(Form Q3)", "(Form Q4)", 1)
+    assert sum(l.startswith("//!BIND") for l in code.split("\n")) <= 16
+    return code
+
+
 HEADER = """\
 // =====================================================================
 // GENERATED FILE -- DO NOT EDIT BY HAND.  Form Q (MULTIFRAME-PORT.md):
@@ -304,13 +372,15 @@ HEADER = """\
 def main():
     est, cut_ratio, cut_diff, sup_expr = high_estimator()
     q_est, q_final, q_tail = quad_parts()
-    cut = (CUT_PACK3 if QH_FORM == "3" else CUT_PACK).replace("@CUTRATIO@", cut_ratio).replace("@CUTDIFF@", cut_diff)
-    if QH_FORM in ("2", "3"):
+    cut = (CUT_PACK3 if QH_FORM in ("3", "4") else CUT_PACK).replace("@CUTRATIO@", cut_ratio).replace("@CUTDIFF@", cut_diff)
+    if QH_FORM in ("2", "3", "4"):
         q_tail = ""                                           # the quad's tail reads the plain middle flows: not carried
-    if QH_FORM == "3":                                        # three Highs, no plain chain: the quad gives only its final pass
+    if QH_FORM in ("3", "4"):                                 # three Highs, no plain chain: the quad gives only its final pass
         ha, _, _, _ = high_estimator("HA_", "HOOKED", "FRAME1")
         hc, _, _, _ = high_estimator("HC_", "FRAME2", "FRAME3")
         q_est = ha.rstrip("\n") + "\n\n" + hc
+    if QH_FORM == "4":                                        # the two structure tensors, after High's lumas exist
+        cut = st_pass("HI_LUMA_A_H", "QH_ST_A", 1) + "\n" + st_pass("HI_LUMA_B_H", "QH_ST_B", 2) + "\n" + cut
     text = q_est.rstrip("\n") + "\n\n" + est.rstrip("\n") + "\n\n" + cut + "\n" + final_pass(q_final, sup_expr) + q_tail
     text, _ = prune_passes.prune(text, twins=True, report=sys.stderr)
     code = "\n".join(l for l in text.split("\n") if not l.lstrip().startswith("//"))
@@ -319,9 +389,10 @@ def main():
     env = (f"QH_FORM={QH_FORM} " if QH_FORM != "1" else "") + ("QH_RESID=0 " if QH_FORM != "1" and QH_RESID == "0" else "") \
         + ("QH_CORR=0 " if QH_CORR == "0" else "")
     gate = (("all three links from High's estimator (HA_, HI_, HC_), each outer link gated by its High's fallback, "
-             if QH_FORM == "3" else "High's middle flow in the fit, ")
+             if QH_FORM == "3" else "all three links from High's estimator, the acceleration only along directions the anchor's "
+            "structure tensor constrains, " if QH_FORM == "4" else "High's middle flow in the fit, ")
             + ("the fit's least-squares residual applied (0.5-1 px)" if QH_RESID == "1"
-               else "the residual NOT applied (the isolating variant)")) if QH_FORM in ("2", "3") \
+               else "the residual NOT applied (the isolating variant)")) if QH_FORM in ("2", "3", "4") \
         else "agreement between the quad's plain middle flow and High's (within 0.5-1 px)"
     DST.write_text(HEADER.format(env=env, gate=gate) + text, newline="\n")
     print(f"  {DST.name}: {text.count('//!HOOK')} passes (High {est.count('//!HOOK')} + the quad's), OK")
