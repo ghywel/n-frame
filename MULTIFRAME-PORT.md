@@ -553,13 +553,18 @@ column by about 2600 codes in 65535 (truth error 138 -> 2938). On L1 they lie at
 timing gives the cause:** on L1 they occur ONLY at the phases where the anchor is slot 1 (s = 0.2 and 0.4: 3-55
 pixels a frame; s = 0.6 and 0.8: none), and on P3 the anchor-1 phases carry 376-837 a frame against 16-197.
 
-**The defect, in Q2-Q4's build (the registrations included it):** for anchor 1 the fit's backward link must be the
+**The defect, in Q3 and Q4's build (their registrations included it):** for anchor 1 the fit's backward link must be the
 slot 1 -> 0 displacement of the content at slot 1. Q3 and Q4 took it as the negative of HA's slot 0 -> 1 flow, which
 lies on slot 0's grid, and read it at the slot-1 position: **a whole frame of motion away.** Wherever the flow changes
-over that distance (an object's boundary, a stair's corner), the link takes the wrong content's motion. Q2 had the same
-error in its anchor-2 backward link (-f_fwd, slot 1's grid, read at slot 2). The quad's original reverse flows (F_BA,
+over that distance (an object's boundary, a stair's corner), the link takes the wrong content's motion. The quad's original reverse flows (F_BA,
 F_CB) were on the right grids; High computes both directions too, and the prune drops the half-resolution reverse
-chain because High's own warp never reads it. So "P3 is estimator bias" (Q2) and "P3 is aperture noise" (Q3) were
-both diagnoses of the harmless texels; the harmful ones are this grid error. **The fix** (not built, the owner's call):
+chain because High's own warp never reads it. So "P3 is aperture noise" (Q3) diagnosed the harmless texels; Q3 and Q4's harmful ones are this grid
+error. **Checked the same day, by phase, against the truth** (P3, full 16-bit, added error over the zero form's): Q3
+0.30 / 1.25 at s = 0.2 / 0.4 (anchor 1) against 0.01 / 0.10 at 0.6 / 0.8 (anchor 2); Q4 the same. **Q2's damage also
+sits at anchor 1** (1.53 / 3.51 against 0.50 / 0.37), but Q2's anchor-1 links were all on the right grids (the quad's
+plain F_BA, High's middle flow, the plain F_CD at the moved texel; its anchor-2 backward link reads the middle flow
+with High's own fractional-frame approximation, not a whole frame). So Q2's cause is NOT this defect and is not
+isolated; the mix of plain outer flows and High's middle flow (Q2's own diagnosis, "estimator bias", made from the
+harmless texels) remains the suspect. **The fix** (not built, the owner's call):
 the reverse links from High's own reverse flows (`FLOW_H_BA` of the HA and HI copies, generated unpruned and pruned
 again after assembly), each on the right grid; everything else as Q3. It costs two half-resolution reverse chains.
