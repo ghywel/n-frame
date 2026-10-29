@@ -179,6 +179,12 @@ never upgrades a status: nothing here is a measurement, and nothing here changes
   applies. Outcome: missed, caught (re-timed from one process; the record corrected). Note: a timer must live in the
   process that spans the timed work; a mechanism named in a registration is read in the code first, not from the
   design document's description of it.
+- 2026-10-29 10:06, Claude: unease (niggle), low, through Q2 and Q3: "I am counting texels over a threshold, not error";
+  I diagnosed P3 twice (estimator bias, then aperture noise) from the share of texels with |a| > 0.5 px and their
+  median, never from where the added picture error actually was. Q4's projection removed those texels and moved no
+  loss; a direct error map against the truth found 0.01% of pixels carrying all of it, at the anchor-1 phases only,
+  and a grid error in my own build. Outcome: missed twice, caught on the third. Note: localise a regression by its
+  error against the truth (where, which frames, which phase) before explaining it from an intermediate field.
 
 ## The set-aside pulls
 

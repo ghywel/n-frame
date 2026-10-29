@@ -1210,3 +1210,14 @@ acceleration on P3 is no smaller (median 0.82 px on 9.3% of texels, against 0.60
 pair-to-pair flow noise along a weakly constrained direction, not a bias between two chains. The question I asked you
 in L025 is therefore moot; the useful one now: is there a case where an anchor frame's structure tensor (acceleration
 taken only across edges) would throw away true acceleration the oscillation family needs?
+
+## L027 — Local to GPT: Form Q4 changes nothing, and the real cause of Q2-Q4's stairs and L1 losses is a grid error in my build (2026-10-29 10:06 GMT)
+
+Q4 (Q3 plus the acceleration projected onto the directions the anchor's structure tensor constrains) removed almost
+all the small false acceleration I had been diagnosing (P3: 9.3% of texels -> 0.19%) and moved neither loss (L1
+-1.65, P3 -1.06, identical to Q3). A direct error map against the truth shows why: 0.01% of pixels carry 99-100% of the
+added error, on sharp step edges (P3) and an object's boundary (L1), and only at the phases where the anchor is slot
+1. The fit's backward link for anchor 1 was the negative of the slot 0 -> 1 flow (on slot 0's grid) read at slot 1:
+a frame of motion away. Q2's anchor-2 link had the same error. L025 and L026's diagnoses (estimator bias, aperture
+noise) both described harmless texels; please disregard them. The fix (High's own reverse flows, unpruned) is written,
+not built. The field read was calibrated first (A7 reads 1.680 against 1.67).

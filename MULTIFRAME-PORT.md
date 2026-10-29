@@ -526,3 +526,40 @@ plus two cheap passes (under 75 ms an output).
 
 **Tests:** T1-T5 as registered for Form Q, read as for Q2 and Q3 (against the zero form and High; interior and whole
 clip; T2's line on both readings; T4 judged on the interior).
+
+### Form Q4: results, the diagnosis corrected twice over, and a defect in Q2-Q4's build (2026-10-29, 10:06)
+
+**Results** (`~/np-scratch-int/formq4-20261029`): the zero form reproduces the earlier zero forms. Q4 differs from Q3
+by at most 0.04 dB on any ladder case and 0.09 on any real segment: **interior, against its zero form, L1 -1.65 and P3
+-1.06 exactly as Q3; oscillation +1.94 (+1.80 whole clip); T2 KILLS it as it killed Q3.** Q4-noresid: +3.73 oscillation,
+P3 -3.53, L1 -1.65, F1 -1.62. Real footage: film +0.027, television +0.094, anime +0.000, cartoon +0.005, CG +0.106
+(Q4-noresid: cartoon -0.361). Cage: equal to High on the interior. Cost (this sitting, warmer): High 27.7, Q3 78.7,
+Q4 78.3 ms an output. Predictions: P3 within 0.5 dB, MISSED; L1 not fixed, as predicted; Q4-noresid better than
+Q3-noresid on the stairs, MISSED (identical).
+
+**The instrument, calibrated** (the field-read rule, before reading any field number): the gray16le read the Q2-Q4
+diagnostics used agrees with an in-graph rgb48le read to 0.0005 px; A7 reads 1.680 against its true 1.67 and A6
+1.328 against 1.33; the signed field's background reads 0.5000. Every field number in this record stands.
+
+**What the structure tensor did:** it removed almost all of the small false acceleration Q2 and Q3 were diagnosed on
+(P3's texels over 0.5 px: 9.3% in Q3 -> **0.19%** in Q4; L1's 0.38% -> 0.03%), **and changed neither loss.** Those
+texels were never the damage: at about 0.8 px the warp's dead band leaves a correction of a few hundredths of a pixel.
+
+**Where the damage is, measured directly** (Q4 and its zero form against the truth, full 16-bit, interior outputs): Q4's
+output differs from its zero form on 0.064% of P3's pixels and 0.003% of L1's; **the worst 0.01% of pixels carry 99% to
+100% of the added error.** On P3 they lie on sharp vertical step edges (columns such as x = 920, y 245-293), where a
+horizontal acceleration of about 1 px (median 1.05; the horizontal component 0.97) moves the edge enough to change the
+column by about 2600 codes in 65535 (truth error 138 -> 2938). On L1 they lie at the moving object's boundary. **Their
+timing gives the cause:** on L1 they occur ONLY at the phases where the anchor is slot 1 (s = 0.2 and 0.4: 3-55
+pixels a frame; s = 0.6 and 0.8: none), and on P3 the anchor-1 phases carry 376-837 a frame against 16-197.
+
+**The defect, in Q2-Q4's build (the registrations included it):** for anchor 1 the fit's backward link must be the
+slot 1 -> 0 displacement of the content at slot 1. Q3 and Q4 took it as the negative of HA's slot 0 -> 1 flow, which
+lies on slot 0's grid, and read it at the slot-1 position: **a whole frame of motion away.** Wherever the flow changes
+over that distance (an object's boundary, a stair's corner), the link takes the wrong content's motion. Q2 had the same
+error in its anchor-2 backward link (-f_fwd, slot 1's grid, read at slot 2). The quad's original reverse flows (F_BA,
+F_CB) were on the right grids; High computes both directions too, and the prune drops the half-resolution reverse
+chain because High's own warp never reads it. So "P3 is estimator bias" (Q2) and "P3 is aperture noise" (Q3) were
+both diagnoses of the harmless texels; the harmful ones are this grid error. **The fix** (not built, the owner's call):
+the reverse links from High's own reverse flows (`FLOW_H_BA` of the HA and HI copies, generated unpruned and pruned
+again after assembly), each on the right grid; everything else as Q3. It costs two half-resolution reverse chains.
