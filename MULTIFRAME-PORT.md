@@ -495,3 +495,34 @@ a match is weakly constrained, not estimator mismatch. **The next design** (not 
 fourth form on this line without the owner): take the acceleration only along directions the image constrains (the
 local structure tensor of the anchor frame: along an edge, no acceleration), which is how optical-flow confidence is
 usually handled, rather than any further gate on the fit.
+
+## Form Q4, pre-registered (2026-10-29 09:18, the owner's word on the fourth form, "Yes, build it"; before it is built)
+
+**What changes from Q3** (`QH_FORM=4`; Q, Q2, Q3 stay reproducible): **the acceleration is taken only along directions
+the anchor frame constrains.** Two new passes compute the structure tensor (Förstner and Gülch, 1987; Bigün and
+Granlund, 1987) of slots 1 and 2 from High's own half-resolution lumas: central-difference gradients, their products
+summed over a 5 x 5 Gaussian window (sigma 1.5 half-resolution texels, about 6 px at full resolution). In the final
+pass the anchor's tensor is decomposed into its two eigenvectors (across the local edge, along it) and the fitted
+acceleration, in pixels, is kept along each eigenvector in proportion to smoothstep(1e-4, 4e-4, eigenvalue): the
+minimum-eigenvalue criterion of Shi and Tomasi (1994), applied per direction. Along a clean edge (the small
+eigenvalue under the floor) the along-edge component is dropped; on texture and corners both survive; on flat ground
+both go (a flat region's warp is invisible). The floor is from noise, before any number: 8-bit quantization gives a
+squared-gradient level near 6e-7 and real footage's grain (about two code values) near 3e-5, so 1e-4 to 4e-4 is 3 to
+13 times grain. Applied after Q3's gates (outer fallback, residual) and before the clamp.
+
+**Same sitting:** High, Q4 with `QH_CORR=0` (the zero form), Q4, and **Q4-noresid** (`QH_RESID=0`): if the false
+acceleration was aperture noise, the structure tensor removes it at its source and the residual gate, which cost Q3
+half its oscillation prize (+1.80 against Q3-noresid's +3.70), may no longer be needed.
+
+**Instrument checks:** the zero form reproduces High's interior as Q-Q3's did; on P3 the diagnostic acceleration
+falls well below Q3's (median 0.82 px on 9.3% of texels): **predicted under a third of the texels**; on O3 the large
+accelerations survive (median above 1 px on the texels Q3 had).
+
+**Predictions:** P3 within 0.5 dB of the zero form; L1's interior loss (-1.65 at 78 dB, a few texels at the moving
+object's boundary) NOT fixed by this change (a boundary is a corner, both directions constrained): **T2 at risk on L1
+for Q4**; oscillation kept at Q3's level or above; **Q4-noresid** keeps most of Q3-noresid's +3.70 and, with the
+aperture noise gone, loses less on the stairs and L2 than Q3-noresid did. Real footage at or above Q3. Cost: Q3's
+plus two cheap passes (under 75 ms an output).
+
+**Tests:** T1-T5 as registered for Form Q, read as for Q2 and Q3 (against the zero form and High; interior and whole
+clip; T2's line on both readings; T4 judged on the interior).
