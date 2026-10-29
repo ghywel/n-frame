@@ -619,3 +619,10 @@ identical, write the verdict: **Form Q5 passes T1-T4 at 3.1x High's cost** -- th
 registered gate; (3) INSTINCT entry for the concurrency slip; L028 to GPT; memory; (4) the owner's decision: whether
 a multi-frame High at 3x cost is wanted as a variant (the Cadence rule: best for most content within real time; the
 Metal engine's cost not yet measured), and P3's s = 0.2 residue as an open item.
+
+**Re-run done (2026-10-29, 11:08), before the pause took effect:** Q5's ladder run alone matches the gate's run exactly on
+37 of 45 cases; on 8 (A6, F1, H2, P2, P3, P5, R1, R3) frames differ run to run, every case mean within 0.02 dB and
+every T2 reading unchanged (P3 -0.43 against its zero form both times). **The gate's numbers stand: Form Q5 passes
+T1-T4 at 3.1x High's cost.** Q5 is not bit-reproducible run to run on this engine (the 2-frame tiers are, on the same
+cases); with 268 passes that is recorded as the shader's own wander, to read through repeated runs. Resume at step
+(3) above.
