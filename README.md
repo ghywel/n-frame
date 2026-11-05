@@ -1,5 +1,8 @@
 # N-Frame temporal analysis via ffmpeg and a patched libplacebo
 
+**This is an AI project.** Its shaders, code, tests and documents are written by AI models, Anthropic's Claude and,
+since October 2026, OpenAI's GPT, working under the direction of Gareth Herbert.
+
 ## What this is
 
 [frame-mix-hook.patch](frame-mix-hook.patch) is a small patch to
