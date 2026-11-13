@@ -28,6 +28,8 @@ footprint at the same nine reads, always see a bar: in the CPU replay the cage g
 over it and the faces keep their gain. It does not decide visibility: background uncovered behind a moving object
 is seen in one frame only and stays as High draws it.
 
+4K. The two pixel constants carry the _PX suffix scale_shader.py scales with the frame.
+
 COST. It keeps High's half-resolution B -> A chain alive through the prune (17 passes) and adds up to 72 reads at the
 pixels where a candidate differs. A variant until gated (the shader-variants rule).
 """
@@ -38,16 +40,16 @@ MARKER = "//!DESC [high] motion-compensated warp"
 
 HELPER = """\
 // WARP_VOTE (tests/warp_vote.py): a candidate vector's bilateral cost, the two endpoints it implies compared over
-// 3 x 3 taps WV_STEP px apart. B's luma has the adopted global gain taken out (matching only; the picture keeps B).
+// 3 x 3 taps WV_STEP_PX apart. B's luma has the adopted global gain taken out (matching only; the picture keeps B).
 const float WV_KAPPA = 0.5;         // a candidate must explain the frames at least twice as well as High's vector
 const float WV_EPS = 2.0 / 255.0;   // and by more than this (the noise floor of a 3 x 3 mean absolute difference)
-const float WV_SAME = 0.5;          // px: a candidate this close to High's vector is High's vector
-const float WV_STEP = 3.0;          // px between the patch's taps: a 7 px footprint (see THE FOOTPRINT in the module)
+const float WV_SAME_PX = 0.5;         // px: a candidate this close to High's vector is High's vector
+const float WV_STEP_PX = 3.0;         // px between the patch's taps: a 7 px footprint (see THE FOOTPRINT in the module)
 float wv_cost(vec2 c, vec2 gg) {
     float acc = 0.0;
     for (int j = -1; j <= 1; j++) {
         for (int i = -1; i <= 1; i++) {
-            vec2 o = vec2(float(i), float(j)) * WV_STEP * HOOKED_pt;
+            vec2 o = vec2(float(i), float(j)) * (WV_STEP_PX * HOOKED_pt);
             float a = dot(HOOKED_tex(HOOKED_pos + o - c * mix_t).rgb, vec3(0.299, 0.587, 0.114));
             float b = dot(NEXT_tex(NEXT_pos + o + c * (1.0 - mix_t)).rgb, vec3(0.299, 0.587, 0.114));
             acc += abs(a - (b - gg.y) / gg.x);
@@ -65,13 +67,13 @@ VOTE = """\
         vec2 wv_c3 = -FLOW_H_BA_tex(HOOKED_pos + wv_c1 * (1.0 - mix_t)).xy * 2.0 * HOOKED_pt;
         float wv_d1 = length((wv_c1 - flow_ab) / HOOKED_pt), wv_d2 = length((wv_c2 - flow_ab) / HOOKED_pt),
               wv_d3 = length((wv_c3 - flow_ab) / HOOKED_pt);
-        if (max(wv_d1, max(wv_d2, wv_d3)) > WV_SAME) {
+        if (max(wv_d1, max(wv_d2, wv_d3)) > WV_SAME_PX) {
             vec2 wv_gg = @GG@;
             float wv_k0 = wv_cost(flow_ab, wv_gg);
             float wv_best = wv_k0; vec2 wv_v = flow_ab;
-            if (wv_d1 > WV_SAME) { float k = wv_cost(wv_c1, wv_gg); if (k < wv_best) { wv_best = k; wv_v = wv_c1; } }
-            if (wv_d2 > WV_SAME) { float k = wv_cost(wv_c2, wv_gg); if (k < wv_best) { wv_best = k; wv_v = wv_c2; } }
-            if (wv_d3 > WV_SAME) { float k = wv_cost(wv_c3, wv_gg); if (k < wv_best) { wv_best = k; wv_v = wv_c3; } }
+            if (wv_d1 > WV_SAME_PX) { float k = wv_cost(wv_c1, wv_gg); if (k < wv_best) { wv_best = k; wv_v = wv_c1; } }
+            if (wv_d2 > WV_SAME_PX) { float k = wv_cost(wv_c2, wv_gg); if (k < wv_best) { wv_best = k; wv_v = wv_c2; } }
+            if (wv_d3 > WV_SAME_PX) { float k = wv_cost(wv_c3, wv_gg); if (k < wv_best) { wv_best = k; wv_v = wv_c3; } }
             float wv_w = (1.0 - smoothstep(0.5 * WV_KAPPA, WV_KAPPA, wv_best / max(wv_k0, 1.0e-6)))
                        * smoothstep(WV_EPS, 2.0 * WV_EPS, wv_k0 - wv_best);
             if (wv_w > 0.0) {

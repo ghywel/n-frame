@@ -131,3 +131,25 @@ replayed; it reproduces the loss: High 32.43, vote 31.30 on four outputs):
 period guard removed; nothing else changed. Tests V1-V7, the same lines. Predicted from the replay: C1 within 0.5 dB of
 High; face_fast ROI +2.0 or more, feature +2.0 or more; the ladder's translation gains kept; real footage within 0.05
 of the first form's (film +0.30). The visual gate on the photographs stays at risk and is judged by viewing.
+
+## The third form's results (13:05): V1-V7 PASS
+
+Fresh High in the same sitting (`~/np-scratch-int/motion-20261113`, labels `high` and `vote3`).
+
+| test | result | verdict |
+|---|---|---|
+| V1 suite | face_fast ROI **+2.31**, feature **+2.51**; face_counterpan +1.25, +6.97; face_occluded +0.41; face_lowcontrast +0.23; bars_h9 +0.51, bars_v24 +0.32, bars_h24 -0.38 / -0.32 (inside the 0.5 line); no case past the line; statics bit-identical | PASS |
+| V2 photographs | ROI **+4.64** and **+2.98**, features +12.5 and +14.2. **Viewed** (truth / High / vote, frames 14 and 7): the interior and the leading side are clean where High smears the nose, mouth and cheek; on the counter-pan (a holdout) the face is sharp where High doubles the eye and mouth. The trailing crescent (background uncovered behind the head) is still there, as registered, and its outer edge has two or three small notches High's smooth ring does not have | PASS, marginal on the visual gate: the notches are flagged for the owner's eye |
+| V3 ladder | worst case -0.014 dB (M3); **O3 level** (GPT's combined lost 0.12 there); 36 of 45 cases up more than 0.1: **L2 +11.3, L6 +9.9, L3 +6.6, L8 +6.2, L4 +5.0, M2 +3.8**; raw mean +1.67, capped +0.001 | PASS |
+| V4 cage | C1 -0.23, C2 -0.04, C3 +0.03, C4 -0.19 on the cage's rectangle | PASS |
+| V5 real footage | film **+0.322**, television +0.072, anime +0.117, cartoon +0.012, CG +0.162 dB; 20 of 40 windows up more than 0.05, 2 down (worst -0.098); best film1@3055.7 +1.33, film5@2103 +0.71 | PASS |
+| V6 time coherence | frame-to-frame change of the ROI error, codes: face_fast 1.21 -> 0.65; face_counterpan 1.01 -> 0.82; photo_fast 1.50 -> 0.43; photo_counterpan 1.39 -> 0.60 | PASS |
+| V7 cost | 6.29 s against 5.39 (medians of three, 180 outputs, the whole libplacebo pipeline): **+16.7%**; the Metal graph compiles, 103 of 103 passes; scale_shader.py scales the two pixel constants (renamed `WV_STEP_PX`, `WV_SAME_PX` for it; the code is otherwise the gated file's) | reported |
+
+Predictions: C1 within 0.5, PASS (-0.23); face_fast +2.0 / +2.0, PASS; translation gains kept, PASS (larger: L2 +11.3
+against the first form's +10.4); real footage within 0.05 of the first form, PASS (film +0.32 against +0.30).
+
+**What it is and is not.** It fixes the leading edge and the interior of fast-moving things (the ghost bulge, doubled
+features), which is most of what the ladder's translations and the real windows were losing. It does not touch the
+background uncovered behind a moving thing (the trailing crescent stays as High drew it), fast pans the estimator
+cannot reach, or bars (bars_h24 is 0.3 dB down, three other bar cases 0.1 to 0.5 up, all at 11-15 dB: still broken).
