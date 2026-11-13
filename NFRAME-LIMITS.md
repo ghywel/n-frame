@@ -5752,3 +5752,25 @@ and gain gates) has been ported to it. The 09-04 finding stands, now on 40 windo
 same base are worth a few hundredths, and what separates the tiers is the estimator, not the window. A multi-frame
 High (the High lineage on a four-frame window) is the only form that could answer the question differently; it has
 never been built. Scores: `~/np-scratch-int/content-20261023/scores-interior.json`.
+
+### The final warp at moving edges: WARP_VOTE, a variant that passes the full gate and costs 15% (2026-11-13)
+
+The owner named the remaining visible defects (bars, fast pans, quickly translating faces); GPT built a stress suite
+and three experiments the same morning (`tests/probes/motionstress/`, G029-G030), whose combined variant failed its
+own gate. Continued in [tests/probes/occwarp/PLAN.md](tests/probes/occwarp/PLAN.md), every form pre-registered.
+**What was found:** High warps both frames along A's flow read at the OUTPUT pixel; at a fast-moving thing's leading
+edge that pixel is still background in A, so the edge is drawn twice, and a feature is drawn with the vector of the
+smooth patch it has moved onto (viewed on GPT's photographic plane, and replayed on High's own dumped flow fields to
+0.1 code of its real render). **WARP_VOTE** scores four candidate vectors at each disputed pixel (High's own, frame
+B's opinion, and the two gathered ones) by the two frames' agreement over nine taps spanning 7 px, and replaces High's
+only where a candidate explains the frames twice as well. Against High: the fast face +2.3 dB (features +2.5), GPT's
+photographs +4.6 and +3.0 (features +12 to +14), the ladder with no case down more than 0.014 dB and **L2 +11.3, L6
++9.9, L3 +6.6, L8 +6.2, L4 +5.0** (the object-edge losses High had against its own plain base), the cage within 0.23,
+**real footage film +0.32, television +0.07, anime +0.12, cartoon +0.01, CG +0.16** (the largest real-footage gain since
+the lineage was built), the error's frame-to-frame change halved. Two lessons from the kills on the way: a 3 px
+matching patch lets a candidate match the flat gap between thin bars on both frames (the cage -1.24 dB; a 7 px
+footprint at the same cost fixed it), and a refuted guess is cheaper to replace by locating the loss against the truth
+than by a second guess (the period guard). **It is a variant, not High:** it needs High's half-resolution B -> A field
+(17 passes the prune otherwise drops) and costs +15% at 1080p and +20% at 4K on the Metal engine; four cheaper forms
+lost the cage. Not addressed: background uncovered behind a moving thing, bars, unreachable pans. GPT's global pan
+witness alone passes the gate and does nothing on real footage (no real pair of 1,413 meets its acceptance rule).
