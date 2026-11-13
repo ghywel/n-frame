@@ -2667,3 +2667,11 @@ directive, and libplacebo then mixes with its own mixer without a word. So the m
 host they would ship to carries the patch: Cadence's bundled libplacebo (the owner's), and the Metal engine, which
 evaluates `//!WHEN` itself (stage 3, through lockstep). Adoption is the owner's call.
 
+### Motion stress: bars, fast pans and moving faces (2026-11-13)
+
+[The motionstress probes](probes/motionstress/README.md) add 17 continuous-time analytic scenes and two optional
+photographic-plane translations, with per-feature/region/tail errors, exact timestamps and deliberate failure
+controls. [Measured results](probes/motionstress/RESULTS.md) preserve the useful face/pan gains and the failures:
+the combined High experiment still damages some silhouettes, does not repair the bars, and fails the O3 ladder
+replacement limit. It remains experimental; the shipped shaders and Cadence graphs are unchanged.
+
