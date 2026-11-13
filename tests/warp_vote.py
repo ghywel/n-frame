@@ -18,7 +18,8 @@ patch (B's luma with the adopted global gain taken out, for matching only). The 
 it explains the frames at least twice as well (cost under WV_KAPPA of c0's) and by more than the noise (WV_EPS), fading
 in between; the two PICTURES are blended, so no in-between vector is ever sampled. Where every candidate equals c0
 (nearly everywhere) nothing is computed and the output is High's, bit for bit. A candidate that merely ties (a periodic
-print's alias, a flat region) never wins. It does not decide visibility: background uncovered behind a moving object
+print's alias, a flat region) never wins, and where the picture is periodic along the two vectors' difference the vote
+abstains (the period guard, added after the first form lost 1.24 dB on the cage's thin bars). It does not decide visibility: background uncovered behind a moving object
 is seen in one frame only and stays as High draws it.
 
 COST. It keeps High's half-resolution B -> A chain alive through the prune (17 passes) and adds up to 72 reads at the
@@ -47,6 +48,29 @@ float wv_cost(vec2 c, vec2 gg) {
     }
     return acc / 9.0;
 }
+// THE PERIOD GUARD (2026-11-13, after the first form lost 1.24 dB on the cage): a frame that matches ITSELF displaced
+// by the difference of the two vectors, but not by a half or a third of it, is periodic along that difference, and
+// the candidate may be the same match a period out. There the vote abstains. A flat patch matches itself under all
+// three and is left alone (either vector draws the same picture there).
+float wv_self_a(vec2 base, vec2 d) {
+    float acc = 0.0;
+    for (int j = -1; j <= 1; j++) for (int i = -1; i <= 1; i++) {
+        vec2 q = base + vec2(float(i), float(j)) * HOOKED_pt;
+        acc += abs(dot(HOOKED_tex(q).rgb, vec3(0.299, 0.587, 0.114)) - dot(HOOKED_tex(q + d).rgb, vec3(0.299, 0.587, 0.114)));
+    }
+    return acc / 9.0;
+}
+float wv_self_b(vec2 base, vec2 d) {
+    float acc = 0.0;
+    for (int j = -1; j <= 1; j++) for (int i = -1; i <= 1; i++) {
+        vec2 q = base + vec2(float(i), float(j)) * HOOKED_pt;
+        acc += abs(dot(NEXT_tex(q).rgb, vec3(0.299, 0.587, 0.114)) - dot(NEXT_tex(q + d).rgb, vec3(0.299, 0.587, 0.114)));
+    }
+    return acc / 9.0;
+}
+float wv_periodic(float s1, float s23, float k0) {
+    return (1.0 - smoothstep(0.5 * WV_KAPPA * k0, WV_KAPPA * k0, s1)) * smoothstep(WV_EPS, 2.0 * WV_EPS, s23 - 2.0 * s1);
+}
 
 """
 
@@ -67,6 +91,13 @@ VOTE = """\
             if (wv_d3 > WV_SAME) { float k = wv_cost(wv_c3, wv_gg); if (k < wv_best) { wv_best = k; wv_v = wv_c3; } }
             float wv_w = (1.0 - smoothstep(0.5 * WV_KAPPA, WV_KAPPA, wv_best / max(wv_k0, 1.0e-6)))
                        * smoothstep(WV_EPS, 2.0 * WV_EPS, wv_k0 - wv_best);
+            if (wv_w > 0.0) {   // the period guard, only where the vote would act
+                vec2 wv_d = wv_v - flow_ab;
+                vec2 wv_qa = HOOKED_pos - flow_ab * mix_t, wv_qb = NEXT_pos + flow_ab * (1.0 - mix_t);
+                float wv_pa = wv_periodic(wv_self_a(wv_qa, wv_d), max(wv_self_a(wv_qa, wv_d / 2.0), wv_self_a(wv_qa, wv_d / 3.0)), wv_k0);
+                float wv_pb = wv_periodic(wv_self_b(wv_qb, wv_d), max(wv_self_b(wv_qb, wv_d / 2.0), wv_self_b(wv_qb, wv_d / 3.0)), wv_k0);
+                wv_w *= 1.0 - max(wv_pa, wv_pb);
+            }
             if (wv_w > 0.0) {
                 vec4 wv_new = mix(warp_sample_a(HOOKED_pos - wv_v * mix_t), warp_sample_b(NEXT_pos + wv_v * (1.0 - mix_t)), mix_t);
                 warped = mix(warped, wv_new, wv_w);

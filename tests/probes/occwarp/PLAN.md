@@ -79,3 +79,34 @@ photo_counterpan, face_occluded, face_lowcontrast, every pan and bar case, the l
 
 Adoption into Cadence's High follows only if V1-V6 pass; the graphs are then rebuilt and the app's tests run, the
 upload left to the owner.
+
+## The first form's results (12:40): KILLED by the cage, with the largest real-footage gain High has had
+
+Fresh High in the same sitting; `~/np-scratch-int/motion-20261113`.
+
+| test | result | verdict |
+|---|---|---|
+| V1 suite | face_fast ROI +2.65, feature +2.28; face_counterpan +1.43, +6.56 (the replay had said +2.66/+2.30, +1.41/+7.98); face_occluded +0.71; **bars_h24 feature -0.63** (ROI -0.31); statics identical | faces PASS; the 0.5 dB line MISSED on one bars case |
+| V2 photographs | ROI +4.68 and +2.96, features +12.3 and +14.1 | scores PASS; **visual gate FAILS**: the interior is repaired, the ring stays and its edges carry small ragged fragments High's ring does not have (fewer than GPT's combined) |
+| V3 ladder | no case down 0.1 dB on either reading (worst O3 -0.053); **L2 +10.4, L3 +7.0, L6 +6.1, L8 +5.6, L4 +3.9** (the object-edge losses High had against its own plain base); raw mean +1.53, capped +0.001 | PASS |
+| V4 cage | **C1 -1.24** on the cage's rectangle (C2 -0.46, C3 +0.02, C4 +0.10) | **KILL** |
+| V5 real footage | film **+0.300**, television +0.083, anime +0.102, cartoon -0.023, CG +0.154; best segment +1.29 (film1@3055.7), worst -0.11 | PASS |
+| V7 cost | 6.78 s against 5.74 (median of three, 180 outputs): **+18%** | reported |
+
+On the cage's thin bars the two frames' opinions differ by a period, and the better-registered of two aliases wins the
+vote by the 2x rule although the picture it draws between the frames is a bar's width out.
+
+## The second form, registered before its first run (12:40): the period guard
+
+One addition, in `tests/warp_vote.py`: where the vote would act, each frame is compared with ITSELF displaced by the
+difference of the two vectors, and by a half and a third of it. A frame that matches itself under the whole difference
+(self-cost under the same kappa of High's cost) but not under the half or the third (larger by twice and by more than
+eps) is periodic along that difference, and the vote abstains. A flat patch matches under all three and is left alone.
+The constants are the vote's own (kappa 0.5, eps 2 codes); none is new. Tried on the CPU replay first, with one
+alternative: the period guard keeps the faces' gain (fast face 32.22 / 38.63 against 32.38 / 38.66; photograph
+32.57 / 42.45 against 32.80 / 42.65); requiring each endpoint's own flow to agree with the winner (ownership) loses half
+of it (30.4) and is not built.
+
+Tests V1-V7 as registered, the same lines. Predicted: C1 within 0.5 dB of High; bars_h24 within the 0.5 line; the faces
+within 0.3 dB of the first form; the ladder's translation gains kept; real footage within 0.05 of the first form.
+**The visual gate is at risk**: nothing in this form addresses the ring's ragged edges.

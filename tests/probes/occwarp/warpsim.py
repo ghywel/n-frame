@@ -64,10 +64,10 @@ def hyp(a, b, fab, fba, h, t, lo, hi):
     return samp(a, qax, qay), samp(b, qbx, qby), wa, wb
 
 
-def warp_occ(a, b, fab, fba, sup, t, lo=1.0, hi=2.0, clo=4.0, chi=8.0, one_sided=True):
+def warp_occ(a, b, fab, fba, sup, t, lo=1.0, hi=2.0, clo=4.0, chi=8.0, one_sided=True, base_fn=None):
     """Two hypotheses (A's opinion at the pixel, B's opinion at the pixel); two-sided-valid first, then one-sided, else
     High; engaged only where the two opinions disagree (the conflict gate), so elsewhere the output is High's exactly."""
-    base = warp_high(a, b, fab, fba, sup, t)
+    base = (base_fn or warp_high)(a, b, fab, fba, sup, t)
     conflict = sm(clo, chi, np.hypot(fab[..., 0] + fba[..., 0], fab[..., 1] + fba[..., 1]))
     if not conflict.any():
         return base
@@ -121,7 +121,18 @@ def bilateral_cost(a, b, c, t, taps, step):
     return acc / (taps * taps)
 
 
-def warp_bcv(a, b, fab, fba, sup, t, which='bgzr', R=24.0, taps=3, step=1.0, kappa=0.5, eps=2.0 / 255, soft=True, stats=None):
+def self_cost(img, x0, y0, d, taps=3):
+    """How well a frame matches ITSELF displaced by d around (x0, y0): small where d is a period of the local pattern."""
+    acc = 0.0
+    r = taps // 2
+    for j in range(-r, r + 1):
+        for i in range(-r, r + 1):
+            acc = acc + np.abs(samp(img, x0 + i, y0 + j) - samp(img, x0 + i + d[..., 0], y0 + j + d[..., 1]))
+    return acc / (taps * taps)
+
+
+def warp_bcv(a, b, fab, fba, sup, t, which='bgzr', R=24.0, taps=3, step=1.0, kappa=0.5, eps=2.0 / 255, soft=True, stats=None,
+             own=False, alias=False):
     """Bilateral candidate vote: High's vector is replaced only by a candidate whose endpoints agree at least 1/kappa
     times better AND by more than eps; the replacement fades in with the size of the improvement (soft)."""
     cs = candidates(fab, fba, t, which, R)
@@ -134,9 +145,28 @@ def warp_bcv(a, b, fab, fba, sup, t, which='bgzr', R=24.0, taps=3, step=1.0, kap
         w = (1 - sm(0.5 * kappa, kappa, best / np.maximum(c0, 1e-6))) * sm(eps, 2 * eps, c0 - best)
     else:
         w = ((best < kappa * c0) & (c0 - best > eps)).astype(np.float32)
+    if own:      # the winner must be OWNED at both endpoints: each frame's own flow there agrees with it (two-sided, so
+        #          a chance match in a region one frame cannot see is refused)
+        qax, qay = XX - t * v[..., 0], YY - t * v[..., 1]
+        qbx, qby = XX + (1 - t) * v[..., 0], YY + (1 - t) * v[..., 1]
+        da = np.hypot(samp(fab[..., 0], qax, qay) - v[..., 0], samp(fab[..., 1], qax, qay) - v[..., 1])
+        db = np.hypot(-samp(fba[..., 0], qbx, qby) - v[..., 0], -samp(fba[..., 1], qbx, qby) - v[..., 1])
+        if own == 'rel':     # nearer the winner than halfway to High's vector (the fields are good to a few px, not to one)
+            tol = np.maximum(0.5 * np.hypot(v[..., 0] - fab[..., 0], v[..., 1] - fab[..., 1]), 1.0)
+            w = w * (1 - sm(0.5, 1.0, da / tol)) * (1 - sm(0.5, 1.0, db / tol))
+        else:
+            w = w * (1 - sm(1.0, 2.0, da)) * (1 - sm(1.0, 2.0, db))
+    if alias:    # and not a PERIOD of the picture: a frame that matches itself under the two vectors' difference but not
+        #          under half or a third of it is periodic along it (a flat patch matches under all three and is harmless)
+        d = v - fab
+        per = 0.0
+        for img, x0, y0 in ((a, XX - t * fab[..., 0], YY - t * fab[..., 1]), (b, XX + (1 - t) * fab[..., 0], YY + (1 - t) * fab[..., 1])):
+            s1 = self_cost(img, x0, y0, d)
+            s23 = np.maximum(self_cost(img, x0, y0, d / 2), self_cost(img, x0, y0, d / 3))
+            per = np.maximum(per, (1 - sm(0.5 * kappa * c0, kappa * c0, s1)) * sm(eps, 2 * eps, s23 - 2 * s1))
+        w = w * (1 - per)
     if stats is not None:
         stats.append(float((w > 0.5).mean()))
-    vx = fab[..., 0] + w * (v[..., 0] - fab[..., 0]); vy = fab[..., 1] + w * (v[..., 1] - fab[..., 1])
     hi_ = (1 - t) * samp(a, XX - t * fab[..., 0], YY - t * fab[..., 1]) + t * samp(b, XX + (1 - t) * fab[..., 0], YY + (1 - t) * fab[..., 1])
     new = (1 - t) * samp(a, XX - t * v[..., 0], YY - t * v[..., 1]) + t * samp(b, XX + (1 - t) * v[..., 0], YY + (1 - t) * v[..., 1])
     warped = hi_ + w * (new - hi_)                      # blend the PICTURES, not the vectors: no in-between vector is ever sampled
@@ -152,6 +182,9 @@ VARIANTS = {
     'bcv-bgz': lambda *a, **k: warp_bcv(*a, which='bgz', **k),
     'bcv': warp_bcv,                                                # all: B's opinion, gathered, zero, the ring
     'bcv-hard': lambda *a, **k: warp_bcv(*a, soft=False, **k),
+    'vote2': lambda *a, **k: warp_bcv(*a, which='bg', own='rel', alias=True, **k),    # relative ownership and the period guard
+    'vote2-own': lambda *a, **k: warp_bcv(*a, which='bg', own='rel', **k),
+    'vote2-alias': lambda *a, **k: warp_bcv(*a, which='bg', alias=True, **k),
 }
 
 
@@ -186,7 +219,7 @@ def run(suite, dump, case, variants):
 
 def main():
     suite, dump = Path(sys.argv[1]), Path(sys.argv[2])
-    variants = list(VARIANTS)
+    variants = os.environ.get('VARIANTS', ','.join(VARIANTS)).split(',')
     out = {}
     for case in sys.argv[3:]:
         row = out[case] = run(suite, dump, case, variants)
