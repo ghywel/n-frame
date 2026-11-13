@@ -158,6 +158,9 @@ def warp_bcv(a, b, fab, fba, sup, t, which='bgzr', R=24.0, taps=3, step=1.0, kap
         if own == 'rel':     # nearer the winner than halfway to High's vector (the fields are good to a few px, not to one)
             tol = np.maximum(0.5 * np.hypot(v[..., 0] - fab[..., 0], v[..., 1] - fab[..., 1]), 1.0)
             w = w * (1 - sm(0.5, 1.0, da / tol)) * (1 - sm(0.5, 1.0, db / tol))
+        elif own == 'A':     # owned by frame A alone: A's flow where the winner samples A is nearer the winner than halfway
+            tol = np.maximum(0.5 * np.hypot(v[..., 0] - fab[..., 0], v[..., 1] - fab[..., 1]), 1.0)
+            w = w * (1 - sm(0.5, 1.0, da / tol))
         else:
             w = w * (1 - sm(1.0, 2.0, da)) * (1 - sm(1.0, 2.0, db))
     if alias:    # and not a PERIOD of the picture: a frame that matches itself under the two vectors' difference but not
@@ -189,6 +192,8 @@ VARIANTS = {
     'vote2': lambda *a, **k: warp_bcv(*a, which='bg', own='rel', alias=True, **k),    # relative ownership and the period guard
     'vote2-own': lambda *a, **k: warp_bcv(*a, which='bg', own='rel', **k),
     'vote2-alias': lambda *a, **k: warp_bcv(*a, which='bg', alias=True, **k),
+    'step3': lambda *a, **k: warp_bcv(*a, which='bg', step=3.0, **k),                 # the shipped variant's scoring
+    'step3-ownA': lambda *a, **k: warp_bcv(*a, which='bg', step=3.0, own='A', **k),
     'vote3': lambda *a, **k: warp_bcv(*a, which='bg', doubt=(0.5,), **k),             # the sub-pixel doubt, half a pixel
     'vote3b': lambda *a, **k: warp_bcv(*a, which='bg', doubt=(0.5, 1.0), **k),        # half and one pixel
 }

@@ -118,5 +118,114 @@ def add(text):
     return out
 
 
+# ---------------------------------------------------------------------------------------------------------------------
+# THE LIGHT FORM (WARP_VOTE=2, 2026-11-13): the same vote at a cost High's real-time margin can carry.
+#   - frame B's opinion from the quarter-resolution B -> A field as it stands before the variational passes (the print
+#     lattice already computes it; one copy pass names it), so the prune drops the B -> A chain as it always did;
+#   - the winner must be OWNED BY FRAME A: A's own flow, where the winner samples A, is nearer the winner than halfway
+#     to High's vector. This is what the refined B -> A field was buying on the cage (a look-alike a period out, taken
+#     from a coarse B opinion, is not what A says at that place), at one more read;
+#   - the vote is SCORED AT HALF RESOLUTION in a pass of its own, which stores the winner and its weight; the final pass
+#     reads the winner of its nearest half-resolution texel and the weight bilinearly, and draws;
+#   - nothing is scored on an output that lands on a source frame (mix_t at 0 or 1: half the outputs at 24 -> 48).
+# ---------------------------------------------------------------------------------------------------------------------
+COPY = """\
+//!HOOK FRAME_MIX
+//!BIND FLOW_Q_BA
+//!SAVE WV_FLOW_Q_BA
+//!WIDTH HOOKED.w 4 /
+//!HEIGHT HOOKED.h 4 /
+//!COMPONENTS 2
+//!DESC [vote] frame B's opinion for the final warp: the quarter-resolution B -> A field before the variational passes
+vec4 hook() {
+    return vec4(FLOW_Q_BA_tex(FLOW_Q_BA_pos).xy, 0.0, 0.0);
+}
+
+"""
+
+PICK = """\
+//!HOOK FRAME_MIX
+//!BIND HOOKED
+//!BIND NEXT
+//!BIND FLOW_H_AB
+//!BIND WV_FLOW_Q_BA
+@GGBIND@//!SAVE WV_FLOW_F_AB_PICK
+//!WIDTH HOOKED.w 2 /
+//!HEIGHT HOOKED.h 2 /
+//!COMPONENTS 3
+//!DESC [vote] the final warp's vote, scored at half resolution: the winning vector in px (.xy) and its weight (.z)
+@HELPER@vec4 hook() {
+    vec2 flow_ab = FLOW_H_AB_tex(HOOKED_pos).xy * 2.0 * HOOKED_pt;
+    if (mix_t < 0.01 || mix_t > 0.99) return vec4(flow_ab / HOOKED_pt, 0.0, 0.0);   // on a source frame: nothing to draw
+    vec2 wv_c1 = -WV_FLOW_Q_BA_tex(HOOKED_pos).xy * 4.0 * HOOKED_pt;
+    vec2 wv_c2 = FLOW_H_AB_tex(HOOKED_pos - flow_ab * mix_t).xy * 2.0 * HOOKED_pt;
+    vec2 wv_c3 = -WV_FLOW_Q_BA_tex(HOOKED_pos + wv_c1 * (1.0 - mix_t)).xy * 4.0 * HOOKED_pt;
+    float wv_d1 = length((wv_c1 - flow_ab) / HOOKED_pt), wv_d2 = length((wv_c2 - flow_ab) / HOOKED_pt),
+          wv_d3 = length((wv_c3 - flow_ab) / HOOKED_pt);
+    if (max(wv_d1, max(wv_d2, wv_d3)) <= WV_SAME_PX) return vec4(flow_ab / HOOKED_pt, 0.0, 0.0);
+    vec2 wv_gg = @GG@;
+    float wv_k0 = wv_cost(flow_ab, wv_gg);
+    float wv_best = wv_k0; vec2 wv_v = flow_ab;
+    if (wv_d1 > WV_SAME_PX) { float k = wv_cost(wv_c1, wv_gg); if (k < wv_best) { wv_best = k; wv_v = wv_c1; } }
+    if (wv_d2 > WV_SAME_PX) { float k = wv_cost(wv_c2, wv_gg); if (k < wv_best) { wv_best = k; wv_v = wv_c2; } }
+    if (wv_d3 > WV_SAME_PX) { float k = wv_cost(wv_c3, wv_gg); if (k < wv_best) { wv_best = k; wv_v = wv_c3; } }
+    float wv_w = (1.0 - smoothstep(0.5 * WV_KAPPA, WV_KAPPA, wv_best / max(wv_k0, 1.0e-6)))
+               * smoothstep(WV_EPS, 2.0 * WV_EPS, wv_k0 - wv_best);
+    if (wv_w > 0.0) {   // owned by frame A: A's flow where the winner samples A is nearer the winner than halfway to High's
+        vec2 wv_fa = FLOW_H_AB_tex(HOOKED_pos - wv_v * mix_t).xy * 2.0 * HOOKED_pt;
+        float wv_tol = max(0.5 * length((wv_v - flow_ab) / HOOKED_pt), 1.0);
+        wv_w *= 1.0 - smoothstep(0.5, 1.0, length((wv_fa - wv_v) / HOOKED_pt) / wv_tol);
+    }
+    return vec4(wv_v / HOOKED_pt, wv_w, 0.0);
+}
+
+"""
+
+DRAW = """\
+    vec4 warped = mix(warped_a, warped_b, mix_t);
+    {   // WARP_VOTE=2: the winner scored at half resolution (the weight read bilinearly, the vector from the nearest texel,
+        // so no in-between vector is ever sampled)
+        float wv_w = WV_FLOW_F_AB_PICK_tex(HOOKED_pos).z;
+        if (wv_w > 0.0) {
+            vec2 wv_uv = (floor(HOOKED_pos * WV_FLOW_F_AB_PICK_size) + 0.5) / WV_FLOW_F_AB_PICK_size;
+            vec2 wv_v = WV_FLOW_F_AB_PICK_tex(wv_uv).xy * HOOKED_pt;
+            vec4 wv_new = mix(warp_sample_a(HOOKED_pos - wv_v * mix_t), warp_sample_b(NEXT_pos + wv_v * (1.0 - mix_t)), mix_t);
+            warped = mix(warped, wv_new, wv_w);
+        }
+    }
+"""
+
+
+def add_light(text):
+    assert "WARP_VOTE" not in text, "already applied"
+    assert text.count(MARKER) == 1, "expected one final warp pass"
+    assert "//!SAVE FLOW_Q_BA\n" in text, "WARP_VOTE=2 needs the quarter-resolution B -> A field"
+    gain = "//!SAVE GLOBAL_GAIN\n" in text
+    start = text.rfind("//!HOOK FRAME_MIX", 0, text.index(MARKER))
+    nxt = re.search(r"^//!(?:HOOK|TEXTURE|PARAM) ", text[text.index(MARKER) + len(MARKER):], re.M)
+    end = text.index(MARKER) + len(MARKER) + nxt.start() if nxt else len(text)
+    block = text[start:end]
+    assert block.count("//!BIND FLOW_H_AB\n") == 1
+    block = block.replace("//!BIND FLOW_H_AB\n", "//!BIND FLOW_H_AB\n//!BIND WV_FLOW_F_AB_PICK\n", 1)
+    old = "    vec4 warped = mix(warped_a, warped_b, mix_t);\n"
+    assert block.count(old) == 1, "the final blend line was not found"
+    block = block.replace(old, DRAW, 1)
+    assert sum(l.startswith("//!BIND") for l in block.split("\n")) <= 16
+    pick = PICK.replace("@GGBIND@", "//!BIND GLOBAL_GAIN\n" if gain else "") \
+               .replace("@GG@", "texelFetch(GLOBAL_GAIN_raw, ivec2(0), 0).rg" if gain else "vec2(1.0, 0.0)") \
+               .replace("@HELPER@", HELPER)
+    back = text.rfind("\n\n", 0, start) + 2          # before the final pass's banner comment
+    at = back if "//!" not in text[back:start] else start
+    out = text[:at] + pick + text[at:start] + block + text[end:]
+    # the copy of the pre-variational quarter-resolution B -> A field, before the first quarter-level variational pass
+    m = re.search(r"^//!DESC \[high\] variational Q ", out, re.M)
+    assert m, "no quarter-level variational pass to place the copy before"
+    cat = out.rfind("//!HOOK FRAME_MIX", 0, m.start())
+    assert "//!SAVE FLOW_Q_BA\n" in out[:cat]
+    out = out[:cat] + COPY + out[cat:]
+    assert out.count("{") - out.count("}") == text.count("{") - text.count("}")
+    return out
+
+
 if __name__ == "__main__":
     open(sys.argv[2], "w", newline="\n").write(add(open(sys.argv[1]).read()))

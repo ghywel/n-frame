@@ -566,7 +566,8 @@ BAR_BASIN = os.environ.get("BAR_BASIN", "0") == "1"         # with BAR_REDECIDE:
 # not read as motion. Without the variable the output is byte-identical.
 # WARP_VOTE=1 (2026-11-13; tests/warp_vote.py; tests/probes/occwarp/PLAN.md): the final warp's vector chosen among High's
 # own, frame B's opinion and the two gathered vectors by the frames' agreement; keeps the half-resolution B -> A chain.
-WARP_VOTE = os.environ.get("WARP_VOTE", "0") == "1"
+WARP_VOTE = os.environ.get("WARP_VOTE", "0")                # "1" the full form (the shipped variant), "2" the light form
+assert WARP_VOTE in ("0", "1", "2"), "WARP_VOTE is 0, 1 or 2"
 GLOBAL_GAIN = os.environ.get("GLOBAL_GAIN", "0")          # "1" the killed F1; "2" F1b, the fit accepted only where it explains the frames
 assert GLOBAL_GAIN in ("0", "1", "2"), "GLOBAL_GAIN is 0, 1 or 2"
 # LOCAL_LIGHT=1 (2026-10-25; import 1, IMPORTS-TO-INTERPOLATION.md; needs GLOBAL_GAIN): the coherent-change cue inside the
@@ -938,9 +939,9 @@ if __name__ == "__main__":
         import global_gain
         text, _gg_changed, _gg_reads = global_gain.add(text, accept=GLOBAL_GAIN == "2", local=int(LOCAL_LIGHT))
         print(f"GLOBAL_GAIN: {_gg_reads} reads of frame B's luma compensated in {len(_gg_changed)} passes", file=sys.stderr)
-    if WARP_VOTE:                      # after the gain (its matching reads take the gain out), before the prune (it binds FLOW_H_BA)
+    if WARP_VOTE != "0":               # after the gain (its matching reads take the gain out), before the prune
         import warp_vote
-        text = warp_vote.add(text)
+        text = warp_vote.add(text) if WARP_VOTE == "1" else warp_vote.add_light(text)
     cost = 2 * (s / 256 + e / 64 + q / 16 + h / 4)
     env = ("GLOBAL_SEED=1 " if GLOBAL_SEED else "") + ("QZERO_MOIRE=1 " if QZERO_MOIRE else "") + ("COHERENCE_GATE=1 " if COHERENCE_GATE else "") \
         + (f"EDGE_PROP=1 EDGE_PROP_TAU={EDGE_PROP_TAU:g} " if EDGE_PROP else "") \
@@ -951,7 +952,7 @@ if __name__ == "__main__":
         + ("OUTLINE_ADOPT=1 " if OUTLINE_ADOPT else "") \
         + ("PRINT_LATTICE=1 " if PRINT_LATTICE else "") \
         + ("TRUST_GATE=1 " if TRUST_GATE else "") \
-        + ("BAR_REDECIDE=1 " if BAR_REDECIDE else "") + ("BAR_KEEP=1 " if BAR_KEEP else "") + ("BAR_BASIN=1 " if BAR_BASIN else "") + ("CUT_MOTION=1 " if CUT_MOTION else "") + (f"GLOBAL_GAIN={GLOBAL_GAIN} " if GLOBAL_GAIN != "0" else "") + (f"LOCAL_LIGHT={LOCAL_LIGHT} " if LOCAL_LIGHT != "0" else "") + ("COHERENCE_ZM=1 " if COHERENCE_ZM else "") + ("WARP_VOTE=1 " if WARP_VOTE else "") \
+        + ("BAR_REDECIDE=1 " if BAR_REDECIDE else "") + ("BAR_KEEP=1 " if BAR_KEEP else "") + ("BAR_BASIN=1 " if BAR_BASIN else "") + ("CUT_MOTION=1 " if CUT_MOTION else "") + (f"GLOBAL_GAIN={GLOBAL_GAIN} " if GLOBAL_GAIN != "0" else "") + (f"LOCAL_LIGHT={LOCAL_LIGHT} " if LOCAL_LIGHT != "0" else "") + ("COHERENCE_ZM=1 " if COHERENCE_ZM else "") + (f"WARP_VOTE={WARP_VOTE} " if WARP_VOTE != "0" else "") \
         + ("ALIAS_APERTURE=0 " if ALIAS_CARRY and not ALIAS_APERTURE else "")     # the zero seed is the recommendation's standing state and the line never named it
     env += f"PRUNE={PRUNE} " if PRUNE != "0" else ""     # recorded so the header can rebuild the file (REPAIRS.md L9)
     env += "STICKY_CACHE=1 " if STICKY_CACHE else ""

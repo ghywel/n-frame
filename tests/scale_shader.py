@@ -133,9 +133,17 @@ for i, l in enumerate(lines):
     if "* 2.0 * HOOKED_pt" in l and not l.strip().startswith("//"):
         assert "FLOW_H_" in l, "a '* 2.0 * HOOKED_pt' that is not a half-resolution flow read: " + l.strip()[:100]
         lines[i] = l.replace("* 2.0 * HOOKED_pt", conv); n_warp += l.count("* 2.0 * HOOKED_pt")
+# ... and quarter-resolution flow to the frame's pixels (WARP_VOTE=2's reads of the B -> A field, 2026-11-13)
+convq = "* %.1f * HOOKED_pt" % (4.0 * F["Q"])
+n_q = 0
+for i, l in enumerate(lines):
+    if "* 4.0 * HOOKED_pt" in l and "FLOW_Q_" in l and not l.strip().startswith("//"):
+        lines[i] = l.replace("* 4.0 * HOOKED_pt", convq); n_q += l.count("* 4.0 * HOOKED_pt")
 t = "\n".join(lines)
 assert n_warp >= 1, "no half-resolution-to-frame conversion found"
 report.append("H->frame %d -> %.1f" % (n_warp, 2.0 * F["H"]))
+if n_q:
+    report.append("Q->frame %d -> %.1f" % (n_q, 4.0 * F["Q"]))
 
 # 4. constants in the frame's pixels
 n_px = []
@@ -205,6 +213,7 @@ KNOWN = (
     re.compile(r"\w+_PX \* (?:HOOKED|NEXT)_pt"),                            # a scaled cap or tap in pixels
     re.compile(r"\d+\.\d+ \* HOOKED_pt\.[xy]\b"),                            # a scaled region in pixels
     re.compile(re.escape(conv)),
+    re.compile(r"FLOW_Q_\w+_tex\([^;]*\)\.xy " + re.escape(convq)),          # WARP_VOTE=2's quarter-resolution reads
     re.compile(r"_tex\(\(\(p \+ 0\.5\) \* \d+\.\d\) \* (?:HOOKED|NEXT)_pt\)"),   # a scaled print sampler
 )
 other = [l.strip() for l in t.split("\n")

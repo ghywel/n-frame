@@ -207,3 +207,36 @@ unchanged. The Metal graphs of the variant compile (103 of 103 passes) and repro
 **Open, measured, not addressed by any form:** background uncovered behind a moving thing (the trailing crescent);
 bars (every bar case of GPT's suite is still at 11 to 15 dB); pans the estimator cannot reach (GPT's witness helps two
 synthetic ones and no real pair of 1,413).
+
+## The light form, `WARP_VOTE=2`: registered before its gate (14:46)
+
+The owner, on the variant: "See if you can cut the cost without excessively sacrificing the gains. Otherwise, I am
+tending to use 24 -> 48 not 60 anyway, so it may not matter." **It does matter at 48**: per-pair work is spread over
+two outputs there, not two and a half. Metal bench, the M5, 1080p, five interleaved rounds: High 19.7-20.0 ms an output
+against a 20.83 ms budget; the variant 22.4 (+12.6 to +13.6%), over it. **Where the variant's cost is** (the same
+bench): the 17 passes of the B -> A chain alone +7.7% at 48 and +8.4% at 60 (already over the 48 budget); the scoring
++4.9% and +6.4%; not scoring on outputs that land on a source frame saves 1.8% at 48.
+
+**The light form** (`tests/warp_vote.py`, `add_light`; the full form stays `WARP_VOTE=1`, the shipped variant, and
+regenerates identically):
+1. frame B's opinion from the quarter-resolution B -> A field before the variational passes (one copy pass; the prune
+   drops the chain as before);
+2. **the winner must be owned by frame A**: A's flow, where the winner samples A, nearer the winner than halfway to
+   High's vector. Tried first on the CPU replay (the full-chain dumps): with 1 px taps, where look-alikes won, it
+   brings the cage from 31.30 to 32.33 (High 32.43); it costs the analytic fast face half its ROI gain (32.03 ->
+   30.83) and the photograph little (32.76 -> 32.22, features unchanged). Then on the GPU with full-resolution
+   scoring (an unregistered look, cage / suite / photographs only): cage C1 -0.01, C2 -0.02, C3 -0.02, C4 -0.11;
+   face_fast +1.06 / +1.60; face_counterpan +0.88 / +7.07; photographs +4.14 and +2.74, features +12.5 and +14.2;
+3. the vote scored at HALF resolution in a pass of its own (the winner and its weight stored; the final pass reads the
+   nearest texel's winner and the weight bilinearly);
+4. nothing scored where the output lands on a source frame.
+89 passes against High's 86. Its Metal cost, measured before the gate: **24 -> 48: +3.1% at 1080p (20.62 ms, inside
+the budget) and +2.3% at 4K; 24 -> 60: +5.0% and +6.8%.**
+
+**Tests:** V1-V6 as registered, with the lines that are relative to High unchanged (no suite case down 0.5 dB, no
+ladder case down 0.1, capped mean not down 0.05, cage within 0.5, no content class down 0.05, the error's
+frame-to-frame change not above High's) and the gain lines restated for this form before it runs: face_fast ROI +0.8
+or more and feature +1.0 or more; both photographs ROI +2.0 or more; real footage film +0.15 or more. KILL if a
+relative line fails; a missed gain line is reported as "excessive sacrifice" for the owner to weigh. **If it passes,
+it goes into Cadence's High** (the owner's standing ask of this morning, the cost objection answered at his rate):
+the tier file and its 4K twin regenerated in place, the graphs rebuilt, the app's tests run, the upload his.
