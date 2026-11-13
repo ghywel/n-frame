@@ -10,13 +10,13 @@ background's vector is used and the object's edge is drawn twice (a ghost bulge)
 parts carry a poorer vector than its features, a feature is drawn with the vector of the smooth patch it has moved onto.
 
 THE CHANGE. Three more candidate vectors are read beside High's own c0 = F_A(p):
-    c1 = -F_B(p)                     frame B's opinion at the pixel (the B -> A field, which the prune otherwise drops)
+    c1 = -F_B(p)                     frame B's opinion at the pixel (the quarter-resolution B -> A field: see THE COST)
     c2 =  F_A(p - t c0)              A's flow where c0 says the content came from (GPT's inverse step, G029)
     c3 = -F_B(p + (1 - t) c1)        the same from B's side
 Each candidate is scored by the mean absolute difference of the two endpoints it implies over 3 x 3 taps 3 px apart
 (a 7 px footprint) (B's luma with the adopted global gain taken out, for matching only). The best candidate replaces c0 only where
 it explains the frames at least twice as well (cost under WV_KAPPA of c0's) and by more than the noise (WV_EPS), fading
-in between; the two PICTURES are blended, so no in-between vector is ever sampled. Where every candidate equals c0
+in between; the two PICTURES are blended, so no in-between vector is ever sampled. Where every candidate is within 2 px of c0
 (nearly everywhere) nothing is computed and the output is High's, bit for bit. A candidate that merely ties (a periodic
 print's alias, a flat region) never wins.
 
@@ -30,8 +30,13 @@ is seen in one frame only and stays as High draws it.
 
 4K. The two pixel constants carry the _PX suffix scale_shader.py scales with the frame.
 
-COST. It keeps High's half-resolution B -> A chain alive through the prune (17 passes) and adds up to 72 reads at the
-pixels where a candidate differs. A variant until gated (the shader-variants rule).
+THE COST (the fourth form, 2026-11-13). The third form read B's opinion from the half-resolution B -> A field, which
+the prune otherwise drops: 17 passes kept alive, +16.7% on libplacebo and +15% / +20% on the Metal engine at 1080p /
+4K, where High already runs at the edge of 60 fps on the M5. B's opinion is a CANDIDATE, checked against the frames
+before it is used, so it need not be the refined field: the quarter-resolution B -> A field after outline adoption is
+already computed for the print lattice and costs nothing. And a dispute under 2 px draws a band under 2 px wide, so
+candidates within WV_SAME_PX = 2 px of High's vector are not scored at all (on the cage 70% of pixels disputed by
+0.5 to 2 px).
 """
 import re
 import sys
@@ -43,7 +48,7 @@ HELPER = """\
 // 3 x 3 taps WV_STEP_PX apart. B's luma has the adopted global gain taken out (matching only; the picture keeps B).
 const float WV_KAPPA = 0.5;         // a candidate must explain the frames at least twice as well as High's vector
 const float WV_EPS = 2.0 / 255.0;   // and by more than this (the noise floor of a 3 x 3 mean absolute difference)
-const float WV_SAME_PX = 0.5;         // px: a candidate this close to High's vector is High's vector
+const float WV_SAME_PX = 2.0;         // px: a candidate this close to High's vector is High's vector (see THE COST)
 const float WV_STEP_PX = 3.0;         // px between the patch's taps: a 7 px footprint (see THE FOOTPRINT in the module)
 float wv_cost(vec2 c, vec2 gg) {
     float acc = 0.0;
@@ -59,12 +64,26 @@ float wv_cost(vec2 c, vec2 gg) {
 }
 """
 
+COPY = """\
+//!HOOK FRAME_MIX
+//!BIND FLOW_Q_BA
+//!SAVE WV_FLOW_Q_BA
+//!WIDTH HOOKED.w 4 /
+//!HEIGHT HOOKED.h 4 /
+//!COMPONENTS 2
+//!DESC [vote] frame B's opinion for the final warp: the quarter-resolution B -> A field before the variational passes
+vec4 hook() {
+    return vec4(FLOW_Q_BA_tex(FLOW_Q_BA_pos).xy, 0.0, 0.0);
+}
+
+"""
+
 VOTE = """\
     vec4 warped = mix(warped_a, warped_b, mix_t);
     {   // WARP_VOTE: High's vector against B's opinion and the two gathered vectors
-        vec2 wv_c1 = -FLOW_H_BA_tex(HOOKED_pos).xy * 2.0 * HOOKED_pt;
+        vec2 wv_c1 = -WV_FLOW_Q_BA_tex(HOOKED_pos).xy * 4.0 * HOOKED_pt;
         vec2 wv_c2 = FLOW_H_AB_tex(HOOKED_pos - flow_ab * mix_t).xy * 2.0 * HOOKED_pt;
-        vec2 wv_c3 = -FLOW_H_BA_tex(HOOKED_pos + wv_c1 * (1.0 - mix_t)).xy * 2.0 * HOOKED_pt;
+        vec2 wv_c3 = -WV_FLOW_Q_BA_tex(HOOKED_pos + wv_c1 * (1.0 - mix_t)).xy * 4.0 * HOOKED_pt;
         float wv_d1 = length((wv_c1 - flow_ab) / HOOKED_pt), wv_d2 = length((wv_c2 - flow_ab) / HOOKED_pt),
               wv_d3 = length((wv_c3 - flow_ab) / HOOKED_pt);
         if (max(wv_d1, max(wv_d2, wv_d3)) > WV_SAME_PX) {
@@ -88,17 +107,17 @@ VOTE = """\
 def add(text):
     assert "WARP_VOTE" not in text, "already applied"
     assert text.count(MARKER) == 1, "expected one final warp pass"
-    assert "//!SAVE FLOW_H_BA\n" in text, "WARP_VOTE needs the half-resolution B -> A field (apply before the prune)"
+    assert "//!SAVE FLOW_Q_BA\n" in text, "WARP_VOTE needs the quarter-resolution B -> A field"
     start = text.rfind("//!HOOK FRAME_MIX", 0, text.index(MARKER))
     nxt = re.search(r"^//!(?:HOOK|TEXTURE|PARAM) ", text[text.index(MARKER) + len(MARKER):], re.M)
     end = text.index(MARKER) + len(MARKER) + nxt.start() if nxt else len(text)
     block = text[start:end]
-    assert block.count("//!BIND FLOW_H_AB\n") == 1 and "//!BIND FLOW_H_BA\n" not in block
-    block = block.replace("//!BIND FLOW_H_AB\n", "//!BIND FLOW_H_AB\n//!BIND FLOW_H_BA\n", 1)
+    assert block.count("//!BIND FLOW_H_AB\n") == 1 and "//!BIND WV_FLOW_Q_BA\n" not in block
+    block = block.replace("//!BIND FLOW_H_AB\n", "//!BIND FLOW_H_AB\n//!BIND WV_FLOW_Q_BA\n", 1)
     gain = "//!SAVE GLOBAL_GAIN\n" in text
     if gain:
         assert "//!BIND GLOBAL_GAIN\n" not in block
-        block = block.replace("//!BIND FLOW_H_BA\n", "//!BIND FLOW_H_BA\n//!BIND GLOBAL_GAIN\n", 1)
+        block = block.replace("//!BIND WV_FLOW_Q_BA\n", "//!BIND WV_FLOW_Q_BA\n//!BIND GLOBAL_GAIN\n", 1)
     assert block.count("\nvec4 hook() {") == 1
     block = block.replace("\nvec4 hook() {", "\n" + HELPER + "vec4 hook() {", 1)
     old = "    vec4 warped = mix(warped_a, warped_b, mix_t);\n"
@@ -108,6 +127,16 @@ def add(text):
     assert sum(l.startswith("//!BIND") for l in block.split("\n")) <= 16
     out = text[:start] + block + text[end:]
     assert out.count("{") - out.count("}") == text.count("{") - text.count("}")
+    # B's opinion is the quarter-resolution B -> A field as it stands BEFORE the variational passes (after the alias
+    # choice, outline adoption and the print's apply): a copy under its own name, so the final pass does not keep the
+    # ten B -> A variational and median passes alive through the prune
+    m = re.search(r"^//!DESC \[high\] variational Q ", out, re.M)
+    assert m, "no quarter-level variational pass to place the copy before"
+    at = out.rfind("//!HOOK FRAME_MIX", 0, m.start())
+    back = out.rfind("\n\n", 0, at) + 2          # before the pass's banner comment, if it has one
+    at = back if out[back:at].strip().startswith("//") and "//!" not in out[back:at] else at
+    assert "//!SAVE FLOW_Q_BA\n" in out[:at]
+    out = out[:at] + COPY + out[at:]
     return out
 
 

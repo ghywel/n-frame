@@ -153,3 +153,25 @@ against the first form's +10.4); real footage within 0.05 of the first form, PAS
 features), which is most of what the ladder's translations and the real windows were losing. It does not touch the
 background uncovered behind a moving thing (the trailing crescent stays as High drew it), fast pans the estimator
 cannot reach, or bars (bars_h24 is 0.3 dB down, three other bar cases 0.1 to 0.5 up, all at 11-15 dB: still broken).
+
+## The Metal cost stops the third form at the door; the fourth form registered before its first run (13:13)
+
+The third form on the demo's Metal engine (the graphs Cadence would bundle; `QuadDemo`): the gain reproduces (film1@3055.7
+27.47 -> 28.24 dB, film5@2103 30.16 -> 30.69; retained frames within 0.05 codes), and **the cost does not fit**:
+`--bench`, 24 -> 60, five interleaved rounds on the M5: 1080p 16.89 -> 19.42 ms an output (+14.9%), 4K 37.31 -> 44.64
+(+19.6%). High already runs at 59 fps at 1080p on this machine; at 51 fps Cadence's fall-back would step the film down
+to Standard, and the owner would lose High to gain the vote. The cost is the 17 passes of the half-resolution B -> A
+chain the vote keeps alive, and the scoring of sub-pixel disputes.
+
+**Fourth form** (`tests/warp_vote.py`; nothing else changed):
+- B's opinion is read from the QUARTER-resolution B -> A field as it stands before the variational passes (after the
+  alias choice, outline adoption and the print's apply), which High already computes for the print lattice. It is a
+  candidate, checked against the frames before it is used, so it need not be the refined field. One small copy pass
+  gives it a name; the prune then drops the B -> A variational and half-resolution chain as before: 88 passes
+  against High's 86 (the third form: 103).
+- Candidates within 2 px of High's vector are not scored (`WV_SAME_PX` 0.5 -> 2.0): a dispute under 2 px draws a band
+  under 2 px wide, and on the cage 70% of pixels disputed by 0.5 to 2 px.
+
+Tests V1-V7, the same lines, plus **V7 as a gate now: the Metal bench within 5% of High at 1080p and at 4K**. Predicted:
+cost +2 to +5%; the faces and the ladder's translations within 0.5 dB of the third form (a coarser B opinion finds the
+same vector, less precisely placed at the edge); real footage film +0.2 or more.
