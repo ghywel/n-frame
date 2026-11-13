@@ -110,3 +110,24 @@ of it (30.4) and is not built.
 Tests V1-V7 as registered, the same lines. Predicted: C1 within 0.5 dB of High; bars_h24 within the 0.5 line; the faces
 within 0.3 dB of the first form; the ladder's translation gains kept; real footage within 0.05 of the first form.
 **The visual gate is at risk**: nothing in this form addresses the ring's ragged edges.
+
+## The second form's result (12:51): the period guard does nothing for the cage; the cause located; the third form registered
+
+**Second form, short gate:** C1 33.69 on the cage's rectangle (first form 33.64, High 34.88): the prediction MISSED and the
+period guard is withdrawn. **Located on the CPU replay, against the truth** (the cage's flows dumped, the full final pass
+replayed; it reproduces the loss: High 32.43, vote 31.30 on four outputs):
+- the harm is entirely at pixels where High's own fallback is OFF (7.5% of the cage: there the picture error triples),
+  and the vote helps where the fallback is partly on;
+- of the pixels switched there, 7.3% carry 99% of the added error: winners 4 to 10 px from the true vector while
+  High's own was within half a pixel. They win because a 3 px patch lets a candidate put BOTH endpoints in the flat gap
+  between two bars (cost 2.7 codes) while High's nearly right vector, half a pixel off on a thin bright bar, costs 9.5;
+- two guards tried in the replay and dropped: giving High's vector the best of its half-pixel neighbours (cage 31.63),
+  and the period guard (31.25);
+- **the footprint is the cause**: the same nine taps 3 px apart (a 7 px footprint, wider than the bars' gap) give the
+  cage 32.69 (above High's 32.43), taps 4 px apart 32.66, 5 x 5 taps 2 px apart 32.74; the fast face keeps 32.03 / 38.88
+  (first form 32.38 / 38.66), the counter-pan face 30.75 / 59.84.
+
+**Third form, registered before its first GPU run:** the first form with the patch's taps 3 px apart (`WV_STEP`); the
+period guard removed; nothing else changed. Tests V1-V7, the same lines. Predicted from the replay: C1 within 0.5 dB of
+High; face_fast ROI +2.0 or more, feature +2.0 or more; the ladder's translation gains kept; real footage within 0.05
+of the first form's (film +0.30). The visual gate on the photographs stays at risk and is judged by viewing.

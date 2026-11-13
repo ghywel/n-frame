@@ -42,7 +42,7 @@ def samp(img, x, y):
 
 
 def sm(lo, hi, v):
-    t = np.clip((v - lo) / (hi - lo), 0, 1)
+    t = np.clip((v - lo) / np.maximum(hi - lo, 1e-9), 0, 1)
     return t * t * (3 - 2 * t)
 
 
@@ -132,7 +132,7 @@ def self_cost(img, x0, y0, d, taps=3):
 
 
 def warp_bcv(a, b, fab, fba, sup, t, which='bgzr', R=24.0, taps=3, step=1.0, kappa=0.5, eps=2.0 / 255, soft=True, stats=None,
-             own=False, alias=False):
+             own=False, alias=False, doubt=()):
     """Bilateral candidate vote: High's vector is replaced only by a candidate whose endpoints agree at least 1/kappa
     times better AND by more than eps; the replacement fades in with the size of the improvement (soft)."""
     cs = candidates(fab, fba, t, which, R)
@@ -141,6 +141,10 @@ def warp_bcv(a, b, fab, fba, sup, t, which='bgzr', R=24.0, taps=3, step=1.0, kap
     best = np.take_along_axis(cost, k[None], 0)[0]
     v = np.take_along_axis(np.stack(cs), k[None, ..., None], 0)[0]
     c0 = cost[0]
+    for r in doubt:      # THE SUB-PIXEL DOUBT: High's vector is judged by the best of itself and its neighbours r px away,
+        #                  so a vector right to a fraction of a pixel is not out-voted on thin detail by a look-alike
+        for dx, dy in ((r, 0), (-r, 0), (0, r), (0, -r)):
+            c0 = np.minimum(c0, bilateral_cost(a, b, fab + np.array([dx, dy], np.float32), t, taps, step))
     if soft:   # full replacement once the best costs under kappa/2 of High's; none at kappa; and only beyond the noise floor
         w = (1 - sm(0.5 * kappa, kappa, best / np.maximum(c0, 1e-6))) * sm(eps, 2 * eps, c0 - best)
     else:
@@ -185,6 +189,8 @@ VARIANTS = {
     'vote2': lambda *a, **k: warp_bcv(*a, which='bg', own='rel', alias=True, **k),    # relative ownership and the period guard
     'vote2-own': lambda *a, **k: warp_bcv(*a, which='bg', own='rel', **k),
     'vote2-alias': lambda *a, **k: warp_bcv(*a, which='bg', alias=True, **k),
+    'vote3': lambda *a, **k: warp_bcv(*a, which='bg', doubt=(0.5,), **k),             # the sub-pixel doubt, half a pixel
+    'vote3b': lambda *a, **k: warp_bcv(*a, which='bg', doubt=(0.5, 1.0), **k),        # half and one pixel
 }
 
 
