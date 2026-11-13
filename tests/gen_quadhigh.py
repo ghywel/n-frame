@@ -53,9 +53,17 @@ def sub_n(text, pat, rep, n, flags=0):
     return out
 
 
-def unpruned_high():
-    """Today's High regenerated with PRUNE=0 (its own header's switches), so its half-resolution reverse chain exists.
-    The same switches with the header's PRUNE must reproduce the shipped file first, or the parse is wrong."""
+_SOURCES = {}
+
+
+def high_source(prune):
+    """Today's High regenerated from its own header's switches WITHOUT the final warp's vote (WARP_VOTE, in High since
+    2026-11-13, is a two-frame device: it scores at mix_t and has no meaning on a four-frame window; the forms here were
+    built and measured on High's estimator and final pass as they are without it), at the PRUNE asked for (0 keeps the
+    half-resolution reverse chain). The header's switches as they stand must reproduce the shipped file first, or the
+    parse is wrong."""
+    if prune in _SOURCES:
+        return _SOURCES[prune]
     import subprocess
     import tempfile
     head = HIGH.read_text().split("\n", 20)[:20]
@@ -67,19 +75,25 @@ def unpruned_high():
     assert env.get("PRUNE") == "2", "the shipped High's header no longer says PRUNE=2"
     tmp = pathlib.Path(tempfile.mkdtemp(prefix="quadhigh-"))
     args = ["0,0,8,4", "0.3", "0.08", None, "0", "0,0,2,0", "bidirectional-interpolation-propagated.glsl"]
-    for prune, name in (("2", "check.glsl"), ("0", "unpruned.glsl")):
+    for e, name in ((env, "check.glsl"), (dict(env, PRUNE=prune, WARP_VOTE="0"), "source.glsl")):
         a = list(args); a[3] = str(tmp / name)
-        subprocess.run([sys.executable, str(HERE / "gen_variational.py")] + a, env=dict(env, PRUNE=prune), check=True,
+        subprocess.run([sys.executable, str(HERE / "gen_variational.py")] + a, env=e, check=True,
                        capture_output=True, cwd=HERE)
     strip = lambda t: "\n".join(l for l in t.split("\n") if not l.startswith("//"))
     assert strip((tmp / "check.glsl").read_text()) == strip(HIGH.read_text()), "the regenerated High is not the shipped one"
-    return tmp / "unpruned.glsl"
+    assert "WARP_VOTE" not in (tmp / "source.glsl").read_text()
+    _SOURCES[prune] = tmp / "source.glsl"
+    return _SOURCES[prune]
+
+
+def unpruned_high():
+    return high_source("0")
 
 
 def high_estimator(prefix="HI_", fa="FRAME1", fb="FRAME2", src=None):
     """High's passes up to (not including) its final pass, renamed (prefix) onto one slot pair of a four-frame window:
     frame A read from fa, frame B from fb (slots 1 and 2 for Forms Q and Q2; Q3 adds 0-1 and 2-3)."""
-    text = READING.strip_tail((src or HIGH).read_text())
+    text = READING.strip_tail((src or high_source("2")).read_text())
     text = text[text.index("//!"):]                              # its file header describes a two-frame shader
     est, final = text[:READING.final_pass(text)], text[READING.final_pass(text):]
     names = sorted(set(re.findall(r"^//!(?:SAVE|TEXTURE) (\S+)", est, re.M)))

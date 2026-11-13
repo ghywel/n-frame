@@ -240,3 +240,52 @@ or more and feature +1.0 or more; both photographs ROI +2.0 or more; real footag
 relative line fails; a missed gain line is reported as "excessive sacrifice" for the owner to weigh. **If it passes,
 it goes into Cadence's High** (the owner's standing ask of this morning, the cost objection answered at his rate):
 the tier file and its 4K twin regenerated in place, the graphs rebuilt, the app's tests run, the upload his.
+
+## The light form's results (15:02): every line PASS; it goes into High
+
+Fresh High in the same sitting (`~/np-scratch-int/motion-20261113`, labels `high` and `light`; `vote3` is the full
+variant, `WARP_VOTE=1`).
+
+| test | light form | full variant | verdict |
+|---|---|---|---|
+| V1 suite | face_fast ROI **+1.18**, feature **+1.61**; face_counterpan +0.97, +7.14; bars +0.01 to +0.16; no case below -0.01; statics bit-identical | +2.31 / +2.51; bars_h24 -0.38 | PASS (gain line +0.8 / +1.0 met) |
+| V2 photographs | ROI **+4.28** and **+2.82**, features +12.4 and +14.2. **Viewed** (truth / High / light / full, frames 14 and 7): the interior and leading side are clean where High crosses lines over the cheek; it reads the same as the full variant at this zoom; the trailing crescent stays, as registered | +4.64 / +2.98 | PASS (gain line +2.0 met) |
+| V3 ladder | **no case down** (worst 0.000); 30 of 45 up more than 0.1: L2 +6.45, L6 +5.47, M2 +3.73, L3 +2.48; raw mean +0.87, capped +0.002 | worst -0.014; L2 +11.3; raw mean +1.67 | PASS |
+| V4 cage | C1 -0.04, C2 -0.01, C3 -0.01, C4 -0.02 | -0.23, -0.04, +0.03, -0.19 | PASS |
+| V5 real footage | film **+0.159**, television +0.023, anime +0.007, cartoon +0.010, CG +0.044 dB; 10 of 40 windows up more than 0.05, 2 down (anime4@377.6 -0.146, anime2@1147.9 -0.126) | film +0.322, tv +0.072, anime +0.117, cartoon +0.012, CG +0.162 | PASS (film line +0.15 met, narrowly) |
+| V6 time coherence | face_fast 1.21 -> 0.87; face_counterpan 1.01 -> 0.86; photo_fast 1.50 -> 0.45; photo_counterpan 1.39 -> 0.62 | 0.65, 0.82, 0.43, 0.60 | PASS |
+| V7 cost | Metal as registered: 24 -> 48 **+3.1%** at 1080p (20.62 ms against the 20.83 budget), +2.3% at 4K; 24 -> 60 +5.0% and +6.8%. The libplacebo pipeline, run alone after the gate (medians of three, 180 outputs): 5.85 s against 5.74, **+2.0%** (the full variant 6.58, +14.7%). The reading inside the gate (+18%, light's three rounds 5.6 to 6.6 s) was a disturbed run and is not used | Metal +12.6 to +13.6% at 48; +14.9% / +19.6% at 60 | PASS |
+
+**The trade, plainly.** The light form keeps about nine tenths of the full variant's gain on the photographs, about
+half on the analytic fast face, the ladder's translations and real film (+0.16 dB against +0.32), and most of its
+steadiness in time; it is the gentler of the two on the cage and the bars (nothing down anywhere); it costs 3% at the
+owner's rate instead of 13%. The two anime windows that go down 0.13 to 0.15 dB are new to this form (the full
+variant's worst was -0.098) and are inside the class line (anime +0.007).
+
+**Adoption, as registered.** `WARP_VOTE=2` joins High's recipe: the tier file and its 4K twin regenerated in place
+(89 passes), `smoke.sh` and `content.py` in the same commit, the Metal graphs rebuilt for Cadence, the app's tests run.
+The `-vote` variant (`WARP_VOTE=1`) stays as the full-gain form for machines with the margin. The upload is the
+owner's.
+
+## Adopted (15:30): High is the light form; what was checked on the way in
+
+- **The files.** High and its 4K twin regenerated in place with `WARP_VOTE=2` (89 passes each); `smoke.sh`'s High spec
+  and `content.py`'s `HIGH_ENV` carry the switch (Standard and Low exclude it); smoke 19 of 19. In place, said
+  explicitly: it costs 3% and the rule for a change that costs time is a variant; the precedent is `GLOBAL_GAIN=2`
+  (2026-10-23, +1.6 to +5.3% in place in every tier), and the ladder's in-place condition holds (no case down). The
+  High of this morning regenerates from the same recipe with `WARP_VOTE=0`.
+- **One rename after the gate.** The scoring pass named High's vector `flow_ab` and read it with the very line the
+  final pass uses; GPT's `motionstress/build.py` anchors on that line being unique in High and stopped. The scoring
+  pass now calls it `wv_c0`; nothing else changed (ten lines differ from the gated file, all the name), and the
+  shipped file renders face_fast and photo_fast **bit-identical** to the gated renders (md5 of the decoded frames).
+  GPT's builder runs again, untouched.
+- **`gen_quadhigh.py`** (Forms Q to Q5) took High's passes up to the final one and now met a pass that reads `mix_t`.
+  It regenerates High from its header's switches with `WARP_VOTE=0` (the vote is a two-frame device); Forms Q and Q5
+  regenerate code-identical to their gated files.
+- **Metal, the final graphs** (`gen_metal.py`, 89 of 89 passes compile, both sizes; the M5, medians of five
+  interleaved rounds): 24 -> 48 at 1080p 19.96 -> 20.62 ms (+3.3%, budget 20.83), at 4K +3.2%; 24 -> 60 +4.9% and
+  +6.0%. The picture on the demo's engine, withheld frames: film1@3055.7 27.47 -> 27.81 dB (the full form 28.24),
+  film5@2103 30.16 -> 30.55 (30.69); retained frames unchanged.
+- **Cadence** (its own tree and record): the two High graphs replaced, the old pair kept outside the tree, metallibs
+  for the three platforms, `mac-tests.sh` short 57 passed, 0 failed. The demo's `lockstep.sh` PASS (it regenerated
+  the two stale graphs). The upload is the owner's.

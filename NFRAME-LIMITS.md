@@ -5753,7 +5753,7 @@ same base are worth a few hundredths, and what separates the tiers is the estima
 High (the High lineage on a four-frame window) is the only form that could answer the question differently; it has
 never been built. Scores: `~/np-scratch-int/content-20261023/scores-interior.json`.
 
-### The final warp at moving edges: WARP_VOTE, a variant that passes the full gate and costs 15% (2026-11-13)
+### The final warp at moving edges: WARP_VOTE, in High in its light form; the full form a variant that costs 13 to 20% (2026-11-13)
 
 The owner named the remaining visible defects (bars, fast pans, quickly translating faces); GPT built a stress suite
 and three experiments the same morning (`tests/probes/motionstress/`, G029-G030), whose combined variant failed its
@@ -5774,3 +5774,20 @@ than by a second guess (the period guard). **It is a variant, not High:** it nee
 (17 passes the prune otherwise drops) and costs +15% at 1080p and +20% at 4K on the Metal engine; four cheaper forms
 lost the cage. Not addressed: background uncovered behind a moving thing, bars, unreachable pans. GPT's global pan
 witness alone passes the gate and does nothing on real footage (no real pair of 1,413 meets its acceptance rule).
+
+**The light form, in High since the same afternoon (`WARP_VOTE=2`).** The owner asked for the cost cut without giving
+up too much of the gain, at the rate he uses (24 -> 48, where the full form ran 22.4 ms an output against a 20.8 ms
+budget on the M5). Where the full form's cost was: 17 passes of the half-resolution B -> A chain (+7.7%) and the
+scoring at full resolution (+4.9%). The light form takes frame B's opinion from the quarter-resolution B -> A field
+the print lattice already computes (one copy pass), scores at half resolution in a pass of its own, scores nothing on
+an output that lands on a source frame, and replaces the refined B -> A field's protection of the cage with one read:
+**the winner must be owned by frame A** (A's own flow, where the winner samples A, is nearer the winner than halfway
+to High's vector; a look-alike a period out, taken from a coarse opinion, is not what A says at that place). 89
+passes against 86. Against High, every registered line met: the fast face +1.18 dB (features +1.61), GPT's
+photographs +4.28 and +2.82, **the ladder with no case down** (L2 +6.45, L6 +5.47, M2 +3.73, L3 +2.48), the cage
+within 0.04, **real film +0.16** (television +0.02, anime +0.01, cartoon +0.01, CG +0.04), the error's frame-to-frame
+change down by a quarter to two thirds; on the Metal engine **+3.3% at 1080p and +3.2% at 4K at 24 -> 48** (20.6 ms
+against the 20.8 budget), +4.9% and +6.0% at 24 -> 60. It keeps about nine tenths of the full form's gain on the
+photographs and about half on the analytic face, the ladder's translations and real film; it is gentler than the full
+form on the cage and the bars. What neither form touches is unchanged: background uncovered behind a moving thing,
+bars, unreachable pans.

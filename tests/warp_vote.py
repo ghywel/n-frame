@@ -155,17 +155,18 @@ PICK = """\
 //!COMPONENTS 3
 //!DESC [vote] the final warp's vote, scored at half resolution: the winning vector in px (.xy) and its weight (.z)
 @HELPER@vec4 hook() {
-    vec2 flow_ab = FLOW_H_AB_tex(HOOKED_pos).xy * 2.0 * HOOKED_pt;
-    if (mix_t < 0.01 || mix_t > 0.99) return vec4(flow_ab / HOOKED_pt, 0.0, 0.0);   // on a source frame: nothing to draw
+    // High's own vector is wv_c0 here (the final pass keeps the name flow_ab, alone in the file: other tools anchor on it)
+    vec2 wv_c0 = FLOW_H_AB_tex(HOOKED_pos).xy * 2.0 * HOOKED_pt;
+    if (mix_t < 0.01 || mix_t > 0.99) return vec4(wv_c0 / HOOKED_pt, 0.0, 0.0);   // on a source frame: nothing to draw
     vec2 wv_c1 = -WV_FLOW_Q_BA_tex(HOOKED_pos).xy * 4.0 * HOOKED_pt;
-    vec2 wv_c2 = FLOW_H_AB_tex(HOOKED_pos - flow_ab * mix_t).xy * 2.0 * HOOKED_pt;
+    vec2 wv_c2 = FLOW_H_AB_tex(HOOKED_pos - wv_c0 * mix_t).xy * 2.0 * HOOKED_pt;
     vec2 wv_c3 = -WV_FLOW_Q_BA_tex(HOOKED_pos + wv_c1 * (1.0 - mix_t)).xy * 4.0 * HOOKED_pt;
-    float wv_d1 = length((wv_c1 - flow_ab) / HOOKED_pt), wv_d2 = length((wv_c2 - flow_ab) / HOOKED_pt),
-          wv_d3 = length((wv_c3 - flow_ab) / HOOKED_pt);
-    if (max(wv_d1, max(wv_d2, wv_d3)) <= WV_SAME_PX) return vec4(flow_ab / HOOKED_pt, 0.0, 0.0);
+    float wv_d1 = length((wv_c1 - wv_c0) / HOOKED_pt), wv_d2 = length((wv_c2 - wv_c0) / HOOKED_pt),
+          wv_d3 = length((wv_c3 - wv_c0) / HOOKED_pt);
+    if (max(wv_d1, max(wv_d2, wv_d3)) <= WV_SAME_PX) return vec4(wv_c0 / HOOKED_pt, 0.0, 0.0);
     vec2 wv_gg = @GG@;
-    float wv_k0 = wv_cost(flow_ab, wv_gg);
-    float wv_best = wv_k0; vec2 wv_v = flow_ab;
+    float wv_k0 = wv_cost(wv_c0, wv_gg);
+    float wv_best = wv_k0; vec2 wv_v = wv_c0;
     if (wv_d1 > WV_SAME_PX) { float k = wv_cost(wv_c1, wv_gg); if (k < wv_best) { wv_best = k; wv_v = wv_c1; } }
     if (wv_d2 > WV_SAME_PX) { float k = wv_cost(wv_c2, wv_gg); if (k < wv_best) { wv_best = k; wv_v = wv_c2; } }
     if (wv_d3 > WV_SAME_PX) { float k = wv_cost(wv_c3, wv_gg); if (k < wv_best) { wv_best = k; wv_v = wv_c3; } }
@@ -173,7 +174,7 @@ PICK = """\
                * smoothstep(WV_EPS, 2.0 * WV_EPS, wv_k0 - wv_best);
     if (wv_w > 0.0) {   // owned by frame A: A's flow where the winner samples A is nearer the winner than halfway to High's
         vec2 wv_fa = FLOW_H_AB_tex(HOOKED_pos - wv_v * mix_t).xy * 2.0 * HOOKED_pt;
-        float wv_tol = max(0.5 * length((wv_v - flow_ab) / HOOKED_pt), 1.0);
+        float wv_tol = max(0.5 * length((wv_v - wv_c0) / HOOKED_pt), 1.0);
         wv_w *= 1.0 - smoothstep(0.5, 1.0, length((wv_fa - wv_v) / HOOKED_pt) / wv_tol);
     }
     return vec4(wv_v / HOOKED_pt, wv_w, 0.0);

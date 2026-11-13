@@ -191,13 +191,14 @@ else
 fi
 
 # ... and the three tiers with the motion-aware cut gate (CUT_MOTION, adopted for the player 2026-10-01) and the fade
-# compensation (GLOBAL_GAIN=2, adopted 2026-10-23) with their 4K twins: the player bundles all six. The fourth file is
-# High's variant with the final warp's vote (WARP_VOTE=1, 2026-11-13; not bundled: tests/probes/occwarp/PLAN.md)
+# compensation (GLOBAL_GAIN=2, adopted 2026-10-23) with their 4K twins: the player bundles all six. High carries the
+# final warp's vote in its light form since 2026-11-13 (WARP_VOTE=2; tests/probes/occwarp/PLAN.md). The fourth file is
+# the full form of the vote (WARP_VOTE=1), a variant of High that is not bundled (it costs 13% more on Metal)
 CUTOK=1
 PLC="GLOBAL_SEED=1 QZERO_MOIRE=1 COHERENCE_GATE=1 COARSE_ENERGY=1 COARSE_ENERGY_WS=8 COARSE_ENERGY_WE=1 ALIAS_PRIOR=1 ALIAS_CARRY=1 OUTLINE_ADOPT=1"
 for spec in "ZERO_SEED=1|bidirectional-interpolation-variational-propagated-cut" \
             "$PLC|bidirectional-interpolation-variational-propagated-global-cage-energy-carry-adopt-cut" \
-            "$PLC PRINT_LATTICE=1|bidirectional-interpolation-variational-propagated-global-cage-energy-carry-adopt-lattice-cut" \
+            "$PLC PRINT_LATTICE=1 WARP_VOTE=2|bidirectional-interpolation-variational-propagated-global-cage-energy-carry-adopt-lattice-cut" \
             "$PLC PRINT_LATTICE=1 WARP_VOTE=1|bidirectional-interpolation-variational-propagated-global-cage-energy-carry-adopt-lattice-cut-vote"; do
   vars="${spec%%|*}"; stem="${spec#*|}"
   # shellcheck disable=SC2086

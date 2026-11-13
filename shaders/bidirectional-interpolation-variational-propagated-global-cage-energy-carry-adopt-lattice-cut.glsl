@@ -6,7 +6,7 @@
 // generator and regenerate. Hand edits will be lost, and the ~100
 // near-identical iteration passes are not maintainable by hand anyway.
 //
-//   GLOBAL_SEED=1 QZERO_MOIRE=1 COHERENCE_GATE=1 COARSE_ENERGY=1 COARSE_ENERGY_WS=8 COARSE_ENERGY_WE=1 ALIAS_PRIOR=1 ALIAS_CARRY=1 OUTLINE_ADOPT=1 PRINT_LATTICE=1 CUT_MOTION=1 GLOBAL_GAIN=2 PRUNE=2 ./gen_variational.py "0,0,8,4" 0.3 0.08 <output.glsl> 0 "0,0,2,0"
+//   GLOBAL_SEED=1 QZERO_MOIRE=1 COHERENCE_GATE=1 COARSE_ENERGY=1 COARSE_ENERGY_WS=8 COARSE_ENERGY_WE=1 ALIAS_PRIOR=1 ALIAS_CARRY=1 OUTLINE_ADOPT=1 PRINT_LATTICE=1 CUT_MOTION=1 GLOBAL_GAIN=2 WARP_VOTE=2 PRUNE=2 ./gen_variational.py "0,0,8,4" 0.3 0.08 <output.glsl> 0 "0,0,2,0"
 //
 // Variational iterations per pyramid level: S=0 E=0 Q=8 H=4
 // (S = 1/16 resolution, E = 1/8, Q = 1/4, H = 1/2). Roughly 3.0
@@ -4435,6 +4435,33 @@ vec4 hook() {
     return vec4(r.z > 0.5 ? r.xy * 0.25 : h, 0.0, 0.0);
 }
 //!HOOK FRAME_MIX
+//!BIND FLOW_Q_BA
+//!BIND LUMA_A_E
+//!BIND PLAT_P
+//!SAVE FLOW_Q_BA
+//!WIDTH HOOKED.w 4 /
+//!HEIGHT HOOKED.h 4 /
+//!COMPONENTS 2
+//!DESC [print] apply (BA): each cell's two by two quarter texels take its re-scored vector
+vec4 plat_p_ba(vec2 uv) { return PLAT_P_tex(vec2(uv.x * 0.5 + 0.5, uv.y)); }
+vec4 hook() {
+    vec2 h = FLOW_Q_BA_tex(FLOW_Q_BA_pos).xy;
+    ivec2 cell = ivec2(gl_FragCoord.xy) / 2;
+    vec4 r = plat_p_ba((vec2(cell) + 0.5) / LUMA_A_E_size);
+    return vec4(r.z > 0.5 ? r.xy * 0.25 : h, 0.0, 0.0);
+}
+//!HOOK FRAME_MIX
+//!BIND FLOW_Q_BA
+//!SAVE WV_FLOW_Q_BA
+//!WIDTH HOOKED.w 4 /
+//!HEIGHT HOOKED.h 4 /
+//!COMPONENTS 2
+//!DESC [vote] frame B's opinion for the final warp: the quarter-resolution B -> A field before the variational passes
+vec4 hook() {
+    return vec4(FLOW_Q_BA_tex(FLOW_Q_BA_pos).xy, 0.0, 0.0);
+}
+
+//!HOOK FRAME_MIX
 //!BIND FLOW_Q_AB
 //!BIND LUMA_A_Q
 //!BIND LUMA_B_Q
@@ -5501,10 +5528,66 @@ vec4 hook() {
 
 //!HOOK FRAME_MIX
 //!BIND HOOKED
+//!BIND NEXT
+//!BIND FLOW_H_AB
+//!BIND WV_FLOW_Q_BA
+//!BIND GLOBAL_GAIN
+//!SAVE WV_FLOW_F_AB_PICK
+//!WIDTH HOOKED.w 2 /
+//!HEIGHT HOOKED.h 2 /
+//!COMPONENTS 3
+//!DESC [vote] the final warp's vote, scored at half resolution: the winning vector in px (.xy) and its weight (.z)
+// WARP_VOTE (tests/warp_vote.py): a candidate vector's bilateral cost, the two endpoints it implies compared over
+// 3 x 3 taps WV_STEP_PX apart. B's luma has the adopted global gain taken out (matching only; the picture keeps B).
+const float WV_KAPPA = 0.5;         // a candidate must explain the frames at least twice as well as High's vector
+const float WV_EPS = 2.0 / 255.0;   // and by more than this (the noise floor of a 3 x 3 mean absolute difference)
+const float WV_SAME_PX = 0.5;         // px: a candidate this close to High's vector is High's vector
+const float WV_STEP_PX = 3.0;         // px between the patch's taps: a 7 px footprint (see THE FOOTPRINT in the module)
+float wv_cost(vec2 c, vec2 gg) {
+    float acc = 0.0;
+    for (int j = -1; j <= 1; j++) {
+        for (int i = -1; i <= 1; i++) {
+            vec2 o = vec2(float(i), float(j)) * (WV_STEP_PX * HOOKED_pt);
+            float a = dot(HOOKED_tex(HOOKED_pos + o - c * mix_t).rgb, vec3(0.299, 0.587, 0.114));
+            float b = dot(NEXT_tex(NEXT_pos + o + c * (1.0 - mix_t)).rgb, vec3(0.299, 0.587, 0.114));
+            acc += abs(a - (b - gg.y) / gg.x);
+        }
+    }
+    return acc / 9.0;
+}
+vec4 hook() {
+    // High's own vector is wv_c0 here (the final pass keeps the name flow_ab, alone in the file: other tools anchor on it)
+    vec2 wv_c0 = FLOW_H_AB_tex(HOOKED_pos).xy * 2.0 * HOOKED_pt;
+    if (mix_t < 0.01 || mix_t > 0.99) return vec4(wv_c0 / HOOKED_pt, 0.0, 0.0);   // on a source frame: nothing to draw
+    vec2 wv_c1 = -WV_FLOW_Q_BA_tex(HOOKED_pos).xy * 4.0 * HOOKED_pt;
+    vec2 wv_c2 = FLOW_H_AB_tex(HOOKED_pos - wv_c0 * mix_t).xy * 2.0 * HOOKED_pt;
+    vec2 wv_c3 = -WV_FLOW_Q_BA_tex(HOOKED_pos + wv_c1 * (1.0 - mix_t)).xy * 4.0 * HOOKED_pt;
+    float wv_d1 = length((wv_c1 - wv_c0) / HOOKED_pt), wv_d2 = length((wv_c2 - wv_c0) / HOOKED_pt),
+          wv_d3 = length((wv_c3 - wv_c0) / HOOKED_pt);
+    if (max(wv_d1, max(wv_d2, wv_d3)) <= WV_SAME_PX) return vec4(wv_c0 / HOOKED_pt, 0.0, 0.0);
+    vec2 wv_gg = texelFetch(GLOBAL_GAIN_raw, ivec2(0), 0).rg;
+    float wv_k0 = wv_cost(wv_c0, wv_gg);
+    float wv_best = wv_k0; vec2 wv_v = wv_c0;
+    if (wv_d1 > WV_SAME_PX) { float k = wv_cost(wv_c1, wv_gg); if (k < wv_best) { wv_best = k; wv_v = wv_c1; } }
+    if (wv_d2 > WV_SAME_PX) { float k = wv_cost(wv_c2, wv_gg); if (k < wv_best) { wv_best = k; wv_v = wv_c2; } }
+    if (wv_d3 > WV_SAME_PX) { float k = wv_cost(wv_c3, wv_gg); if (k < wv_best) { wv_best = k; wv_v = wv_c3; } }
+    float wv_w = (1.0 - smoothstep(0.5 * WV_KAPPA, WV_KAPPA, wv_best / max(wv_k0, 1.0e-6)))
+               * smoothstep(WV_EPS, 2.0 * WV_EPS, wv_k0 - wv_best);
+    if (wv_w > 0.0) {   // owned by frame A: A's flow where the winner samples A is nearer the winner than halfway to High's
+        vec2 wv_fa = FLOW_H_AB_tex(HOOKED_pos - wv_v * mix_t).xy * 2.0 * HOOKED_pt;
+        float wv_tol = max(0.5 * length((wv_v - wv_c0) / HOOKED_pt), 1.0);
+        wv_w *= 1.0 - smoothstep(0.5, 1.0, length((wv_fa - wv_v) / HOOKED_pt) / wv_tol);
+    }
+    return vec4(wv_v / HOOKED_pt, wv_w, 0.0);
+}
+
+//!HOOK FRAME_MIX
+//!BIND HOOKED
 //!BIND SCENE_DIFF
 //!BIND SCENE_RES
 //!BIND NEXT
 //!BIND FLOW_H_AB
+//!BIND WV_FLOW_F_AB_PICK
 //!BIND SUPPORT
 //!SAVE FRAME_MIX
 //!WIDTH HOOKED.w
@@ -5625,6 +5708,16 @@ vec4 hook() {
     float unwarped = (1.0 - smoothstep(0.50, 0.70, sup.x)) * (1.0 - smoothstep(0.40, 0.40 + 0.15, sup.y))
                    * (1.0 - smoothstep(0.50, 0.50 + 0.5, sup.z));
     vec4 warped = mix(warped_a, warped_b, mix_t);
+    {   // WARP_VOTE=2: the winner scored at half resolution (the weight read bilinearly, the vector from the nearest texel,
+        // so no in-between vector is ever sampled)
+        float wv_w = WV_FLOW_F_AB_PICK_tex(HOOKED_pos).z;
+        if (wv_w > 0.0) {
+            vec2 wv_uv = (floor(HOOKED_pos * WV_FLOW_F_AB_PICK_size) + 0.5) / WV_FLOW_F_AB_PICK_size;
+            vec2 wv_v = WV_FLOW_F_AB_PICK_tex(wv_uv).xy * HOOKED_pt;
+            vec4 wv_new = mix(warp_sample_a(HOOKED_pos - wv_v * mix_t), warp_sample_b(NEXT_pos + wv_v * (1.0 - mix_t)), mix_t);
+            warped = mix(warped, wv_new, wv_w);
+        }
+    }
     if (unwarped <= 0.0) return warped;
     return mix(warped, mix(HOOKED_tex(HOOKED_pos), NEXT_tex(NEXT_pos), mix_t), unwarped);
 }
