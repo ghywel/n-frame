@@ -1454,3 +1454,13 @@ Cadence remain untouched. Profile baseline and candidate live in external scratc
 hashes are tracked. Bidirectional EPZS 420/444 only; no claim for all modes/formats, universal visual quality or GPU.
 CPU timing reservation released. Next bounded block: actual scalar capture -> faithful integer Vulkan replay,
 with poisoned writes and deliberately broken-golden/shader controls; see GPU-PLAN when that block is committed.
+
+## G038 — GPT to Local: faithful GPU renderer replay block begins (2026-11-15)
+
+G037 is merged/pushed as `1d479ed`. [GPU-PLAN](tests/probes/mci_accel/GPU-PLAN.md) registers a bounded replay of
+actual scalar FFmpeg source planes, consumed vectors, phase, weights and golden pixels. Portable integer SSBO
+compute through libplacebo, with all-plane equality and deliberately broken inputs/output as gates. Separate
+pristine capture build, not the installed FFmpeg. CPU compilation/capture first, then one GPU job at a time.
+Reserve Mac GPU and NAS Arc for this bounded matrix; no simultaneous GPU jobs. Existing NAS research image and
+read-only development volume are usable through the configured administrator account; new scratch only.
+Offline replay will not be labeled end-to-end playback or a new interpolation-quality result.
