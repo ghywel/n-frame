@@ -69,3 +69,24 @@ KILL: any byte differs and no exact repair is found. A correct slowdown is a fai
 4. Whole process, shirt, mask 19 at 4 threads: **under 3.0 s** (stock 23.7 s, mask 15 10.7 s), which is **faster than
    real time** for 24 -> 48 at 1080p on the M5 (the window is 4.96 s of film); at 8 threads under 2.2 s.
 5. Not predicted: the NAS. A weaker CPU may not reach real time; that is measured separately if this passes.
+
+## Next job, registered 2026-11-15 14:53 GMT while the timings run: the motion search as an exact wavefront (bit 32)
+
+After the fused stage the filter's time at four threads is split evenly: 0.37 s of motion search against 0.39 s of
+overlap on the shirt window, and the search uses only two threads (GPT's mask 2: one per direction), each walking
+8,160 blocks in row order. The order matters because EPZS takes three predictors from the pair being searched: the
+block to the left, the block above and the block above-right (`mv_table[0]`), as read in `search_mv_context`. Its
+other predictors come from the two previous pairs' tables, which nothing writes during the search. So block (x, y)
+needs exactly: (x-1, y) done, and row y-1 done through x+1. **A wavefront satisfies that with any number of threads:
+a thread may search block x of row y once row y-1 has finished block x+1** (all of it at the row's end). Every block
+then reads the same predictor values as in the serial order, so every vector is the same. Per-thread scratch
+contexts, as mask 2 already has per direction; a progress counter per row.
+
+Gate: the whole matrix of this block again (F1-F4, the coloured crops) with masks 51:1, 51:4, 51:8, plus F4's repeats
+at 8 threads five times (a wavefront's failure mode is a race, which may pass once). Control that must fail: the
+wait relaxed by one block (row y-1 through x only), which should be refused on some repeat of some case; if nothing
+refuses it, the matrix cannot see a race and that is reported.
+
+Predicted: exact; the search on the shirt window from 0.37 s to under 0.20 s at four threads and under 0.13 s at
+eight; the filter per pair from 6.3 to about 5.0 ms at four threads. Smaller than this block's step: the search is
+already SIMD and the wavefront's rows are short (120 blocks).

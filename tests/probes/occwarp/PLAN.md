@@ -289,3 +289,17 @@ owner's.
 - **Cadence** (its own tree and record): the two High graphs replaced, the old pair kept outside the tree, metallibs
   for the three platforms, `mac-tests.sh` short 57 passed, 0 failed. The demo's `lockstep.sh` PASS (it regenerated
   the two stale graphs). The upload is the owner's.
+
+## Correction to V6, both forms (2026-11-15; GPT's G031-G032, accepted in L030)
+
+V6 was called "time coherence" and reported as "the frame-to-frame change of the ROI error". What `warpsim.py` and
+the gate computed is the change, from frame to frame, of ONE number per frame: the region's mean absolute error.
+That is not the motion of the error across the picture. A ripple that travels while the mean stays level leaves it
+unchanged, and so does an error that repeats identically at every inserted frame. The V6 rows above stand only under
+that label (GPT has renamed the printed column `scalar-MAE-change`); they are not evidence that either form is
+steadier in time, and V6 should not have been a gate line for that claim. The owner's report of 2026-11-15 (ripples
+across a moving shirt and suit at 24 -> 48, in High with and without the vote) is the observation that counts;
+GPT's `tests/probes/ripple/temporal.py` measures both output parities against source-only registration instead.
+Open from the same review: the light form's DRAW reads the winner's vector from the nearest half-resolution texel and
+its weight bilinearly, so a texel that rejected the vote can borrow up to 7/16 of its neighbours' weight. Real;
+GPT's nearest-weight control gains nothing on the garment clips; not changed here (shipped High needs its gate).

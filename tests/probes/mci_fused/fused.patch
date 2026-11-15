@@ -1,0 +1,316 @@
+diff --git a/libavfilter/vf_minterpolate.c b/libavfilter/vf_minterpolate.c
+index 17d73e6..7ead3c8 100644
+--- a/libavfilter/vf_minterpolate.c
++++ b/libavfilter/vf_minterpolate.c
+@@ -186,6 +186,11 @@ typedef struct MIContext {
+     PixelMVS *pixel_mvs;
+     PixelWeights *pixel_weights;
+     PixelRefs *pixel_refs;
++    uint32_t *fused_acc;        ///< mci_accel 16: weighted luma sum per pixel
++    uint16_t *fused_wsum;       ///< ... its overlap-weight sum
++    uint8_t *fused_cnt;         ///< ... its accepted pairs
++    uint32_t *fused_cacc[2];    ///< ... weighted chroma sums, per chroma sample
++    uint16_t *fused_cwsum;      ///< ... the owning luma pixel's weight sum, per chroma sample
+     int (*mv_table[3])[2][2];
+     int64_t out_pts;
+     int b_width, b_height, b_count;
+@@ -233,7 +238,7 @@ static const AVOption minterpolate_options[] = {
+     { "search_param", "search parameter", OFFSET(search_param), AV_OPT_TYPE_INT, {.i64 = 32}, 4, INT_MAX, FLAGS },
+     { "mci_profile", "report bidir stage wall times", OFFSET(mci_profile), AV_OPT_TYPE_BOOL, {.i64 = 0}, 0, 1, FLAGS },
+     { "vsbmc", "variable-size block motion compensation", OFFSET(vsbmc), AV_OPT_TYPE_INT, {.i64 = 0}, 0, 1, FLAGS },
+-    { "mci_accel", "experimental acceleration bits: 1 SIMD SAD, 2 direction jobs, 4 row jobs, 8 last chroma", OFFSET(mci_accel), AV_OPT_TYPE_INT, {.i64 = 0}, 0, 15, FLAGS },
++    { "mci_accel", "experimental acceleration bits: 1 SIMD SAD, 2 direction jobs, 4 row jobs, 8 last chroma, 16 fused overlap sums (bidir)", OFFSET(mci_accel), AV_OPT_TYPE_INT, {.i64 = 0}, 0, 31, FLAGS },
+     { "scd", "scene change detection method", OFFSET(scd_method), AV_OPT_TYPE_INT, {.i64 = SCD_METHOD_FDIFF}, SCD_METHOD_NONE, SCD_METHOD_FDIFF, FLAGS, .unit = "scene" },
+         CONST("none",   "disable detection",                    SCD_METHOD_NONE,        "scene"),
+         CONST("fdiff",  "frame difference",                     SCD_METHOD_FDIFF,       "scene"),
+@@ -415,11 +420,26 @@ static int config_input(AVFilterLink *inlink)
+         } else if (mi_ctx->me_mode == ME_MODE_BILAT)
+             me_ctx->get_cost = &get_sbad_ob;
+ 
++        if (mi_ctx->me_mode == ME_MODE_BIDIR && (mi_ctx->mci_accel & 16)) {
++            /* the fused stage keeps sums, not lists: 7 bytes a pixel and the chroma sums */
++            const int cwidth  = AV_CEIL_RSHIFT(width,  mi_ctx->log2_chroma_w);
++            const int cheight = AV_CEIL_RSHIFT(height, mi_ctx->log2_chroma_h);
++            mi_ctx->fused_acc     = av_calloc(width * height, sizeof(*mi_ctx->fused_acc));
++            mi_ctx->fused_wsum    = av_calloc(width * height, sizeof(*mi_ctx->fused_wsum));
++            mi_ctx->fused_cnt     = av_calloc(width * height, sizeof(*mi_ctx->fused_cnt));
++            mi_ctx->fused_cacc[0] = av_calloc(cwidth * cheight, sizeof(*mi_ctx->fused_cacc[0]));
++            mi_ctx->fused_cacc[1] = av_calloc(cwidth * cheight, sizeof(*mi_ctx->fused_cacc[1]));
++            mi_ctx->fused_cwsum   = av_calloc(cwidth * cheight, sizeof(*mi_ctx->fused_cwsum));
++            if (!mi_ctx->fused_acc || !mi_ctx->fused_wsum || !mi_ctx->fused_cnt ||
++                !mi_ctx->fused_cacc[0] || !mi_ctx->fused_cacc[1] || !mi_ctx->fused_cwsum)
++                return AVERROR(ENOMEM);
++        } else {
+         mi_ctx->pixel_mvs     = av_calloc(width * height, sizeof(*mi_ctx->pixel_mvs));
+         mi_ctx->pixel_weights = av_calloc(width * height, sizeof(*mi_ctx->pixel_weights));
+         mi_ctx->pixel_refs    = av_calloc(width * height, sizeof(*mi_ctx->pixel_refs));
+         if (!mi_ctx->pixel_mvs || !mi_ctx->pixel_weights || !mi_ctx->pixel_refs)
+             return AVERROR(ENOMEM);
++        }
+ 
+         if (mi_ctx->me_mode == ME_MODE_BILAT)
+             if (!FF_ALLOCZ_TYPED_ARRAY(mi_ctx->int_blocks, mi_ctx->b_count))
+@@ -1166,6 +1186,228 @@ static void set_frame_data_dispatch(AVFilterContext *ctx, MIContext *mi_ctx,
+     }
+ }
+ 
++/* ---- mci_accel bit 16: the overlap lists replaced by sums (n-frame tests/probes/mci_fused/PLAN.md) ----
++ * bidirectional_obmc() stores, for every luma pixel, up to NB_PIXEL_MVS entries of vector, weight and frame, and
++ * set_frame_data() then only sums them. Here each accepted pair is added straight into a weighted sum, a weight sum
++ * and a pair count (and, at the one luma pixel that owns each chroma sample, into the chroma sums). Blocks are
++ * visited in the stock order, so every pixel receives its pairs in the stock order and the cap falls on the same
++ * pair. Threads own bands of whole chroma row groups; each walks all blocks and writes only its own rows. */
++#define MCI_FUSED_CAP (NB_PIXEL_MVS / 2)
++
++/* One row of one block where no clip can act: the six arrays never overlap. */
++static av_always_inline void fused_row(uint32_t *restrict racc, uint16_t *restrict rws,
++                                       uint8_t *restrict rcnt, const uint8_t *restrict t,
++                                       const uint8_t *restrict pa, const uint8_t *restrict pb,
++                                       int n, uint32_t wa, uint32_t wb)
++{
++    int i;
++#if defined(__clang__)
++#pragma clang loop vectorize(enable) interleave(disable)
++#endif
++    for (i = 0; i < n; i++) {
++        const uint32_t m = rcnt[i] < MCI_FUSED_CAP ? t[i] : 0;
++        racc[i] += m * (wa * pa[i] + wb * pb[i]);
++        rws[i]  += m;
++        rcnt[i] += m != 0;
++    }
++}
++
++/* Finish one row: (sum + W/2) / W with W = 1024 w, or the plain blend where no pair landed (w = 0).
++ * floor(((sum + 512 w) >> 10) / w) is taken through a float32 division so the loop vectorises. It is exact:
++ * the numerator is below 2^20 and w below 2^12, so both convert exactly; the quotient r is at most 255; if r is
++ * an integer the division is exact, otherwise r is at least 1/w > 2^-12 from the next integer while the rounded
++ * quotient is within half an ulp, under 2^-17, of r. Truncation therefore gives floor(r). */
++static av_always_inline void fused_finish(uint8_t *restrict dst, const uint32_t *restrict racc,
++                                          const uint16_t *restrict rws, const uint8_t *restrict pa,
++                                          const uint8_t *restrict pb, int n, uint32_t wa, uint32_t wb)
++{
++    int i;
++#if defined(__clang__)
++#pragma clang loop vectorize(enable) interleave(disable)
++#endif
++    for (i = 0; i < n; i++) {
++        const uint32_t w = rws[i];
++        const uint32_t num = (racc[i] + (w << 9)) >> 10;
++#ifdef __FAST_MATH__   /* a reciprocal in place of the division would not be exact */
++        const uint32_t q = num / (w ? w : 1);
++#else
++        const uint32_t q = (uint32_t)((float)num / (float)(w ? w : 1));
++#endif
++        const uint32_t blend = (wa * pa[i] + wb * pb[i] + 512) >> 10;
++        dst[i] = w ? q : blend;
++    }
++}
++
++typedef struct MCFusedData {
++    AVFrame *out;
++    int alpha;
++} MCFusedData;
++
++static int fused_jobs(AVFilterContext *ctx, void *arg, int jobnr, int nb_jobs)
++{
++    MIContext *mi_ctx = ctx->priv;
++    MCFusedData *td = arg;
++    AVFrame *out = td->out;
++    const AVFrame *fa = mi_ctx->frames[1].avf;
++    const AVFrame *fb = mi_ctx->frames[2].avf;
++    const int alpha = td->alpha;
++    const uint32_t wa = ALPHA_MAX - alpha, wb = alpha;
++    const int width = out->width, height = out->height;
++    const int cw = mi_ctx->log2_chroma_w, ch = mi_ctx->log2_chroma_h;
++    const int chroma = mi_ctx->nb_planes >= 3;
++    const int xmask = (1 << cw) - 1, ymask = (1 << ch) - 1;
++    const int groups = AV_CEIL_RSHIFT(height, ch);
++    const int row0 = (groups * jobnr / nb_jobs) << ch;
++    const int row1 = FFMIN((groups * (jobnr + 1) / nb_jobs) << ch, height);
++    const int crow0 = row0 >> ch, crow1 = AV_CEIL_RSHIFT(row1, ch);
++    const int cwidth = AV_CEIL_RSHIFT(width, cw);
++    const int log2_mb = mi_ctx->log2_mb_size;
++    const int span = 2 << log2_mb;
++    const uint8_t *tab = obmc_tab_linear[4 - log2_mb];
++    uint32_t *acc = mi_ctx->fused_acc;
++    uint16_t *wsum = mi_ctx->fused_wsum;
++    uint8_t *cnt = mi_ctx->fused_cnt;
++    int dir, mb_x, mb_y, x, y, plane;
++
++    if (row0 >= row1)
++        return 0;
++
++    memset(acc  + (size_t)row0 * width, 0, (size_t)(row1 - row0) * width * sizeof(*acc));
++    memset(wsum + (size_t)row0 * width, 0, (size_t)(row1 - row0) * width * sizeof(*wsum));
++    memset(cnt  + (size_t)row0 * width, 0, (size_t)(row1 - row0) * width * sizeof(*cnt));
++    if (chroma)
++        for (plane = 0; plane < 2; plane++)
++            memset(mi_ctx->fused_cacc[plane] + (size_t)crow0 * cwidth, 0,
++                   (size_t)(crow1 - crow0) * cwidth * sizeof(*mi_ctx->fused_cacc[plane]));
++
++    for (dir = 0; dir < 2; dir++) {
++        const Block *blocks = mi_ctx->frames[2 - dir].blocks;
++        const int a = dir ? alpha : (ALPHA_MAX - alpha);
++
++        for (mb_y = 0; mb_y < mi_ctx->b_height; mb_y++)
++            for (mb_x = 0; mb_x < mi_ctx->b_width; mb_x++) {
++                int mv_x = blocks[mb_x + mb_y * mi_ctx->b_width].mvs[dir][0];
++                int mv_y = blocks[mb_x + mb_y * mi_ctx->b_width].mvs[dir][1];
++                const int start_x = (mb_x << log2_mb) - mi_ctx->mb_size / 2 + mv_x * a / ALPHA_MAX;
++                const int start_y = (mb_y << log2_mb) - mi_ctx->mb_size / 2 + mv_y * a / ALPHA_MAX;
++                const int startc_x = av_clip(start_x, 0, width - 1);
++                const int startc_y = av_clip(start_y, 0, height - 1);
++                const int endc_x = av_clip(start_x + span, 0, width - 1);
++                const int endc_y = av_clip(start_y + span, 0, height - 1);
++                const int y0 = FFMAX(startc_y, row0), y1 = FFMIN(endc_y, row1);
++                int ax, ay, bx, by;
++
++                if (y0 >= y1 || startc_x >= endc_x)
++                    continue;
++
++                if (dir) {
++                    mv_x = -mv_x;
++                    mv_y = -mv_y;
++                }
++                /* the two displacements of a pair, before the clip to the frame */
++                ax = (mv_x * alpha) / ALPHA_MAX;
++                ay = (mv_y * alpha) / ALPHA_MAX;
++                bx = -mv_x * (ALPHA_MAX - alpha) / ALPHA_MAX;
++                by = -mv_y * (ALPHA_MAX - alpha) / ALPHA_MAX;
++
++                if (startc_x + FFMIN(ax, bx) >= 0 && endc_x - 1 + FFMAX(ax, bx) <= width - 1 &&
++                    y0 + FFMIN(ay, by) >= 0 && y1 - 1 + FFMAX(ay, by) <= height - 1) {
++                    /* no clip can act on these pixels: the displacements are the block's constants */
++                    const int n = endc_x - startc_x;
++                    const int cax = ax / (1 << cw), cay = ay / (1 << ch);
++                    const int cbx = bx / (1 << cw), cby = by / (1 << ch);
++
++                    for (y = y0; y < y1; y++) {
++                        const uint8_t *t = tab + (startc_x - start_x) + ((y - start_y) << (log2_mb + 1));
++                        const uint8_t *pa = fa->data[0] + (y + ay) * fa->linesize[0] + startc_x + ax;
++                        const uint8_t *pb = fb->data[0] + (y + by) * fb->linesize[0] + startc_x + bx;
++                        uint32_t *racc = acc + (size_t)y * width + startc_x;
++                        uint16_t *rws = wsum + (size_t)y * width + startc_x;
++                        uint8_t *rcnt = cnt + (size_t)y * width + startc_x;
++
++                        if (chroma && !((y + 1) & ymask)) {
++                            /* this row owns a chroma row: its owning columns, before the counts move */
++                            const int cy = y >> ch;
++                            for (plane = 1; plane < 3; plane++) {
++                                const uint8_t *ca = fa->data[plane] + (cy + cay) * fa->linesize[plane] + cax;
++                                const uint8_t *cb = fb->data[plane] + (cy + cby) * fb->linesize[plane] + cbx;
++                                uint32_t *cacc = mi_ctx->fused_cacc[plane - 1] + (size_t)cy * cwidth;
++                                for (x = startc_x | xmask; x < endc_x; x += xmask + 1) {
++                                    const uint32_t m = rcnt[x - startc_x] < MCI_FUSED_CAP ? t[x - startc_x] : 0;
++                                    cacc[x >> cw] += m * (wa * ca[x >> cw] + wb * cb[x >> cw]);
++                                }
++                            }
++                        }
++                        fused_row(racc, rws, rcnt, t, pa, pb, n, wa, wb);
++                    }
++                } else {
++                    for (y = y0; y < y1; y++) {
++                        const int day = av_clip(ay, -y, height - y - 1);
++                        const int dby = av_clip(by, -y, height - y - 1);
++                        for (x = startc_x; x < endc_x; x++) {
++                            const uint32_t w = tab[(x - start_x) + ((y - start_y) << (log2_mb + 1))];
++                            const size_t p = (size_t)y * width + x;
++                            int dax, dbx;
++
++                            if (!w || cnt[p] >= MCI_FUSED_CAP)
++                                continue;
++                            dax = av_clip(ax, -x, width - x - 1);
++                            dbx = av_clip(bx, -x, width - x - 1);
++                            acc[p] += w * (wa * fa->data[0][(y + day) * fa->linesize[0] + x + dax] +
++                                           wb * fb->data[0][(y + dby) * fb->linesize[0] + x + dbx]);
++                            if (chroma && !((y + 1) & ymask) && !((x + 1) & xmask)) {
++                                const int cx = x >> cw, cy = y >> ch;
++                                for (plane = 1; plane < 3; plane++)
++                                    mi_ctx->fused_cacc[plane - 1][(size_t)cy * cwidth + cx] += w *
++                                        (wa * fa->data[plane][(cy + day / (1 << ch)) * fa->linesize[plane] + cx + dax / (1 << cw)] +
++                                         wb * fb->data[plane][(cy + dby / (1 << ch)) * fb->linesize[plane] + cx + dbx / (1 << cw)]);
++                            }
++                            wsum[p] += w;
++                            cnt[p]++;
++                        }
++                    }
++                }
++            }
++    }
++
++    /* finish: (sum + W/2) / W with W = 1024 * wsum; a pixel with no pair is the plain blend at its own position */
++    for (y = row0; y < row1; y++) {
++        const uint8_t *pa = fa->data[0] + y * fa->linesize[0];
++        const uint8_t *pb = fb->data[0] + y * fb->linesize[0];
++        const uint32_t *racc = acc + (size_t)y * width;
++        const uint16_t *rws = wsum + (size_t)y * width;
++        uint8_t *dst = out->data[0] + y * out->linesize[0];
++
++        fused_finish(dst, racc, rws, pa, pb, width, wa, wb);
++    }
++    if (chroma)
++        for (y = crow0; y < crow1; y++) {
++            /* the luma pixel that owns each chroma sample: the last one of its cell, inside the frame */
++            const int ly = FFMIN(((y + 1) << ch) - 1, height - 1);
++            const uint16_t *lws = wsum + (size_t)ly * width;
++            uint16_t *cws = mi_ctx->fused_cwsum + (size_t)y * cwidth;
++
++            for (x = 0; x < cwidth; x++)
++                cws[x] = lws[FFMIN(((x + 1) << cw) - 1, width - 1)];
++            for (plane = 1; plane < 3; plane++)
++                fused_finish(out->data[plane] + y * out->linesize[plane],
++                             mi_ctx->fused_cacc[plane - 1] + (size_t)y * cwidth, cws,
++                             fa->data[plane] + y * fa->linesize[plane],
++                             fb->data[plane] + y * fb->linesize[plane], cwidth, wa, wb);
++        }
++    return 0;
++}
++
++static void fused_dispatch(AVFilterContext *ctx, MIContext *mi_ctx, int alpha, AVFrame *avf_out)
++{
++    MCFusedData td = { .out = avf_out, .alpha = alpha };
++    const int groups = AV_CEIL_RSHIFT(avf_out->height, mi_ctx->log2_chroma_h);
++    const int threads = ff_filter_get_nb_threads(ctx);
++
++    /* more bands than threads, so unequal cores share the rows evenly */
++    ff_filter_execute(ctx, fused_jobs, &td, NULL, FFMIN(groups, threads > 1 ? 4 * threads : 1));
++}
++
+ static void var_size_bmc(MIContext *mi_ctx, Block *block, int x_mb, int y_mb, int n, int alpha)
+ {
+     int sb_x, sb_y;
+@@ -1329,12 +1571,21 @@ static void interpolate(AVFilterLink *inlink, AVFrame *avf_out)
+         case MI_MODE_MCI:
+             if (mi_ctx->me_mode == ME_MODE_BIDIR) {
+                 int64_t profile_start = mi_ctx->mci_profile ? av_gettime_relative() : 0;
++                if (mi_ctx->mci_accel & 16) {
++                    /* lists and output in one threaded pass; its whole time is reported as the overlap stage */
++                    fused_dispatch(ctx, mi_ctx, alpha, avf_out);
++                    if (mi_ctx->mci_profile) {
++                        mi_ctx->profile_overlap_us += av_gettime_relative() - profile_start;
++                        profile_start = av_gettime_relative();
++                    }
++                } else {
+                 bidirectional_obmc(mi_ctx, alpha);
+                 if (mi_ctx->mci_profile) {
+                     mi_ctx->profile_overlap_us += av_gettime_relative() - profile_start;
+                     profile_start = av_gettime_relative();
+                 }
+                 set_frame_data_dispatch(ctx, mi_ctx, alpha, avf_out);
++                }
+                 if (mi_ctx->mci_profile) {
+                     mi_ctx->profile_output_us += av_gettime_relative() - profile_start;
+                     mi_ctx->profile_draws++;
+@@ -1437,6 +1688,12 @@ static av_cold void uninit(AVFilterContext *ctx)
+     av_freep(&mi_ctx->pixel_mvs);
+     av_freep(&mi_ctx->pixel_weights);
+     av_freep(&mi_ctx->pixel_refs);
++    av_freep(&mi_ctx->fused_acc);
++    av_freep(&mi_ctx->fused_wsum);
++    av_freep(&mi_ctx->fused_cnt);
++    av_freep(&mi_ctx->fused_cacc[0]);
++    av_freep(&mi_ctx->fused_cacc[1]);
++    av_freep(&mi_ctx->fused_cwsum);
+     if (mi_ctx->int_blocks)
+         for (m = 0; m < mi_ctx->b_count; m++)
+             free_blocks(&mi_ctx->int_blocks[m]);

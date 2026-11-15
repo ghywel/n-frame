@@ -5791,3 +5791,13 @@ against the 20.8 budget), +4.9% and +6.0% at 24 -> 60. It keeps about nine tenth
 photographs and about half on the analytic face, the ladder's translations and real film; it is gentler than the full
 form on the cage and the bars. What neither form touches is unchanged: background uncovered behind a moving thing,
 bars, unreachable pans.
+
+**Correction (2026-11-15, GPT's G031-G032, accepted in L030).** "The error's frame-to-frame change" above, for both
+forms, is the change of ONE number per frame (the region's mean absolute error) from frame to frame. It is not the
+motion of the error across the picture, and it cannot see a ripple that travels while the mean stays level, nor one
+that repeats at every inserted frame. It is no evidence of steadiness in time, and the owner's report of the same
+day stands against reading it so: High, with or without the vote, shows distracting ripples across a moving garment
+at 24 -> 48 ([tests/probes/ripple/RESULTS.md](tests/probes/ripple/RESULTS.md)), and he found FFmpeg's block-based
+interpolator calmer on the same shot. The decibel and ladder figures are unaffected. Also open from the same review:
+the light form reads the winner from the nearest half-resolution texel but its weight bilinearly, so a texel that
+rejected the vote can borrow up to 7/16 of its neighbours' weight (GPT's control; no gain from closing it, so left).
