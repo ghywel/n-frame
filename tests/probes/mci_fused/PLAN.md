@@ -72,6 +72,8 @@ KILL: any byte differs and no exact repair is found. A correct slowdown is a fai
 
 ## Next job, registered 2026-11-15 14:53 GMT while the timings run: the motion search as an exact wavefront (bit 32)
 
+**Done the same afternoon: [RESULTS.md](RESULTS.md).** Exact; the search 0.36 -> 0.20 s at four threads.
+
 After the fused stage the filter's time at four threads is split evenly: 0.37 s of motion search against 0.39 s of
 overlap on the shirt window, and the search uses only two threads (GPT's mask 2: one per direction), each walking
 8,160 blocks in row order. The order matters because EPZS takes three predictors from the pair being searched: the
@@ -90,3 +92,20 @@ refuses it, the matrix cannot see a race and that is reported.
 Predicted: exact; the search on the shirt window from 0.37 s to under 0.20 s at four threads and under 0.13 s at
 eight; the filter per pair from 6.3 to about 5.0 ms at four threads. Smaller than this block's step: the search is
 already SIMD and the wavefront's rows are short (120 blocks).
+
+## Next job, registered 2026-11-15 16:37 GMT: 4K on the NAS, the overlap stage's bands sized to the cache
+
+Found by the third NAS job: at 4K the fused stage takes 5.4 s at four threads and 4.9 s at six on the i5-9500, while
+at 1080p it scales (0.92 to 0.69 s) and on the M5 at 4K it scales too. The bands are `4 x threads` slices of the
+frame: at 4K and six threads, 24 bands of 90 rows, each 90 x 3840 x 7 bytes = 2.4 MB of sums, written by every block
+that crosses the band, twice (two directions). Six such working sets are 14.5 MB against a 9 MB shared cache.
+
+Change, nothing else: the band height capped (bands of at most 32 rows of whole chroma groups, so 0.86 MB a band at
+4K; more bands than `4 x threads` where the frame is tall), each band's blocks found from a per-row index instead of
+a walk over all blocks (the walk is 65,280 block tests a band at 4K and would grow with the band count). Order within
+a pixel is untouched: bands are disjoint rows and each still takes its blocks in the stock order.
+
+Gate: this block's whole matrix on the M5 and the NAS again. Predicted: exact; the NAS at 4K, six threads, native,
+from 6.6 s to under 4.5 s (above real time, 4.96 s of film); 1080p on both hosts within 5% either way; the M5 at 4K
+no slower. If the NAS at 4K does not move, the bound is the frames' own traffic (two 12 MB frames read at scattered
+offsets), and the next door there is the GPU renderer GPT has already proven exact on the Arc.

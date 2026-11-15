@@ -7,7 +7,9 @@ No installed FFmpeg, shader or Cadence resource is touched; the builds live in t
 **In one line:** `minterpolate` in its bidirectional MCI mode (the pictures the owner found calmer than High) does its
 filter work for 1080p 24 -> 48 in **4.5 ms a source pair on four threads of the M5: 41 times faster than stock, 8.6
 times faster than real time, every output byte unchanged**. One thread alone is 2.7 times real time. 4K runs at
-twice real time on four threads. Memory falls from 631 MiB to 73 MiB. NAS figures are in their own section.
+twice real time on four threads. Memory falls from 631 MiB to 73 MiB. **On the NAS's six-core i5 the same filter
+goes from 0.07 times real time to 3.9 times (4.9 with the build tuned to that CPU), 60 to 75 times stock**; 4K there
+is 0.75 times real time, not yet enough.
 
 ## What was built
 
@@ -117,6 +119,43 @@ Warm, three alternating paired rounds, medians:
 filter's stages take about 0.55 s of the 3.2 s; the rest is the FFV1 decoder on its one thread (about 27 ms a 1080p
 frame). That is the reason for the decode-free measure above.
 
+## Timing on the NAS (Intel i5-9500, six cores, Linux, gcc 14; CPU only, in its own container)
+
+Three builds from the same sources and patches: stock with GPT's profiling patch, the final patch with FFmpeg's
+default x86-64 flags, and the final patch with `-march=native` (AVX2). **Exactness there:** the final binaries are
+equal to that host's stock on 140 comparisons (GPT's eleven cases at 51:1 / 51:4 / 51:6, three cases five times at
+six threads, both films at 51:4 and 51:6, the six coloured crops at three block sizes; the two earlier binaries of
+the afternoon on 212 and 140). And **the NAS's stock output equals the M5's stock output on every frame of both
+films** (gcc on x86-64 against clang on arm64), as integer code should.
+
+Decode-free as above; five interleaved rounds, medians (stock: three rounds, timed once in the first job):
+
+| 1080p 24 -> 48, shirt, on the NAS | Wall | x real time | x stock | Filter per source pair | Peak memory |
+|---|---:|---:|---:|---:|---:|
+| stock | 75.88 s | 0.07 | 1 | 631.3 ms | 630 MiB |
+| GPT's mask 15, 4 threads | 30.93 s | 0.16 | 2.5 | 256.5 ms | 630 MiB |
+| mask 51, default flags, 1 thread | 6.11 s | 0.81 | 12.4 | 50.2 ms | 71 MiB |
+| mask 51, default flags, 4 threads | 1.63 s | 3.04 | 46.5 | 12.9 ms | 71 MiB |
+| **mask 51, default flags, 6 threads** | **1.27 s** | **3.91** | **59.7** | **9.8 ms** | 71 MiB |
+| mask 51, `-march=native`, 1 thread | 4.77 s | 1.04 | 15.9 | 39.0 ms | 71 MiB |
+| mask 51, `-march=native`, 4 threads | 1.25 s | 3.96 | 60.6 | 9.7 ms | 71 MiB |
+| **mask 51, `-march=native`, 6 threads** | **1.01 s** | **4.90** | **74.9** | **7.7 ms** | 71 MiB |
+
+The suit window agrees (stock 90.95 s; mask 51 at six threads 1.53 s with default flags, 1.24 s native: 3.9 and 4.8
+times real time). So the machine that stock runs at a fourteenth of real time holds 1080p 24 -> 48 nearly four
+times over on the CPU alone, with the Arc free for decode and encode.
+
+**What the NAS taught the patch.** gcc had vectorised neither inner loop ("unsupported control flow": a conditional
+load it will not speculate, where clang does). Written as masks instead of branches both compilers vectorise both
+loops; on the NAS that took the overlap stage at six threads from 1.17 s to 0.69 s in the native build, and it
+made the M5 a fifth faster too. Before it, the native build was slower than the default one.
+
+**4K on the NAS is not there:** the upscaled window takes 6.8 s at four threads and 6.6 s at six (0.73 and 0.75
+times real time, 51 ms a pair against a 41.7 ms budget), and the overlap stage barely moves between four and six
+threads (5.4 and 4.9 s) while the search does. That is the signature of memory, not arithmetic: at 4K each thread's
+band of sums is about 2.4 MB and six of them do not fit that CPU's 9 MB shared cache beside the frames. Registered
+as the next job in PLAN.md (narrower bands); not attempted here.
+
 ## Predictions against results
 
 | Registered | Result |
@@ -125,6 +164,7 @@ frame). That is the reason for the decode-free measure above.
 | 2. the films refuse both sabotages; the cap may pass every small case | half wrong: the shirt window passes the cap sabotage; four small cases refuse it |
 | 3. fused stage under 2.0 s on the shirt window at four threads | held: 0.34 s (first build 0.44 s) |
 | 4. whole process under 3.0 s in GPT's pipeline, faster than real time | **missed as registered**: 3.2 s (still 1.5x real time); the floor is the pipeline's FFV1 decoder, not the filter |
+| 5. the NAS not predicted ("a weaker CPU may not reach real time") | it does at 1080p, nearly four times over; it does not at 4K |
 | wavefront: search under 0.20 s at four threads, under 0.13 s at eight | 0.202 s and 0.172 s: **missed** at eight (a wavefront moves at the pace of its slowest row; six of the ten cores are slow) and on the line at four |
 | wavefront: filter about 5.0 ms a pair at four threads | held: 4.5 ms |
 
@@ -134,3 +174,28 @@ Two five-second 1080p windows and an upscale of one; 8-bit, the bidirectional EP
 block sizes and four chroma samplings are tested for exactness, not timed). Not playback: a real pipeline adds its own
 decode and whatever follows the filter. No new claim about how the pictures look: they are stock's pictures, byte
 for byte, and the owner's "calmer" verdict was on one shirt shot.
+
+## Reproduce
+
+An isolated checkout of FFmpeg `3a5eb948e76dc6390e4b3cff7becf84bc492b7af`; apply `../mci_accel/ffmpeg.patch`, then
+`fused.patch` (sha256 `f5ca6de3...104ce` at this commit); configure exactly as [../mci_accel/README.md](../mci_accel/README.md)
+does for its candidate (with `--enable-pixelutils`), build. The stock baseline is GPT's (its profiling patch only).
+Remove `libavfilter/vf_minterpolate.o`, `libavfilter/libavfilter.a` and the executables before any rebuild you
+mean to compare (the trap above).
+
+```sh
+python3 colour_fixtures.py "$OUT/colour" --source "$SUIT_WINDOW" --ffmpeg "$INSTALLED_FFMPEG"
+python3 gate_fused.py check "$OUT/small" --fixtures "$GPT_OUT/inputs/fixtures.json" --baseline "$BASE" --candidate "$NEW" \
+  --cases bars_v9,bars_h9,face_occluded,pan43,static,cut,border420,border444,pan43_60,rigid_frozen,rigid_grain \
+  --configs 16:1,16:4,19:4,19:8,31:4,51:1,51:4,51:8
+python3 gate_fused.py check "$OUT/film" --fixtures "$GPT_OUT/inputs/fixtures.json" --baseline "$BASE" --candidate "$NEW" \
+  --cases shirt,suit --configs 19:1,19:4,19:8,15:4,51:1,51:4,51:8
+python3 gate_fused.py check "$OUT/colour-check" --fixtures "$OUT/colour/fixtures.json" --baseline "$BASE" --candidate "$NEW" \
+  --cases colour420,colour420odd,colour444,colour422,colour440,colour420_60 --mb-sizes 4 8 16 --configs 16:1,19:4,19:8,51:4,51:8
+python3 rawbench.py "$OUT/raw" --fixtures "$GPT_OUT/inputs/fixtures.json" --baseline "$BASE" --candidate "$NEW" \
+  --prep-ffmpeg "$INSTALLED_FFMPEG" --configs 15:4,19:4,51:1,51:4,51:8 --rounds 5
+python3 collect.py measurements.json m5-1080p="$OUT/raw/rawbench.json" --checks small="$OUT/small/check-summary.json"
+```
+
+Use: `-vf minterpolate=fps=48000/1001:mi_mode=mci:me_mode=bidir:me=epzs:mci_accel=51` with `-filter_threads N`.
+[measurements.json](measurements.json) holds the medians, the wall samples and the gate counts, without paths.
