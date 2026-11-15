@@ -1026,6 +1026,28 @@ counterexamples in the linked record show why each assumption needs its own evid
 estimator-specific operators from the current code; it makes no claim to invent weighted regression or PIV uncertainty.
 The full Sciacchitano 2019 PDF already cited above could not be retrieved in this block and supplies no new claim here.
 
+## 2026-11-15: output-preserving CPU MCI acceleration
+
+Bounded primary-source survey for the active FFmpeg bidir/EPZS reference; detailed
+links and licensing boundaries are in [mci_accel/SOURCES.md](tests/probes/mci_accel/SOURCES.md).
+FFmpeg already provides unaligned 32x32 integer SAD on NEON/SSE2/AVX2 via pixelutils,
+and a reusable slice scheduler in vf_framerate. Import these established kernels
+and scheduling mechanisms, preserving cost clipping, pre-clamp predictor penalty,
+candidate tie order and final output semantics. This is engineering reuse, not a
+novel motion estimator or an established speedup before measurement.
+
+MVTools documents changed output at internal slice boundaries; VapourSynth MVTools
+removes temporal prediction to enable threading. Neither licenses an exactness
+claim for naive EPZS block/frame parallelism. Futatabi provides an active GPU
+DIS/interpolation implementation; Lu and Hang's CUDA MODS paper changes the search.
+Both are useful architectural prior art but do not preserve the current estimator.
+The 2017 FFmpeg discussion points to unfinished mcfps; a 2022 request supplies no
+threading patch. No maintained exact bidir/EPZS parallel patch was located in this
+bounded search. This statement is a search result, not a claim of invention.
+
+[GATE.md](tests/probes/mci_accel/GATE.md) registers all-plane exact frame/PTS checks,
+adversarial controls, cached small and real inputs, and serial interleaved timing.
+
 ## Exact-anchor derivative weights (2026-10-22, GPT)
 
 The uncertainty follow-up applies standard constrained/generalized least squares, not a novel estimator theorem.

@@ -1420,3 +1420,37 @@ inside bilateral only; output1135–1137 calls bidirectional_obmc, fixed overlap
 source review agrees. Corrected README/RESULTS, annotated the original PLAN and mci.py; exact command and stored
 pixel hashes preserved. User's calmer-shirt observation and the full decoded reproduction remain valid. Do not
 attribute that benefit to adaptive weighting or subdivision that did not run. No new render or quality result.
+
+## G036 — GPT to Local: owner separates the sense-organ field from playback; investigate accelerated MCI/hybrids (2026-11-15 12:46 GMT)
+
+Owner explicitly supports a different interpolation engine if it gives better playback, retaining n-directional
+source-rate motion fields as the useful sense organ. Confirmed he means GPU acceleration as well as CPU threading.
+New isolated branch `codex/minterpolate-acceleration`, [plan](tests/probes/mci_accel/PLAN.md). Installed FFmpeg's
+unrelated local changes will be preserved; prototypes build in a separate checkout. No production replacement.
+
+First profile the exact calmer bidir/EPZS path, then preserve outputs while testing existing SIMD SAD, independent
+direction workers, chroma-safe drawing slices and elimination of overwritten chroma calculations. In parallel,
+work through an exact moving-block GPU gather and estimator dependencies. The two endpoints and all YUV planes,
+timestamps, cap/order/border behavior are gate requirements. No claim that the previous fixed8px field blend was
+equivalent to MCI. One CPU benchmark at a time; no GPU reserved yet. Reuse cached media, no new long NAS reads.
+
+## G037 — GPT to Local: exact CPU MCI prototype is 2.21–2.23x faster; drawing is the main bottleneck (2026-11-15)
+
+[RESULTS](tests/probes/mci_accel/RESULTS.md) and portable measurements preserve this block. All 141 comparisons
+pass full YUV/count/PTS gates: individual optimizations, complete film windows, block 4/8/16 boundary cases and
+repeated 1/2/4-thread execution. Compiled scalar/SIMD costs agree in 49,152 cases; 30 refusal controls include real
+chroma-only corruption. Both original displayed MCI clips also match the scalar baseline across all YUV bytes.
+Two independent source reviews cover predictor dependencies, disjoint contexts, chroma ownership and joins.
+
+Warmed interleaved three-round medians on M5: shirt 23.666->10.695s (2.213x), suit 28.387->12.726s (2.231x), about 22 output
+frames/s. Not real-time 48fps and not a NAS throughput result. Original ME ~19% of walltime, drawing ~80%; after
+SIMD/two-direction jobs/chroma-safe output jobs/last-writer elimination, ME is only 0.343/0.423s but unchanged
+serial overlap-list building still takes 8.535/10.156s. Preserve first 16 hypothesis order/cap, source support
+transport, integer clipping/rounding, last-chroma representative and current border fallback when porting it.
+
+Failure preserved: make alone did not update CONFIG_PIXELUTILS after configure dependency changed; standalone
+cost control refused. Explicit reconfiguration/rebuild resolved it before validation. Installed FFmpeg and
+Cadence remain untouched. Profile baseline and candidate live in external scratch; complete patch and build
+hashes are tracked. Bidirectional EPZS 420/444 only; no claim for all modes/formats, universal visual quality or GPU.
+CPU timing reservation released. Next bounded block: actual scalar capture -> faithful integer Vulkan replay,
+with poisoned writes and deliberately broken-golden/shader controls; see GPU-PLAN when that block is committed.

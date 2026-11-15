@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "ffmpeg_commit": "3a5eb948e76dc6390e4b3cff7becf84bc492b7af",
+  "hardware": {
+    "cpu": "Apple M5",
+    "cores": "10",
+    "memory_bytes": "17179869184",
+    "platform": "macOS-27.2.1-arm64-arm-64bit-Mach-O"
+  },
+  "compiler": "Apple clang version 21.0.0 (clang-2100.4.1.1)\nTarget: arm64-apple-darwin27.2.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin",
+  "complete_patch_sha256": "ee346154071ccae59cf7f2417f2feddec805d1531dd40453e82c5ff2948ffc21",
+  "profile_only_patch_sha256": "5fae7038fdb82fca83c9d7811bf143531046b39bbe87f9794ba60fd09d8ada02",
+  "builds": {
+    "baseline": {
+      "ffmpeg_sha256": "7138e695a8804ab2be4128d00c4f758023c7cc08f924925650f4d34c936bfc74",
+      "ffprobe_sha256": "8aecfe0af23c56cbaad068616bfcfd8ca5568c993ee7db36a6f3652229da23db",
+      "config_mak_sha256": "20011521560569683399564f50cc6cfdee4acebf173f896ba64ac0ba9a634a59",
+      "configuration": [
+        "FFMPEG_CONFIGURATION=--disable-everything --disable-autodetect --disable-doc --disable-debug --enable-ffmpeg --enable-ffprobe --enable-pthreads --enable-protocol='file,pipe' --enable-demuxer=matroska --enable-decoder='ffv1,rawvideo' --enable-encoder='ffv1,rawvideo' --enable-muxer='matroska,rawvideo,framemd5,null' --enable-filter='minterpolate,format,scale,setpts,settb,tpad,trim,select,testsrc2,color,null' --enable-indev=lavfi",
+        "CC=gcc",
+        "CFLAGS=   -std=c17 -Werror=partial-availability -mdynamic-no-pic -fno-common -fomit-frame-pointer -fPIC -pthread -Wall -Wdisabled-optimization -Wpointer-arith -Wredundant-decls -Wwrite-strings -Wtype-limits -Wundef -Wempty-body -Wimplicit-fallthrough -Wmissing-prototypes -Wstrict-prototypes -Wunterminated-string-initialization -Wno-parentheses -Wno-switch -Wno-format-zero-length -Wno-pointer-sign -Wno-unused-const-variable -Wno-bool-operation -Wno-char-subscripts -Wno-implicit-const-int-float-conversion -Wno-microsoft-enum-forward-reference -O3 -fno-math-errno -fno-signed-zeros -mstack-alignment=16 -Qunused-arguments -Werror=implicit-function-declaration -Werror=missing-prototypes -Werror=return-type"
+      ]
+    },
+    "candidate": {
+      "ffmpeg_sha256": "1271a195ffca6415e0475f140ff2dcee9a23b768a845d62658c9ac8294e457a2",
+      "ffprobe_sha256": "86cceb77eee0855acaab485f2221884f2f242ad1c318a63419632002cb4b0ca3",
+      "config_mak_sha256": "92ceabec4d322c607af0eec6f281f59f96c2e9f268a738f7b38add1acb42252d",
+      "configuration": [
+        "FFMPEG_CONFIGURATION=--disable-everything --disable-autodetect --disable-doc --disable-debug --enable-ffmpeg --enable-ffprobe --enable-pthreads --enable-protocol='file,pipe' --enable-demuxer=matroska --enable-decoder='ffv1,rawvideo' --enable-encoder='ffv1,rawvideo' --enable-muxer='matroska,rawvideo,framemd5,null' --enable-filter='minterpolate,format,scale,setpts,settb,tpad,trim,select,testsrc2,color,null' --enable-indev=lavfi --enable-pixelutils",
+        "CC=gcc",
+        "CFLAGS=   -std=c17 -Werror=partial-availability -mdynamic-no-pic -fno-common -fomit-frame-pointer -fPIC -pthread -Wall -Wdisabled-optimization -Wpointer-arith -Wredundant-decls -Wwrite-strings -Wtype-limits -Wundef -Wempty-body -Wimplicit-fallthrough -Wmissing-prototypes -Wstrict-prototypes -Wunterminated-string-initialization -Wno-parentheses -Wno-switch -Wno-format-zero-length -Wno-pointer-sign -Wno-unused-const-variable -Wno-bool-operation -Wno-char-subscripts -Wno-implicit-const-int-float-conversion -Wno-microsoft-enum-forward-reference -O3 -fno-math-errno -fno-signed-zeros -mstack-alignment=16 -Qunused-arguments -Werror=implicit-function-declaration -Werror=missing-prototypes -Werror=return-type"
+      ]
+    }
+  },
+  "controls": {
+    "scalar_simd_cost_comparisons": 49152,
+    "passed": true,
+    "first_build_refused": "pixelutils disabled in existing configuration; explicit reconfigure required",
+    "first_control_exit": 3
+  }
+}
