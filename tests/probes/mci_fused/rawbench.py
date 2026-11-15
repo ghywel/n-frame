@@ -77,6 +77,8 @@ def main():
     ap.add_argument('--cases', default='shirt,suit')
     ap.add_argument('--configs', default='15:4,19:1,19:4,19:8')
     ap.add_argument('--rounds', type=int, default=5)
+    ap.add_argument('--no-stock-timing', action='store_true',
+                    help='stock gives the exactness reference only (its time is known from an earlier run)')
     a = ap.parse_args()
     a.out.mkdir(parents=True, exist_ok=True)
     fixtures = json.loads(a.fixtures.read_text())['cases']
@@ -97,17 +99,20 @@ def main():
             if reference is None:
                 reference = records
             assert records == reference, f'{name} {label}: differs from stock on the raw source; not timed'
+            if label == 'stock' and a.no_stock_timing:
+                continue
             rows[label] = []
             run(command(binary, case, threads, mask, 'null'))   # warm-up, discarded
             print('exact+warm', name, label, flush=True)
         for r in range(a.rounds):
             order = variants if r % 2 == 0 else variants[::-1]
             for label, binary, mask, threads in order:
-                m, _ = run(command(binary, case, threads, mask, 'null'))
-                rows[label].append(m)
+                if label in rows:
+                    rows[label].append(run(command(binary, case, threads, mask, 'null'))[0])
             print('round', name, r, flush=True)
         frames, seconds = gate.output_count(case), float(case['frames'] / gate.Fraction(case['rate']))
-        peak = {label: peak_rss(command(binary, case, threads, mask, 'null')) for label, binary, mask, threads in variants}
+        peak = {label: peak_rss(command(binary, case, threads, mask, 'null'))
+                for label, binary, mask, threads in variants if label in rows}
         summary = {}
         for label, ms in rows.items():
             med = {k: statistics.median(x[k] for x in ms) for k in ms[0]}

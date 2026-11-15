@@ -1,8 +1,17 @@
 diff --git a/libavfilter/vf_minterpolate.c b/libavfilter/vf_minterpolate.c
-index 17d73e6..7ead3c8 100644
+index 17d73e6..dcdc280 100644
 --- a/libavfilter/vf_minterpolate.c
 +++ b/libavfilter/vf_minterpolate.c
-@@ -186,6 +186,11 @@ typedef struct MIContext {
+@@ -20,6 +20,8 @@
+  */
+ 
+ #include <inttypes.h>
++#include <sched.h>
++#include <stdatomic.h>
+ #include "libavutil/time.h"
+ #include "motion_estimation.h"
+ #include "libavcodec/mathops.h"
+@@ -186,6 +188,12 @@ typedef struct MIContext {
      PixelMVS *pixel_mvs;
      PixelWeights *pixel_weights;
      PixelRefs *pixel_refs;
@@ -11,19 +20,20 @@ index 17d73e6..7ead3c8 100644
 +    uint8_t *fused_cnt;         ///< ... its accepted pairs
 +    uint32_t *fused_cacc[2];    ///< ... weighted chroma sums, per chroma sample
 +    uint16_t *fused_cwsum;      ///< ... the owning luma pixel's weight sum, per chroma sample
++    atomic_int *wave_done;      ///< mci_accel 32: blocks finished per search row
      int (*mv_table[3])[2][2];
      int64_t out_pts;
      int b_width, b_height, b_count;
-@@ -233,7 +238,7 @@ static const AVOption minterpolate_options[] = {
+@@ -233,7 +241,7 @@ static const AVOption minterpolate_options[] = {
      { "search_param", "search parameter", OFFSET(search_param), AV_OPT_TYPE_INT, {.i64 = 32}, 4, INT_MAX, FLAGS },
      { "mci_profile", "report bidir stage wall times", OFFSET(mci_profile), AV_OPT_TYPE_BOOL, {.i64 = 0}, 0, 1, FLAGS },
      { "vsbmc", "variable-size block motion compensation", OFFSET(vsbmc), AV_OPT_TYPE_INT, {.i64 = 0}, 0, 1, FLAGS },
 -    { "mci_accel", "experimental acceleration bits: 1 SIMD SAD, 2 direction jobs, 4 row jobs, 8 last chroma", OFFSET(mci_accel), AV_OPT_TYPE_INT, {.i64 = 0}, 0, 15, FLAGS },
-+    { "mci_accel", "experimental acceleration bits: 1 SIMD SAD, 2 direction jobs, 4 row jobs, 8 last chroma, 16 fused overlap sums (bidir)", OFFSET(mci_accel), AV_OPT_TYPE_INT, {.i64 = 0}, 0, 31, FLAGS },
++    { "mci_accel", "experimental acceleration bits: 1 SIMD SAD, 2 direction jobs, 4 row jobs, 8 last chroma, 16 fused overlap sums (bidir), 32 wavefront search (bidir epzs)", OFFSET(mci_accel), AV_OPT_TYPE_INT, {.i64 = 0}, 0, 63, FLAGS },
      { "scd", "scene change detection method", OFFSET(scd_method), AV_OPT_TYPE_INT, {.i64 = SCD_METHOD_FDIFF}, SCD_METHOD_NONE, SCD_METHOD_FDIFF, FLAGS, .unit = "scene" },
          CONST("none",   "disable detection",                    SCD_METHOD_NONE,        "scene"),
          CONST("fdiff",  "frame difference",                     SCD_METHOD_FDIFF,       "scene"),
-@@ -415,11 +420,26 @@ static int config_input(AVFilterLink *inlink)
+@@ -415,17 +423,37 @@ static int config_input(AVFilterLink *inlink)
          } else if (mi_ctx->me_mode == ME_MODE_BILAT)
              me_ctx->get_cost = &get_sbad_ob;
  
@@ -50,7 +60,102 @@ index 17d73e6..7ead3c8 100644
  
          if (mi_ctx->me_mode == ME_MODE_BILAT)
              if (!FF_ALLOCZ_TYPED_ARRAY(mi_ctx->int_blocks, mi_ctx->b_count))
-@@ -1166,6 +1186,228 @@ static void set_frame_data_dispatch(AVFilterContext *ctx, MIContext *mi_ctx,
+                 return AVERROR(ENOMEM);
+ 
+         if (mi_ctx->me_method == AV_ME_METHOD_EPZS) {
++            if (mi_ctx->mci_accel & 32) {
++                mi_ctx->wave_done = av_calloc(2 * mi_ctx->b_height, sizeof(*mi_ctx->wave_done));
++                if (!mi_ctx->wave_done)
++                    return AVERROR(ENOMEM);
++            }
+             for (i = 0; i < 3; i++) {
+                 mi_ctx->mv_table[i] = av_calloc(mi_ctx->b_count, sizeof(*mi_ctx->mv_table[0]));
+                 if (!mi_ctx->mv_table[i])
+@@ -635,6 +663,64 @@ static int search_direction_jobs(AVFilterContext *ctx, void *arg, int jobnr, int
+     return 0;
+ }
+ 
++/* ---- mci_accel bit 32: the bidirectional EPZS search as a wavefront (n-frame tests/probes/mci_fused/PLAN.md) ----
++ * Of the pair being searched, a block reads only three vectors: its left, top and top-right neighbours'
++ * (mv_table[0]); the other predictors come from earlier pairs' tables, which nothing writes meanwhile. So block x of
++ * row y may be searched once row y-1 has finished block x+1. Rows are claimed in order, per direction; each job has
++ * its own scratch context; progress is published and awaited a chunk of blocks at a time. Every block reads the values it reads in the serial order, so every vector is the same. */
++#define MCI_WAVE_CHUNK 8   /* blocks searched between two looks at the row above (a block is a few hundred ns) */
++#define MCI_WAVE_LAG   1   /* blocks of the row above needed beyond a chunk's last block: its top-right */
++
++typedef struct MCWaveData {
++    AVMotionEstContext base;    ///< the context as the pair begins
++    AVMotionEstContext last;    ///< the context as the serial order leaves it: after direction 1's last block
++    atomic_int next_row[2];     ///< the next unclaimed row of each direction
++    atomic_int *done;           ///< blocks finished in each row, [direction * b_height + row]
++} MCWaveData;
++
++static int search_wave_jobs(AVFilterContext *ctx, void *arg, int jobnr, int nb_jobs)
++{
++    MIContext *mi_ctx = ctx->priv;
++    MCWaveData *td = arg;
++    AVMotionEstContext me = td->base;
++    const int bw = mi_ctx->b_width, bh = mi_ctx->b_height;
++    int pass, mb_x;
++
++    for (pass = 0; pass < 2; pass++) {
++        const int dir = (jobnr + pass) & 1;   /* jobs start on alternate directions; one job does 0 then 1 */
++
++        me.linesize_cur = mi_ctx->frames[2].avf->linesize[0];
++        me.linesize_ref = mi_ctx->frames[dir ? 3 : 1].avf->linesize[0];
++        me.data_cur = mi_ctx->frames[2].avf->data[0];
++        me.data_ref = mi_ctx->frames[dir ? 3 : 1].avf->data[0];
++
++        for (;;) {
++            const int mb_y = atomic_fetch_add(&td->next_row[dir], 1);
++            atomic_int *mine, *above;
++
++            if (mb_y >= bh)
++                break;
++            mine  = &td->done[dir * bh + mb_y];
++            above = mb_y ? mine - 1 : NULL;
++            for (mb_x = 0; mb_x < bw; mb_x++) {
++                if (above && !(mb_x % MCI_WAVE_CHUNK)) {
++                    const int need = FFMIN(mb_x + MCI_WAVE_CHUNK + MCI_WAVE_LAG, bw);
++                    int spins = 0;
++                    while (atomic_load(above) < need)
++                        if (++spins > 256)
++                            sched_yield();
++                }
++                search_mv_context(mi_ctx, &me, mi_ctx->frames[2].blocks, mb_x, mb_y, dir);
++                if (!((mb_x + 1) % MCI_WAVE_CHUNK) || mb_x == bw - 1)
++                    atomic_store(mine, mb_x + 1);
++            }
++            if (dir == 1 && mb_y == bh - 1)
++                td->last = me;
++        }
++    }
++    return 0;
++}
++
+ static void bilateral_me(MIContext *mi_ctx)
+ {
+     Block *block;
+@@ -832,7 +918,17 @@ static int inject_frame(AVFilterLink *inlink, AVFrame *avf_in)
+             int64_t profile_start = mi_ctx->mci_profile ? av_gettime_relative() : 0;
+ 
+             if (mi_ctx->frames[1].avf) {
+-                if ((mi_ctx->mci_accel & 2) && mi_ctx->me_method == AV_ME_METHOD_EPZS) {
++                if ((mi_ctx->mci_accel & 32) && mi_ctx->me_method == AV_ME_METHOD_EPZS) {
++                    MCWaveData td = { .base = mi_ctx->me_ctx, .last = mi_ctx->me_ctx, .done = mi_ctx->wave_done };
++                    int i;
++                    atomic_init(&td.next_row[0], 0);
++                    atomic_init(&td.next_row[1], 0);
++                    for (i = 0; i < 2 * mi_ctx->b_height; i++)
++                        atomic_store(&td.done[i], 0);
++                    ff_filter_execute(ctx, search_wave_jobs, &td, NULL,
++                                      FFMIN(2 * mi_ctx->b_height, ff_filter_get_nb_threads(ctx)));
++                    mi_ctx->me_ctx = td.last;
++                } else if ((mi_ctx->mci_accel & 2) && mi_ctx->me_method == AV_ME_METHOD_EPZS) {
+                     MCDirectionData td = { .me = { mi_ctx->me_ctx, mi_ctx->me_ctx } };
+                     ff_filter_execute(ctx, search_direction_jobs, &td, NULL,
+                                       FFMIN(2, ff_filter_get_nb_threads(ctx)));
+@@ -1166,6 +1262,231 @@ static void set_frame_data_dispatch(AVFilterContext *ctx, MIContext *mi_ctx,
      }
  }
  
@@ -73,7 +178,8 @@ index 17d73e6..7ead3c8 100644
 +#pragma clang loop vectorize(enable) interleave(disable)
 +#endif
 +    for (i = 0; i < n; i++) {
-+        const uint32_t m = rcnt[i] < MCI_FUSED_CAP ? t[i] : 0;
++        /* the weight, or 0 once the cap is reached: as a mask, not a branch, so gcc vectorises it as well */
++        const uint32_t m = t[i] & (uint32_t)-(int)(rcnt[i] < MCI_FUSED_CAP);
 +        racc[i] += m * (wa * pa[i] + wb * pb[i]);
 +        rws[i]  += m;
 +        rcnt[i] += m != 0;
@@ -95,14 +201,16 @@ index 17d73e6..7ead3c8 100644
 +#endif
 +    for (i = 0; i < n; i++) {
 +        const uint32_t w = rws[i];
++        const uint32_t has = (uint32_t)-(int)(w != 0);      /* all ones where a pair landed */
++        const uint32_t div = w + (~has & 1);                /* w, or 1 where w is 0 */
 +        const uint32_t num = (racc[i] + (w << 9)) >> 10;
 +#ifdef __FAST_MATH__   /* a reciprocal in place of the division would not be exact */
-+        const uint32_t q = num / (w ? w : 1);
++        const uint32_t q = num / div;
 +#else
-+        const uint32_t q = (uint32_t)((float)num / (float)(w ? w : 1));
++        const uint32_t q = (uint32_t)((float)num / (float)div);
 +#endif
 +        const uint32_t blend = (wa * pa[i] + wb * pb[i] + 512) >> 10;
-+        dst[i] = w ? q : blend;
++        dst[i] = (q & has) | (blend & ~has);
 +    }
 +}
 +
@@ -279,7 +387,7 @@ index 17d73e6..7ead3c8 100644
  static void var_size_bmc(MIContext *mi_ctx, Block *block, int x_mb, int y_mb, int n, int alpha)
  {
      int sb_x, sb_y;
-@@ -1329,12 +1571,21 @@ static void interpolate(AVFilterLink *inlink, AVFrame *avf_out)
+@@ -1329,12 +1650,21 @@ static void interpolate(AVFilterLink *inlink, AVFrame *avf_out)
          case MI_MODE_MCI:
              if (mi_ctx->me_mode == ME_MODE_BIDIR) {
                  int64_t profile_start = mi_ctx->mci_profile ? av_gettime_relative() : 0;
@@ -301,7 +409,7 @@ index 17d73e6..7ead3c8 100644
                  if (mi_ctx->mci_profile) {
                      mi_ctx->profile_output_us += av_gettime_relative() - profile_start;
                      mi_ctx->profile_draws++;
-@@ -1437,6 +1688,12 @@ static av_cold void uninit(AVFilterContext *ctx)
+@@ -1437,6 +1767,13 @@ static av_cold void uninit(AVFilterContext *ctx)
      av_freep(&mi_ctx->pixel_mvs);
      av_freep(&mi_ctx->pixel_weights);
      av_freep(&mi_ctx->pixel_refs);
@@ -311,6 +419,7 @@ index 17d73e6..7ead3c8 100644
 +    av_freep(&mi_ctx->fused_cacc[0]);
 +    av_freep(&mi_ctx->fused_cacc[1]);
 +    av_freep(&mi_ctx->fused_cwsum);
++    av_freep(&mi_ctx->wave_done);
      if (mi_ctx->int_blocks)
          for (m = 0; m < mi_ctx->b_count; m++)
              free_blocks(&mi_ctx->int_blocks[m]);

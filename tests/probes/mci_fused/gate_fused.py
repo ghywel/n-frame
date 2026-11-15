@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""GPT's exactness and timing gate (../mci_accel/gate.py), unchanged, with the mask range widened to 0..31
+"""GPT's exactness and timing gate (../mci_accel/gate.py), unchanged, with the mask range widened to 0..63
 and 4:2:2 / 4:4:0 frame sizes known (the coloured edge fixtures, colour_fixtures.py).
 
     gate_fused.py check|bench ...        exactly gate.py's arguments (see ../mci_accel/GATE.md)
 
-Bit 16 is the fused overlap stage (PLAN.md). Nothing else differs: the module is imported and two functions replaced.
+Bit 16 is the fused overlap stage, bit 32 the wavefront search (PLAN.md). Nothing else differs: the module is imported and two functions replaced.
 """
 import importlib.util
 from pathlib import Path
@@ -18,7 +18,7 @@ def configs(text):
     result = []
     for item in text.split(','):
         mask, threads = map(int, item.split(':'))
-        gate.require(0 <= mask <= 31 and 1 <= threads <= 64, 'invalid mask:threads')
+        gate.require(0 <= mask <= 63 and 1 <= threads <= 64, 'invalid mask:threads')
         gate.require((mask, threads) not in result, 'duplicate mask:threads')
         result.append((mask, threads))
     gate.require(bool(result), 'empty configurations')
