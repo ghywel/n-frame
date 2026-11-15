@@ -1,0 +1,94 @@
+#version 450
+// Capsule v1 replay only: CPU EPZS vectors, integer planar 8-bit source samples.
+// No golden data is uploaded. Each native plane sample has exactly one writer.
+layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
+layout(std430, binding = 0) readonly buffer InputA { uint src_a[]; };
+layout(std430, binding = 1) readonly buffer InputB { uint src_b[]; };
+layout(std430, binding = 2) readonly buffer Vectors { int raw_mv[]; };
+layout(std430, binding = 3) readonly buffer Weights { uint table[]; };
+layout(std430, binding = 4) writeonly buffer Output { uint dst[]; };
+layout(push_constant, std430) uniform Params {
+    uint width, height, block_size, search_radius;
+    uint alpha, hsub, vsub, plane;
+    uint plane_width, plane_height, plane_offset, blocks_x;
+    uint blocks_y, block_count, max_pairs, reserved;
+} pc;
+
+// GLSL integer division truncates toward zero. Only the bounded-anchor search
+// needs mathematical floor, including when its lower coordinate is negative.
+int floor_div(int n, int d)
+{
+    return n >= 0 ? n / d : -((-n + d - 1) / d);
+}
+
+uint render_sample(uvec2 q)
+{
+    const int M = 1024;
+    int W = int(pc.width), H = int(pc.height), B = int(pc.block_size);
+    int alpha = int(pc.alpha);
+    int hs = pc.plane == 0u ? 0 : int(pc.hsub);
+    int vs = pc.plane == 0u ? 0 : int(pc.vsub);
+    ivec2 scale = ivec2(1 << hs, 1 << vs);
+    // Last full-resolution visit in the original repeatedly overwritten chroma.
+    ivec2 p = min((ivec2(q) + 1) * scale - 1, ivec2(W - 1, H - 1));
+    uint direct = pc.plane_offset + q.y * pc.plane_width + q.x;
+    if (alpha == 0)
+        return src_a[direct];
+    if (alpha == M)
+        return src_b[direct];
+
+    uint total = 0u, denominator = 0u, accepted = 0u;
+    for (int direction = 0; direction < 2 && accepted < pc.max_pairs; direction++) {
+        int phase = direction == 0 ? M - alpha : alpha;
+        int shift_bound = int(pc.search_radius) * phase / M;
+        // Strict lower bound: p - 3B/2 - S < anchor <= p + B/2 + S.
+        int x0 = max(0, floor_div(p.x - 3 * B / 2 - shift_bound, B) + 1);
+        int y0 = max(0, floor_div(p.y - 3 * B / 2 - shift_bound, B) + 1);
+        int x1 = min(int(pc.blocks_x) - 1, floor_div(p.x + B / 2 + shift_bound, B));
+        int y1 = min(int(pc.blocks_y) - 1, floor_div(p.y + B / 2 + shift_bound, B));
+        for (int by = y0; by <= y1 && accepted < pc.max_pairs; by++) {
+            for (int bx = x0; bx <= x1 && accepted < pc.max_pairs; bx++) {
+                int index = 2 * (direction * int(pc.block_count) + by * int(pc.blocks_x) + bx);
+                ivec2 raw = ivec2(raw_mv[index], raw_mv[index + 1]);
+                ivec2 origin = ivec2(bx, by) * B - B / 2 + raw * phase / M;
+                ivec2 lo = clamp(origin, ivec2(0), ivec2(W - 1, H - 1));
+                ivec2 hi = clamp(origin + 2 * B, ivec2(0), ivec2(W - 1, H - 1));
+                if (any(lessThan(p, lo)) || any(greaterThanEqual(p, hi)))
+                    continue;
+                ivec2 t = p - origin;
+                uint weight = table[t.y * (2 * B) + t.x];
+                if (weight == 0u)
+                    continue;
+                ivec2 v = direction == 0 ? raw : -raw;
+                ivec2 da = clamp(v * alpha / M, -p, ivec2(W - 1, H - 1) - p);
+                ivec2 db = clamp(-v * (M - alpha) / M, -p, ivec2(W - 1, H - 1) - p);
+                // Clip in luma first; division of a negative offset must truncate.
+                ivec2 ca = (p / scale) + da / scale;
+                ivec2 cb = (p / scale) + db / scale;
+                ivec2 size = ivec2(pc.plane_width, pc.plane_height);
+                if (any(lessThan(ca, ivec2(0))) || any(greaterThanEqual(ca, size)) ||
+                    any(lessThan(cb, ivec2(0))) || any(greaterThanEqual(cb, size)))
+                    return 0xfffffffeu; // fail visibly, never hide an address error
+                uint ia = pc.plane_offset + uint(ca.y) * pc.plane_width + uint(ca.x);
+                uint ib = pc.plane_offset + uint(cb.y) * pc.plane_width + uint(cb.x);
+                uint wa = weight * uint(M - alpha), wb = weight * uint(alpha);
+                total += wa * src_a[ia] + wb * src_b[ib];
+                denominator += wa + wb;
+                accepted++;
+            }
+        }
+    }
+    if (denominator == 0u)
+        return (src_a[direct] * uint(M - alpha) + src_b[direct] * uint(alpha) + 512u) / 1024u;
+    return (total + denominator / 2u) / denominator;
+}
+
+void main()
+{
+    uvec2 q = gl_GlobalInvocationID.xy;
+    if (q.x >= pc.plane_width || q.y >= pc.plane_height)
+        return;
+    uint out_index = q.y * pc.plane_width + q.x;
+    uint result = render_sample(q);
+    dst[pc.plane_offset + out_index] = result;
+}

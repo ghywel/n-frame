@@ -1,0 +1,123 @@
+--- a/replay.c
++++ b/replay.c
+@@ -3,6 +3,7 @@
+  *   cc -std=c17 -O2 replay.c $(pkg-config --cflags --libs libplacebo) -o replay
+  *   ./replay --validate-only capsule.bin
+  *   ./replay --shader gather.comp --repeats 5 capsule.bin > result.json
++ *   ./replay --readback staging --shader gather.comp --repeats 5 capsule.bin
+  * pkg-config may need the local libplacebo prefix in PKG_CONFIG_PATH.
+  * No shader compile or device creation occurs with --validate-only.
+  * All timed replays are offline, expanded-u32, with input re-upload and output
+@@ -147,6 +148,7 @@
+ static bool selected_hardware;
+ static unsigned gpu_errors;
+ static const char *capsule_path;
++static const char *readback_mode = "direct";
+ 
+ static uint64_t now_ns(void)
+ {
+@@ -180,6 +182,7 @@
+            dispatches, validated_samples);
+     printf(",\"device\":"); json_string(selected_device);
+     printf(",\"software\":%s", selected_hardware ? "false" : "null");
++    printf(",\"readback_mode\":"); json_string(readback_mode);
+ }
+ 
+ static void fail(int code, const char *status, const char *reason)
+@@ -372,7 +375,7 @@
+ }
+ 
+ static Timing iteration(const Capsule *c, pl_gpu gpu, pl_pass pass, pl_buf buffers[5],
+-                        pl_timer timers[3], uint32_t *output, uint8_t *packed)
++                        pl_buf staging, pl_timer timers[3], uint32_t *output, uint8_t *packed)
+ {
+     Timing t = {0};
+     uint64_t start = now_ns(), stage = start;
+@@ -415,7 +418,16 @@
+         }
+     }
+     stage = now_ns();
+-    if (!pl_buf_read(gpu, buffers[4], 0, output, plane_bytes))
++    pl_buf read_buffer = buffers[4];
++    if (staging) {
++        /* Isolate readback: original device output allocation/flags stay the
++         * same. The GPU copy, synchronization, and CPU read are all download. */
++        pl_buf_copy(gpu, staging, 0, buffers[4], 0, plane_bytes);
++        pl_gpu_finish(gpu);
++        check_gpu(gpu);
++        read_buffer = staging;
++    }
++    if (!pl_buf_read(gpu, read_buffer, 0, output, plane_bytes))
+         fail(3, "setup_error", "GPU output download failed");
+     pl_gpu_finish(gpu);
+     check_gpu(gpu);
+@@ -454,6 +466,11 @@
+         if (!strcmp(argv[i], "--validate-only")) validate_only = true;
+         else if (!strcmp(argv[i], "--shader") && i + 1 < argc) shader_path = argv[++i];
+         else if (!strcmp(argv[i], "--device") && i + 1 < argc) device_name = argv[++i];
++        else if (!strcmp(argv[i], "--readback") && i + 1 < argc) {
++            readback_mode = argv[++i];
++            if (strcmp(readback_mode, "direct") && strcmp(readback_mode, "staging"))
++                fail(2, "validation_error", "readback must be direct or staging");
++        }
+         else if (!strcmp(argv[i], "--output") && i + 1 < argc) output_path = argv[++i];
+         else if (!strcmp(argv[i], "--repeats") && i + 1 < argc) {
+             char *end = NULL;
+@@ -463,7 +480,7 @@
+                 fail(2, "validation_error", "repeats must be in 1..100");
+             repeats = (unsigned)n;
+         } else if (argv[i][0] == '-' || capsule_path)
+-            fail(2, "validation_error", "usage: replay [--validate-only] [--device exact-name] [--shader file] [--repeats N] [--output raw.yuv] capsule.bin");
++            fail(2, "validation_error", "usage: replay [--validate-only] [--device exact-name] [--readback direct|staging] [--shader file] [--repeats N] [--output raw.yuv] capsule.bin");
+         else capsule_path = argv[i];
+     }
+     if (!capsule_path)
+@@ -531,6 +548,7 @@
+     size_t sizes[5] = { (size_t)c.samples * 4, (size_t)c.samples * 4,
+                         (size_t)c.h[36] * 4, (size_t)c.h[37] * 4, (size_t)c.samples * 4 };
+     pl_buf buffers[5] = {0};
++    pl_buf staging = NULL;
+     pl_timer timers[3] = {0};
+     start = now_ns();
+     for (unsigned i = 0; i < 5; i++) {
+@@ -541,6 +559,14 @@
+         if (!buffers[i])
+             fail(3, "setup_error", "GPU buffer allocation failed");
+     }
++    if (!strcmp(readback_mode, "staging")) {
++        /* Host-visible, preferably host-cached transfer destination. It is not
++         * a shader descriptor and contains only the GPU-produced output. */
++        staging = pl_buf_create(gpu, pl_buf_params(.size = sizes[4],
++            .host_readable = true, .memory_type = PL_BUF_MEM_HOST));
++        if (!staging)
++            fail(3, "setup_error", "host readback staging allocation failed");
++    }
+     for (unsigned plane = 0; plane < 3; plane++)
+         timers[plane] = pl_timer_create(gpu);
+     uint64_t allocation_ns = now_ns() - start;
+@@ -550,7 +576,7 @@
+         fail(3, "setup_error", "output host allocation failed");
+     Timing timings[MAX_REPEATS + 1];
+     for (unsigned i = 0; i <= repeats; i++)
+-        timings[i] = iteration(&c, gpu, pass, buffers, timers, output, packed);
++        timings[i] = iteration(&c, gpu, pass, buffers, staging, timers, output, packed);
+     if (output_path) {
+         FILE *f = fopen(output_path, "wb");
+         if (!f || fwrite(packed, 1, c.samples, f) != c.samples || fclose(f))
+@@ -563,6 +589,8 @@
+            properties.vendorID, properties.deviceID, properties.driverVersion, properties.apiVersion);
+     for (unsigned i = 0; i < 16; i++) printf("%02x", gpu->uuid[i]);
+     printf("\",\"shader\":"); json_string(shader_path);
++    printf(",\"gpu_reports_host_cached_buffers\":%s,\"staging_copy_bytes_per_iteration\":%zu",
++           gpu->limits.host_cached ? "true" : "false", staging ? sizes[4] : 0);
+     printf(",\"load_decode_validate_wall_ns\":%" PRIu64 ",\"device_init_wall_ns\":%" PRIu64
+            ",\"compile_pipeline_wall_ns\":%" PRIu64 ",\"buffer_allocation_wall_ns\":%" PRIu64
+            ",\"uploaded_bytes_per_iteration_including_poison\":%zu,\"downloaded_bytes_per_iteration\":%zu,"
+@@ -575,6 +603,7 @@
+     }
+     puts("]}");
+     for (unsigned plane = 0; plane < 3; plane++) pl_timer_destroy(gpu, &timers[plane]);
++    pl_buf_destroy(gpu, &staging);
+     for (unsigned i = 0; i < 5; i++) pl_buf_destroy(gpu, &buffers[i]);
+     pl_pass_destroy(gpu, &pass);
+     pl_vulkan_destroy(&vk);

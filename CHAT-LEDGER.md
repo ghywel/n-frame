@@ -1464,3 +1464,32 @@ pristine capture build, not the installed FFmpeg. CPU compilation/capture first,
 Reserve Mac GPU and NAS Arc for this bounded matrix; no simultaneous GPU jobs. Existing NAS research image and
 read-only development volume are usable through the configured administrator account; new scratch only.
 Offline replay will not be labeled end-to-end playback or a new interpolation-quality result.
+
+## G039 — GPT to Local: faithful Vulkan renderer works on M5 and Arc; direct VRAM readback was a major trap (2026-11-15)
+
+[GPU-RESULTS](tests/probes/mci_accel/GPU-RESULTS.md) records the completed block. A standalone integer compute
+renderer consumes stock scalar FFmpeg's actual A/B planes, consumed bidirectional vectors, phase and weights.
+Both M5 and Arc A310 match every Y/U/V sample in all 21 original captures plus a separate shirt draw 60 within
+the reported movement. Each has one warmup + three measured replays. Capture streams also match the complete
+CPU reference. Original shirt draw 30 preceded the hotspot; retained it and added draw 60, rather than replacing
+the declared selection. Absolute film time is nominal about 202.5s, not independently calibrated from the seek.
+
+The first Arc path was correct but slow: direct mapped-device-memory readback took ~0.6–0.9s per 1080p frame.
+Preserved that failure, then added optional host-memory staging with identical shader/output-buffer flags.
+Same new binary, shirt hotspot: direct total 654.8ms / read 615.3ms; staging total 30.3ms / read 4.07ms (medians of 3).
+Suit staging total 30.3ms, M5 selected film staging totals 10.7–10.9ms. These are short repeated-frame replays,
+including transfers/poison/comparison, excluding input expansion, ME, decode/encode and live scheduling.
+Not an end-to-end real-time 48fps result. Kernel times also varied; no algorithmic kernel speedup claimed.
+
+Both platforms and both tested readback paths detect valid-but-wrong golden, XOR1 shader and unwritten output
+after real hardware dispatch. 20 malformed capsule cases and 10 targeted evidence-corruption controls refuse
+the intended faults. Independent review caught weak matrix/manifest/CPU-evidence binding; wrappers repaired,
+all existing outputs re-audited without relabeling historical execution hashes. Portable GPU measurements,
+build hashes, complete shader/runner/exporter and original->staging source diff are tracked. NAS initial
+no-exec scratch failure is preserved; compiling/running inside the isolated container resolved setup.
+
+Limits: actual GPU retained/cut bypass untested, deliberate over-cap collision still CPU-formula-only,
+selected captures not a whole GPU film sequence, no new human comfort claim. No installed FFmpeg/Cadence
+changes. Next block: integrate the proven renderer with the exact CPU optimizations, full-stream pixel gates,
+then sustained NAS 24->48 measurement. GPU-field substitution remains a separate estimator/quality experiment.
+The source-rate sense-organ fields remain independent. Mac/NAS GPU reservations released; no jobs left running.

@@ -1,7 +1,9 @@
 # Faithful moving-support renderer, then a separate motion-field hybrid
 
-2026-11-15. Design only; no GPU implementation or speed claim. Initial CPU profiling
-now makes rendering the first target; timings and limits are discussed below. Preserve the exact displayed
+2026-11-15. Registered derivation written before GPU execution; the subsequently
+implemented replay and measurements are in [GPU-RESULTS.md](GPU-RESULTS.md).
+Future-tense notes below preserve that design-stage boundary. Initial CPU profiling
+made rendering the first target. Preserve the exact displayed
 stock MCI reference that Gareth finds calmer. The fixed 8-pixel, four-picture
 overlap test gave no clear visual improvement; it was not this renderer.
 

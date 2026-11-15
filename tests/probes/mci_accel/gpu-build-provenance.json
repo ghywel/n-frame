@@ -1,0 +1,111 @@
+{
+  "schema": 1,
+  "ffmpeg_commit": "3a5eb948e76dc6390e4b3cff7becf84bc492b7af",
+  "capture": {
+    "ffmpeg_sha256": "193338c5e48c92cbcd6e51d03db0f338948de0edd0d3b10dd1217f94b39dbe08",
+    "ffprobe_sha256": "13d2f915d684fe697242f8550e8cb8a4c557c57b20b9fb41495b8450c61fcfda",
+    "source_sha256": "77cef9882a13ed46dd5fabeec7853c04b203094456ea2170febec7ea55ee6cb0",
+    "configuration": [
+      "FFMPEG_CONFIGURATION=--disable-everything --disable-autodetect --disable-doc --disable-debug --enable-ffmpeg --enable-ffprobe --enable-pthreads --enable-protocol='file,pipe' --enable-demuxer=matroska --enable-decoder='ffv1,rawvideo' --enable-encoder='ffv1,rawvideo' --enable-muxer='matroska,rawvideo,framemd5,null' --enable-filter='minterpolate,format,scale,setpts,settb,tpad,trim,select,testsrc2,color,null' --enable-indev=lavfi",
+      "CC=gcc",
+      "CFLAGS=   -std=c17 -Werror=partial-availability -mdynamic-no-pic -fno-common -fomit-frame-pointer -fPIC -pthread -Wall -Wdisabled-optimization -Wpointer-arith -Wredundant-decls -Wwrite-strings -Wtype-limits -Wundef -Wempty-body -Wimplicit-fallthrough -Wmissing-prototypes -Wstrict-prototypes -Wunterminated-string-initialization -Wno-parentheses -Wno-switch -Wno-format-zero-length -Wno-pointer-sign -Wno-unused-const-variable -Wno-bool-operation -Wno-char-subscripts -Wno-implicit-const-int-float-conversion -Wno-microsoft-enum-forward-reference -O3 -fno-math-errno -fno-signed-zeros -mstack-alignment=16 -Qunused-arguments -Werror=implicit-function-declaration -Werror=missing-prototypes -Werror=return-type"
+    ]
+  },
+  "mac": {
+    "original": {
+      "status": "compiled",
+      "pkg_config_command": [
+        "/opt/homebrew/bin/pkg-config",
+        "--cflags",
+        "--libs",
+        "libplacebo",
+        "vulkan"
+      ],
+      "command": [
+        "cc",
+        "-std=c17",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "/Users/kurokendo/.codex/worktrees/minterpolate-acceleration/n-frame/tests/probes/mci_accel/replay.c",
+        "-I/Users/kurokendo/np-build/libplacebo-install/include",
+        "-I/opt/homebrew/Cellar/shaderc/2026.4/include",
+        "-I/opt/homebrew/opt/little-cms2/include",
+        "-I/opt/homebrew/Cellar/vulkan-loader/1.4.363.0/../../../opt/vulkan-headers/include",
+        "-L/Users/kurokendo/np-build/libplacebo-install/lib",
+        "-lplacebo",
+        "-L/opt/homebrew/Cellar/vulkan-loader/1.4.363.0/lib",
+        "-lvulkan",
+        "-o",
+        "/Users/kurokendo/np-scratch-int/mci-accel-20261115/gpu-replay-mac/replay"
+      ],
+      "source_sha256": "16a6dca3785adb9c184822ed6189923b84548014dd0700f58c120f9783db93d0",
+      "shader_sha256": "6f77ef89b4f64c86172b4000e952d032e823d6fd5dfa26cc1c62afe952af626c",
+      "exit_code": 0,
+      "executable_sha256": "c6a4df81d5ae8a3e6a238df8845190d1788e94094cf98ac15aafa980d1c7c3d1"
+    },
+    "readback": {
+      "status": "compiled",
+      "pkg_config_command": [
+        "/opt/homebrew/bin/pkg-config",
+        "--cflags",
+        "--libs",
+        "libplacebo",
+        "vulkan"
+      ],
+      "command": [
+        "cc",
+        "-std=c17",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "/Users/kurokendo/.codex/worktrees/minterpolate-acceleration/n-frame/tests/probes/mci_accel/replay.c",
+        "-I/Users/kurokendo/np-build/libplacebo-install/include",
+        "-I/opt/homebrew/Cellar/shaderc/2026.4/include",
+        "-I/opt/homebrew/opt/little-cms2/include",
+        "-I/opt/homebrew/Cellar/vulkan-loader/1.4.363.0/../../../opt/vulkan-headers/include",
+        "-L/Users/kurokendo/np-build/libplacebo-install/lib",
+        "-lplacebo",
+        "-L/opt/homebrew/Cellar/vulkan-loader/1.4.363.0/lib",
+        "-lvulkan",
+        "-o",
+        "/Users/kurokendo/np-scratch-int/mci-accel-20261115/gpu-replay-mac-readback/replay"
+      ],
+      "source_sha256": "642582170bed3e1d3ce79707609e9c6680f94d452b4fe51a2332dc814bb59c25",
+      "shader_sha256": "6f77ef89b4f64c86172b4000e952d032e823d6fd5dfa26cc1c62afe952af626c",
+      "parent_direct_executable_sha256": "c6a4df81d5ae8a3e6a238df8845190d1788e94094cf98ac15aafa980d1c7c3d1",
+      "exit_code": 0,
+      "executable_sha256": "d070b52df4ef8a8b97b0220925bb0daea1fe1088b9298b8519b66d69ac83322a"
+    }
+  },
+  "arc": {
+    "builds": {
+      "original": {
+        "executable_sha256": "fe0e4e1fb50b9d1c08d0ec6e1e756e46c490152aea0eef717de5ab7c130ccadf",
+        "source_sha256": "16a6dca3785adb9c184822ed6189923b84548014dd0700f58c120f9783db93d0",
+        "shader_sha256": "6f77ef89b4f64c86172b4000e952d032e823d6fd5dfa26cc1c62afe952af626c",
+        "command": "cc -std=c17 -O2 -Wall -Wextra -Werror SOURCE.c -o /tmp/replay $(pkg-config --cflags --libs libplacebo) -lm"
+      },
+      "readback": {
+        "executable_sha256": "03cf4e0595a4fa04f50c8a25e9d5bbbab4d2e73d613d2b2c80cb24e44bcf8a07",
+        "source_sha256": "642582170bed3e1d3ce79707609e9c6680f94d452b4fe51a2332dc814bb59c25",
+        "shader_sha256": "6f77ef89b4f64c86172b4000e952d032e823d6fd5dfa26cc1c62afe952af626c",
+        "command": "cc -std=c17 -O2 -Wall -Wextra -Werror SOURCE.c -o /tmp/replay $(pkg-config --cflags --libs libplacebo) -lm"
+      }
+    },
+    "compiler": "cc (Debian 14.2.0-19) 14.2.0\nCopyright (C) 2024 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+    "libplacebo": "7.372.0",
+    "image": "existing claude-research:latest",
+    "research_volume": "claude-np mounted read-only",
+    "gpu": "Intel(R) Arc(tm) A310 Graphics (DG2)",
+    "runtime_environment": {
+      "MESA_VK_DEVICE_SELECT": "8086:56a6!",
+      "LD_LIBRARY_PATH": "/work/libplacebo-install/lib/x86_64-linux-gnu"
+    }
+  },
+  "readback_patch_sha256": "bf826814f470b54a6dd529852eb90c0100fb7b8f8300f3427a8e4ffa76522503",
+  "shader_sha256": "6f77ef89b4f64c86172b4000e952d032e823d6fd5dfa26cc1c62afe952af626c",
+  "initial_nas_setup_failure": "Data scratch mount denied execution before GPU dispatch; built and executed inside transient container /tmp instead"
+}
