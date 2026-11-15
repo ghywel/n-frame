@@ -1575,3 +1575,38 @@ reciprocal multiplication fails the registered weight164 control; direct divisio
 9.0.2 patch includes the alpha/spin repairs, in-object chroma indexing, corrected proof comments and explicit
 no-fast/no-reciprocal compiler flags. Both Mac architecture libraries now compile. Application adapter work
 continues as a separate block; research correctness is not being counted as player correctness.
+
+
+## G042 — GPT to Local: Cadence now runs exact accelerated MCI; content-testing app installed (2026-11-15)
+
+Cadence **main `fcfbec2`** at `/Users/kurokendo/Developer/Cadence` contains the completed integration. No remote
+is configured for that repo. Review block `6f6b720` is merged/pushed here. The app and test notes are
+`/Users/kurokendo/Applications/Cadence MCI Test.app` and Cadence's `MCI-CONTENT-TEST.md`. Separate bundle identity,
+ad hoc signed, universal arm64/x86_64; installed regular Cadence remains unchanged. Main's ignored Mac framework
+slices were refreshed from the tested build, with old slices backed up externally; other platform slices retained.
+
+Persistent in-process FFmpeg MCI, mask51, native decoded YUV and NV12 display output, existing audio clock. Mac
+MCI default; visible n-frame selection, Off/2x/60, Auto2x, explicit SDR/HDR restrictions and actual backend/fallback
+reporting. n-frame quality/cadence remains separate. Sequential history is retained through skipped output frames;
+seek/rate changes rebuild with4 source-frame lead-in, not a claim of full-history EPZS identity. Mobile/TV defaults
+remain n-frame until their fresh libraries/device checks. Universal build is not an Intel runtime measurement.
+
+Final actual bridge (FFmpeg9.0.2 backport + review repairs): **746 selected YUV frames, physical PTS, durations and
+counts exactly match stock**, including both film windows, colored edges,60fps, nonzero start and reset. Real
+NV12 unequal-stride/ownership/API refusal controls pass. Further failures found and repaired: coarse source clock
+changed60fps phase arithmetic; YUVJ422/444/440/411 lost full-range tags (pixels unchanged); cached starvation
+could stall a reset; learned EOF must supersede a rounded container count. The final bridge rerun preserves all
+746 exact matches and all5 YUVJ range controls. Original failures and commands/hashes are retained.
+
+**Final actual-player matrix:8 successful cases +2 intended refusals.** Cached H264/AC3 Bond excerpt with both
+reported actions: steady2x479 frames/48.8fps and60 mode598/60.0fps, both averaging6.2ms/output onM5, zero late or
+left-out pictures and no audio gaps/overlaps/late buffers. Seek458 frames, four rate changes589, Off122,
+n-frame237, EOF1695 with two terminalholds, forceddecode-stall+seek/retarget593. Four rate changes cost10left-out
+and5late pictures; forced1s stall/transitions cost91/4; both recover with continuous audio. These are short player
+observations, not universal throughput or comfort proof. Wrong-backend and mask127 controls correctly exit1.
+
+See Cadence `MediaStack/tests/{mci-bridge-results,mci-playback-results}.json`, `MCI-BRIDGE.md`, `ADAPTER-REVIEW.md`
+and the playback script for exact bounds. Raw captures/logs/builds remain in `np-scratch-int/mci-review-20261115`
+and `cadence-mci-bridge-20261115`. A GUI screenshot inspection was unavailable (computer-use permission absent);
+actual AV presentation/audio was exercised by the app's own tests. Owner can now judge sustained content comfort.
+No GPU renderer join needed for this1080p CPU route; that remains useful research for4K/NAS CPU load. No jobs remain.
