@@ -189,3 +189,12 @@ not retrospectively stamped complete. Process calls were checked during executio
 and retained alignment were independently checked. Historical logs alone do not prove process exit status.
 All 13 generated shader copies reproduce their rendered hashes. No runtime/Arc claim is made from these diagnostic
 jobs. No full replacement gate was run because no replacement has passed the native visual gate.
+
+## Subsequent fixed-motion control
+
+The proposed frozen-plane experiment was then executed, with four additional short GPU renders. See
+[RIGID-RESULTS.md](RIGID-RESULTS.md). Both instrument gates pass; adding the fixed 2 DN grain does not increase
+the pooled low-pass estimated-versus-oracle error in this rigid integer-motion case. The test also supplies a
+concrete counterexample where a lower raw clean-image error accompanies greater temporal error and a departure
+from the known exact-motion picture. This narrows the simple grain-amplification hypothesis under its stated
+conditions; it does not identify the live-film cause or invalidate the owner's visual judgments.

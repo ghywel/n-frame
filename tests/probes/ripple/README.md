@@ -4,6 +4,9 @@ Start with [RESULTS.md](RESULTS.md). This is a diagnostic block prompted by two 
 not a replacement for High. [PLAN.md](PLAN.md) and the per-intervention documents preserve predictions made before
 their renders. Generated shaders, source footage, diagnostic arrays and previews remain outside git.
 
+The subsequent four-render known-motion/grain control is in [RIGID-RESULTS.md](RIGID-RESULTS.md), with its separate
+registration in [RIGID.md](RIGID.md). It does not change the real-film conclusions or supply a production fix.
+
 ## Reproduce the two conditions
 
 Run from the repository root, using the project's patched FFmpeg/libplacebo and a Python environment with NumPy

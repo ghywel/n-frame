@@ -1,0 +1,3439 @@
+{
+ "schema": 1,
+ "scope": "Selected evidence from the registered fixed rigid-plane matrix; full scores remain external and are reproducible with rigid.py.",
+ "fixtures": {
+  "execution_status": "complete",
+  "schema": 1,
+  "scope": "Frozen photographed plane containing clothing/face/scene texture; not segmented cloth or film causality",
+  "original": {
+   "name": "shirt-source.mkv",
+   "sha256": "d11ba45398884cf63a64dcf8d2d5d37670704a27614ab6b18b7afd1df05d4dcb",
+   "frame": 48,
+   "format": {
+    "width": 1920,
+    "height": 1080,
+    "pix_fmt": "yuv420p",
+    "color_range": "tv",
+    "color_space": "bt709",
+    "color_primaries": "bt709",
+    "r_frame_rate": "24000/1001",
+    "nb_read_frames": "119"
+   }
+  },
+  "conversion": {
+   "pixel_format": "gray16le",
+   "normalization": "decoded_uint16 / 65535",
+   "transfer": "No gamma linearization; source code-value luma retained",
+   "output_range": "pc",
+   "output_matrix": "bt709",
+   "output_primaries": "bt709",
+   "color_transfer_tag": "unspecified, matching absent source transfer tag",
+   "ffmpeg_sha256": "e91d80d0eec61da46dfe41becbd0fd27ec54d24dc08ae3db8cf4e06205cef188",
+   "ffprobe_sha256": "c5561790f38989fa7f968689164a3dc044d20954d51e7c1ea75690918da13c2c"
+  },
+  "size": [
+   640,
+   360
+  ],
+  "source_frames": 12,
+  "truth_frames": 24,
+  "source_rate": "24000/1001",
+  "output_rate": "48000/1001",
+  "origin": [
+   400,
+   250
+  ],
+  "displacement_px_per_source_frame": [
+   -16,
+   0
+  ],
+  "material_roi_at_t7": [
+   128,
+   48,
+   384,
+   264
+  ],
+  "material_roi_x_formula": "128 + 16*(7-t)",
+  "scored_output_indices": [
+   9,
+   10,
+   11,
+   12,
+   13,
+   14,
+   15,
+   16,
+   17,
+   18,
+   19
+  ],
+  "temporal_support_output_indices": [
+   8,
+   20
+  ],
+  "noise_seed": 221115,
+  "noise_generator": "PCG64",
+  "numpy_version": "2.5.4",
+  "truth": {
+   "name": "truth.mkv",
+   "sha256": "8177b58967b43ea07571ee6a1eb6611b902f86a9cf30744c61e599cb3db8c2f1",
+   "frames": 24,
+   "rate": "48000/1001",
+   "format": {
+    "width": 640,
+    "height": 360,
+    "pix_fmt": "gray16le",
+    "color_range": "pc",
+    "r_frame_rate": "7001/146",
+    "nb_read_frames": "24"
+   }
+  },
+  "plate_sha256": "49efb97ac7830e179d887e8f3dc651006c94ca66a09a9e4408ceab743661558e",
+  "conditions": {
+   "frozen": {
+    "source": {
+     "name": "source.mkv",
+     "sha256": "585408d0353cfe24deafc215f12722f180f49f6a1254a931c5c38c057df33059",
+     "frames": 12,
+     "rate": "24000/1001",
+     "format": {
+      "width": 640,
+      "height": 360,
+      "pix_fmt": "gray16le",
+      "color_range": "pc",
+      "r_frame_rate": "24000/1001",
+      "nb_read_frames": "12"
+     }
+    },
+    "noise_sigma_dn": 0,
+    "material_noise_rms_dn_by_source": [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    "material_noise_mean_dn_by_source": [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    "adjacent_material_noise_covariance_dn2": [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    "clipped_low_count": 0,
+    "clipped_high_count": 0,
+    "total_noise_samples": 2764800
+   },
+   "grain": {
+    "source": {
+     "name": "source.mkv",
+     "sha256": "e520f3a78f76f164298de2383e51f2076af1216963c628316c44ca5faf0294a1",
+     "frames": 12,
+     "rate": "24000/1001",
+     "format": {
+      "width": 640,
+      "height": 360,
+      "pix_fmt": "gray16le",
+      "color_range": "pc",
+      "r_frame_rate": "24000/1001",
+      "nb_read_frames": "12"
+     }
+    },
+    "noise_sigma_dn": 2.0,
+    "material_noise_rms_dn_by_source": [
+     1.993199669,
+     1.998420135,
+     1.99691707,
+     1.997750157,
+     1.996640714,
+     2.00219121,
+     1.99649418,
+     1.994827596,
+     1.992119052,
+     1.996923778,
+     2.002795021,
+     1.998347428
+    ],
+    "material_noise_mean_dn_by_source": [
+     0.00130754651,
+     -0.006795110181,
+     -0.0007649683976,
+     -0.003910541534,
+     -0.00838616956,
+     -0.002825336531,
+     0.0009673442692,
+     0.004185653292,
+     -0.008973146789,
+     -0.004079218488,
+     -0.007706451695,
+     -0.002183466218
+    ],
+    "adjacent_material_noise_covariance_dn2": [
+     -0.008613461629,
+     0.003512669355,
+     0.006803761702,
+     0.004883504473,
+     -0.0002290835255,
+     0.01031630673,
+     0.008462609723,
+     0.001187283546,
+     -0.01247237064,
+     -0.002858008491,
+     0.009501176886
+    ],
+    "clipped_low_count": 306,
+    "clipped_high_count": 1491,
+    "total_noise_samples": 2764800
+   }
+  },
+  "gates": {
+   "selected_source_full_frame_mae_max_dn": 0.5,
+   "each_oracle_midpoint_cpu_blend_rms_max_dn": 1.0
+  }
+ },
+ "cpu_controls": {
+  "execution_status": "complete",
+  "status": "pass",
+  "scope": "CPU fixture/measurement/certification controls only",
+  "exact_material_stationarity": true,
+  "conditions": {
+   "frozen": {
+    "raw_clean_error": {
+     "all": {
+      "frames": 11,
+      "rms_dn": 0.0,
+      "mae_dn": 0.0,
+      "gradient_rms_dn_per_px": 0.0,
+      "curvature_rms_dn": 0.0
+     },
+     "source": {
+      "frames": 5,
+      "rms_dn": 0.0,
+      "mae_dn": 0.0,
+      "gradient_rms_dn_per_px": 0.0,
+      "curvature_rms_dn": 0.0
+     },
+     "inserted": {
+      "frames": 6,
+      "rms_dn": 0.0,
+      "mae_dn": 0.0,
+      "gradient_rms_dn_per_px": 0.0,
+      "curvature_rms_dn": 0.0
+     }
+    },
+    "sigma2_clean_error": {
+     "all": {
+      "frames": 11,
+      "rms_dn": 0.0,
+      "mae_dn": 0.0,
+      "gradient_rms_dn_per_px": 0.0,
+      "curvature_rms_dn": 0.0
+     },
+     "source": {
+      "frames": 5,
+      "rms_dn": 0.0,
+      "mae_dn": 0.0,
+      "gradient_rms_dn_per_px": 0.0,
+      "curvature_rms_dn": 0.0
+     },
+     "inserted": {
+      "frames": 6,
+      "rms_dn": 0.0,
+      "mae_dn": 0.0,
+      "gradient_rms_dn_per_px": 0.0,
+      "curvature_rms_dn": 0.0
+     }
+    },
+    "raw_midpoint_chord_rms_dn": 0.0
+   },
+   "grain": {
+    "raw_clean_error": {
+     "all": {
+      "frames": 11,
+      "rms_dn": 1.702863365,
+      "mae_dn": 1.339026332,
+      "gradient_rms_dn_per_px": 1.699863315,
+      "curvature_rms_dn": 1.648940701
+     },
+     "source": {
+      "frames": 5,
+      "rms_dn": 1.996513905,
+      "mae_dn": 1.593485951,
+      "gradient_rms_dn_per_px": 1.993658304,
+      "curvature_rms_dn": 2.445774307
+     },
+     "inserted": {
+      "frames": 6,
+      "rms_dn": 1.412258307,
+      "mae_dn": 1.126976728,
+      "gradient_rms_dn_per_px": 1.408990383,
+      "curvature_rms_dn": 8.485414642e-06
+     }
+    },
+    "sigma2_clean_error": {
+     "all": {
+      "frames": 11,
+      "rms_dn": 0.2407973166,
+      "mae_dn": 0.1895195395,
+      "gradient_rms_dn_per_px": 0.1131092012,
+      "curvature_rms_dn": 0.2323097231
+     },
+     "source": {
+      "frames": 5,
+      "rms_dn": 0.2824169906,
+      "mae_dn": 0.2255131751,
+      "gradient_rms_dn_per_px": 0.1327728182,
+      "curvature_rms_dn": 0.3445710034
+     },
+     "inserted": {
+      "frames": 6,
+      "rms_dn": 0.1995912663,
+      "mae_dn": 0.1595248431,
+      "gradient_rms_dn_per_px": 0.09361933917,
+      "curvature_rms_dn": 1.204773376e-06
+     }
+    },
+    "raw_midpoint_chord_rms_dn": 0.0
+   }
+  },
+  "repeated_midpoint_error": {
+   "inserted_only_change_dn": 0.0,
+   "all_output_change_dn": 0.7070253888
+  },
+  "oracle_as_estimate_refused": true,
+  "source_alignment_gate_outputs": [
+   8,
+   10,
+   12,
+   14,
+   16,
+   18,
+   20
+  ]
+ },
+ "conditions": {
+  "frozen": {
+   "execution_status": "complete",
+   "instrument_gate_pass": true,
+   "field_attribution_valid": true,
+   "violations": [],
+   "condition": "frozen",
+   "scored_output_indices": [
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19
+   ],
+   "material_roi_at_t7": [
+    128,
+    48,
+    384,
+    264
+   ],
+   "source_sha256": "585408d0353cfe24deafc215f12722f180f49f6a1254a931c5c38c057df33059",
+   "truth_sha256": "8177b58967b43ea07571ee6a1eb6611b902f86a9cf30744c61e599cb3db8c2f1",
+   "gates": {
+    "selected_source_full_frame_mae_max_dn": 0.5,
+    "each_oracle_midpoint_cpu_blend_rms_max_dn": 1.0
+   },
+   "renderer_instruments": {
+    "oracle": {
+     "shader_sha256": "b7ef3875a3c644947db4e0488d3d6871ae830370601f0963b033ec7d8008d464",
+     "output_sha256": "b6ad9d8cbb4584c07a0b6d307205f647b8d9c654bc47bc514bcf8aec6b5ca4f2",
+     "output_format": {
+      "width": 640,
+      "height": 360,
+      "pix_fmt": "yuv420p",
+      "color_range": "tv",
+      "r_frame_rate": "7001/146",
+      "nb_read_frames": "24"
+     },
+     "retained_source_checks": [
+      {
+       "output_index": 8,
+       "source_index": 4,
+       "full_frame_mae_dn": 0.3042030334,
+       "material_roi_mae_dn": 0.3010765016
+      },
+      {
+       "output_index": 10,
+       "source_index": 5,
+       "full_frame_mae_dn": 0.3045189083,
+       "material_roi_mae_dn": 0.3010765016
+      },
+      {
+       "output_index": 12,
+       "source_index": 6,
+       "full_frame_mae_dn": 0.3047909141,
+       "material_roi_mae_dn": 0.3010765016
+      },
+      {
+       "output_index": 14,
+       "source_index": 7,
+       "full_frame_mae_dn": 0.3039522171,
+       "material_roi_mae_dn": 0.3010765016
+      },
+      {
+       "output_index": 16,
+       "source_index": 8,
+       "full_frame_mae_dn": 0.3029141426,
+       "material_roi_mae_dn": 0.3010765016
+      },
+      {
+       "output_index": 18,
+       "source_index": 9,
+       "full_frame_mae_dn": 0.3022432029,
+       "material_roi_mae_dn": 0.3010765016
+      },
+      {
+       "output_index": 20,
+       "source_index": 10,
+       "full_frame_mae_dn": 0.301977396,
+       "material_roi_mae_dn": 0.3010765016
+      }
+     ]
+    },
+    "estimate": {
+     "shader_sha256": "0d8ec94d53dbbd7a607265eb3c62f62ccab3797df58ad3c580e5efe5ac9cc3c6",
+     "output_sha256": "6fe46da96079ed8036d06de5fee20b9eed32a697562e83b725df7614de3a4355",
+     "output_format": {
+      "width": 640,
+      "height": 360,
+      "pix_fmt": "yuv420p",
+      "color_range": "tv",
+      "r_frame_rate": "7001/146",
+      "nb_read_frames": "24"
+     },
+     "retained_source_checks": [
+      {
+       "output_index": 8,
+       "source_index": 4,
+       "full_frame_mae_dn": 0.3042030334,
+       "material_roi_mae_dn": 0.3010765016
+      },
+      {
+       "output_index": 10,
+       "source_index": 5,
+       "full_frame_mae_dn": 0.3045189083,
+       "material_roi_mae_dn": 0.3010765016
+      },
+      {
+       "output_index": 12,
+       "source_index": 6,
+       "full_frame_mae_dn": 0.3047909141,
+       "material_roi_mae_dn": 0.3010765016
+      },
+      {
+       "output_index": 14,
+       "source_index": 7,
+       "full_frame_mae_dn": 0.3039522171,
+       "material_roi_mae_dn": 0.3010765016
+      },
+      {
+       "output_index": 16,
+       "source_index": 8,
+       "full_frame_mae_dn": 0.3029141426,
+       "material_roi_mae_dn": 0.3010765016
+      },
+      {
+       "output_index": 18,
+       "source_index": 9,
+       "full_frame_mae_dn": 0.3022432029,
+       "material_roi_mae_dn": 0.3010765016
+      },
+      {
+       "output_index": 20,
+       "source_index": 10,
+       "full_frame_mae_dn": 0.301977396,
+       "material_roi_mae_dn": 0.3010765016
+      }
+     ]
+    }
+   },
+   "oracle_midpoint_cpu_blend_checks": [
+    {
+     "output_index": 9,
+     "rms_dn": 0.3543100999,
+     "mae_dn": 0.3010765016
+    },
+    {
+     "output_index": 11,
+     "rms_dn": 0.3543100999,
+     "mae_dn": 0.3010765016
+    },
+    {
+     "output_index": 13,
+     "rms_dn": 0.3543100999,
+     "mae_dn": 0.3010765016
+    },
+    {
+     "output_index": 15,
+     "rms_dn": 0.3543100999,
+     "mae_dn": 0.3010765016
+    },
+    {
+     "output_index": 17,
+     "rms_dn": 0.3543100999,
+     "mae_dn": 0.3010765016
+    },
+    {
+     "output_index": 19,
+     "rms_dn": 0.3543100999,
+     "mae_dn": 0.3010765016
+    }
+   ],
+   "ideal_unclipped_noise": {
+    "source_rms_dn": 0,
+    "midpoint_rms_dn": 0.0,
+    "inserted_centered_curvature_rms_dn": 0,
+    "source_centered_curvature_rms_dn": 0.0,
+    "sigma2_source_rms_dn": 0.0,
+    "sigma2_midpoint_rms_dn": 0.0
+   },
+   "interpretation": [
+    "The clean plane includes frozen original grain as material texture.",
+    "Added source grain is known; no new midpoint grain realization is treated as predictable truth.",
+    "Compare estimated output minus GPU oracle only conditional on every instrument gate.",
+    "All-output and inserted-only differences have different time steps; both are reported.",
+    "Gate limits are acceptance bounds, not measured precision or film-causality evidence."
+   ],
+   "full_score_sha256": "82ceeaa787e015dbc9e94723d04ab532097b88681d0aceb103ab277f8d000810",
+   "realized_cpu_blend_against_clean": {
+    "raw": {
+     "all": {
+      "frames": 11,
+      "rms_dn": 0.0,
+      "mae_dn": 0.0,
+      "gradient_rms_dn_per_px": 0.0,
+      "curvature_rms_dn": 0.0
+     },
+     "source": {
+      "frames": 5,
+      "rms_dn": 0.0,
+      "mae_dn": 0.0,
+      "gradient_rms_dn_per_px": 0.0,
+      "curvature_rms_dn": 0.0
+     },
+     "inserted": {
+      "frames": 6,
+      "rms_dn": 0.0,
+      "mae_dn": 0.0,
+      "gradient_rms_dn_per_px": 0.0,
+      "curvature_rms_dn": 0.0
+     }
+    },
+    "sigma2": {
+     "all": {
+      "frames": 11,
+      "rms_dn": 0.0,
+      "mae_dn": 0.0,
+      "gradient_rms_dn_per_px": 0.0,
+      "curvature_rms_dn": 0.0
+     },
+     "source": {
+      "frames": 5,
+      "rms_dn": 0.0,
+      "mae_dn": 0.0,
+      "gradient_rms_dn_per_px": 0.0,
+      "curvature_rms_dn": 0.0
+     },
+     "inserted": {
+      "frames": 6,
+      "rms_dn": 0.0,
+      "mae_dn": 0.0,
+      "gradient_rms_dn_per_px": 0.0,
+      "curvature_rms_dn": 0.0
+     }
+    }
+   },
+   "renders": {
+    "oracle": {
+     "against_clean": {
+      "raw": {
+       "parity": {
+        "all": {
+         "frames": 11,
+         "rms_dn": 0.3543100999,
+         "mae_dn": 0.3010765016,
+         "gradient_rms_dn_per_px": 0.3260295093,
+         "curvature_rms_dn": 0.0
+        },
+        "source": {
+         "frames": 5,
+         "rms_dn": 0.3543100999,
+         "mae_dn": 0.3010765016,
+         "gradient_rms_dn_per_px": 0.3260295093,
+         "curvature_rms_dn": 0.0
+        },
+        "inserted": {
+         "frames": 6,
+         "rms_dn": 0.3543100999,
+         "mae_dn": 0.3010765016,
+         "gradient_rms_dn_per_px": 0.3260295093,
+         "curvature_rms_dn": 0.0
+        }
+       },
+       "all_output_error_first_difference_rms_dn": 0.0,
+       "inserted_only_error_first_difference_rms_dn": 0.0,
+       "difference_step_source_frames": {
+        "all_outputs": 0.5,
+        "inserted_only": 1.0
+       }
+      },
+      "sigma2": {
+       "parity": {
+        "all": {
+         "frames": 11,
+         "rms_dn": 0.1344386523,
+         "mae_dn": 0.1078054532,
+         "gradient_rms_dn_per_px": 0.03776958212,
+         "curvature_rms_dn": 0.0
+        },
+        "source": {
+         "frames": 5,
+         "rms_dn": 0.1344386523,
+         "mae_dn": 0.1078054607,
+         "gradient_rms_dn_per_px": 0.03776958212,
+         "curvature_rms_dn": 0.0
+        },
+        "inserted": {
+         "frames": 6,
+         "rms_dn": 0.1344386523,
+         "mae_dn": 0.1078054607,
+         "gradient_rms_dn_per_px": 0.03776958212,
+         "curvature_rms_dn": 0.0
+        }
+       },
+       "all_output_error_first_difference_rms_dn": 0.0,
+       "inserted_only_error_first_difference_rms_dn": 0.0,
+       "difference_step_source_frames": {
+        "all_outputs": 0.5,
+        "inserted_only": 1.0
+       }
+      }
+     },
+     "against_cpu_blend": {
+      "raw": {
+       "parity": {
+        "all": {
+         "frames": 11,
+         "rms_dn": 0.3543100999,
+         "mae_dn": 0.3010765016,
+         "gradient_rms_dn_per_px": 0.3260295093,
+         "curvature_rms_dn": 0.0
+        },
+        "source": {
+         "frames": 5,
+         "rms_dn": 0.3543100999,
+         "mae_dn": 0.3010765016,
+         "gradient_rms_dn_per_px": 0.3260295093,
+         "curvature_rms_dn": 0.0
+        },
+        "inserted": {
+         "frames": 6,
+         "rms_dn": 0.3543100999,
+         "mae_dn": 0.3010765016,
+         "gradient_rms_dn_per_px": 0.3260295093,
+         "curvature_rms_dn": 0.0
+        }
+       },
+       "all_output_error_first_difference_rms_dn": 0.0,
+       "inserted_only_error_first_difference_rms_dn": 0.0,
+       "difference_step_source_frames": {
+        "all_outputs": 0.5,
+        "inserted_only": 1.0
+       }
+      },
+      "sigma2": {
+       "parity": {
+        "all": {
+         "frames": 11,
+         "rms_dn": 0.1344386523,
+         "mae_dn": 0.1078054532,
+         "gradient_rms_dn_per_px": 0.03776958212,
+         "curvature_rms_dn": 0.0
+        },
+        "source": {
+         "frames": 5,
+         "rms_dn": 0.1344386523,
+         "mae_dn": 0.1078054607,
+         "gradient_rms_dn_per_px": 0.03776958212,
+         "curvature_rms_dn": 0.0
+        },
+        "inserted": {
+         "frames": 6,
+         "rms_dn": 0.1344386523,
+         "mae_dn": 0.1078054607,
+         "gradient_rms_dn_per_px": 0.03776958212,
+         "curvature_rms_dn": 0.0
+        }
+       },
+       "all_output_error_first_difference_rms_dn": 0.0,
+       "inserted_only_error_first_difference_rms_dn": 0.0,
+       "difference_step_source_frames": {
+        "all_outputs": 0.5,
+        "inserted_only": 1.0
+       }
+      }
+     },
+     "against_gpu_oracle": {
+      "raw": {
+       "parity": {
+        "all": {
+         "frames": 11,
+         "rms_dn": 0.0,
+         "mae_dn": 0.0,
+         "gradient_rms_dn_per_px": 0.0,
+         "curvature_rms_dn": 0.0
+        },
+        "source": {
+         "frames": 5,
+         "rms_dn": 0.0,
+         "mae_dn": 0.0,
+         "gradient_rms_dn_per_px": 0.0,
+         "curvature_rms_dn": 0.0
+        },
+        "inserted": {
+         "frames": 6,
+         "rms_dn": 0.0,
+         "mae_dn": 0.0,
+         "gradient_rms_dn_per_px": 0.0,
+         "curvature_rms_dn": 0.0
+        }
+       },
+       "all_output_error_first_difference_rms_dn": 0.0,
+       "inserted_only_error_first_difference_rms_dn": 0.0,
+       "difference_step_source_frames": {
+        "all_outputs": 0.5,
+        "inserted_only": 1.0
+       }
+      },
+      "sigma2": {
+       "parity": {
+        "all": {
+         "frames": 11,
+         "rms_dn": 0.0,
+         "mae_dn": 0.0,
+         "gradient_rms_dn_per_px": 0.0,
+         "curvature_rms_dn": 0.0
+        },
+        "source": {
+         "frames": 5,
+         "rms_dn": 0.0,
+         "mae_dn": 0.0,
+         "gradient_rms_dn_per_px": 0.0,
+         "curvature_rms_dn": 0.0
+        },
+        "inserted": {
+         "frames": 6,
+         "rms_dn": 0.0,
+         "mae_dn": 0.0,
+         "gradient_rms_dn_per_px": 0.0,
+         "curvature_rms_dn": 0.0
+        }
+       },
+       "all_output_error_first_difference_rms_dn": 0.0,
+       "inserted_only_error_first_difference_rms_dn": 0.0,
+       "difference_step_source_frames": {
+        "all_outputs": 0.5,
+        "inserted_only": 1.0
+       }
+      }
+     },
+     "per_output_difference_from_gpu_oracle": {
+      "raw": [
+       {
+        "output_index": 9,
+        "parity": "inserted",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.0
+       },
+       {
+        "output_index": 10,
+        "parity": "source",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.0
+       },
+       {
+        "output_index": 11,
+        "parity": "inserted",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.0
+       },
+       {
+        "output_index": 12,
+        "parity": "source",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.0
+       },
+       {
+        "output_index": 13,
+        "parity": "inserted",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.0
+       },
+       {
+        "output_index": 14,
+        "parity": "source",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.0
+       },
+       {
+        "output_index": 15,
+        "parity": "inserted",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.0
+       },
+       {
+        "output_index": 16,
+        "parity": "source",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.0
+       },
+       {
+        "output_index": 17,
+        "parity": "inserted",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.0
+       },
+       {
+        "output_index": 18,
+        "parity": "source",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.0
+       },
+       {
+        "output_index": 19,
+        "parity": "inserted",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.0
+       }
+      ],
+      "sigma2": [
+       {
+        "output_index": 9,
+        "parity": "inserted",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.0
+       },
+       {
+        "output_index": 10,
+        "parity": "source",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.0
+       },
+       {
+        "output_index": 11,
+        "parity": "inserted",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.0
+       },
+       {
+        "output_index": 12,
+        "parity": "source",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.0
+       },
+       {
+        "output_index": 13,
+        "parity": "inserted",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.0
+       },
+       {
+        "output_index": 14,
+        "parity": "source",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.0
+       },
+       {
+        "output_index": 15,
+        "parity": "inserted",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.0
+       },
+       {
+        "output_index": 16,
+        "parity": "source",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.0
+       },
+       {
+        "output_index": 17,
+        "parity": "inserted",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.0
+       },
+       {
+        "output_index": 18,
+        "parity": "source",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.0
+       },
+       {
+        "output_index": 19,
+        "parity": "inserted",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.0
+       }
+      ]
+     },
+     "shape": {
+      "raw": {
+       "per_output": [
+        {
+         "output_index": 9,
+         "parity": "inserted",
+         "contrast_gain": 0.9992966056,
+         "contrast_gain_error": -0.000703394413,
+         "contrast_rms_ratio": 0.9993178248,
+         "gradient_gain": 0.9991454141,
+         "contrast_fit_residual_rms_dn": 0.342488074
+        },
+        {
+         "output_index": 10,
+         "parity": "source",
+         "contrast_gain": 0.9992966056,
+         "contrast_gain_error": -0.000703394413,
+         "contrast_rms_ratio": 0.9993178248,
+         "gradient_gain": 0.9991454141,
+         "contrast_fit_residual_rms_dn": 0.342488074
+        },
+        {
+         "output_index": 11,
+         "parity": "inserted",
+         "contrast_gain": 0.9992966056,
+         "contrast_gain_error": -0.000703394413,
+         "contrast_rms_ratio": 0.9993178248,
+         "gradient_gain": 0.9991454141,
+         "contrast_fit_residual_rms_dn": 0.342488074
+        },
+        {
+         "output_index": 12,
+         "parity": "source",
+         "contrast_gain": 0.9992966056,
+         "contrast_gain_error": -0.000703394413,
+         "contrast_rms_ratio": 0.9993178248,
+         "gradient_gain": 0.9991454141,
+         "contrast_fit_residual_rms_dn": 0.342488074
+        },
+        {
+         "output_index": 13,
+         "parity": "inserted",
+         "contrast_gain": 0.9992966056,
+         "contrast_gain_error": -0.000703394413,
+         "contrast_rms_ratio": 0.9993178248,
+         "gradient_gain": 0.9991454141,
+         "contrast_fit_residual_rms_dn": 0.342488074
+        },
+        {
+         "output_index": 14,
+         "parity": "source",
+         "contrast_gain": 0.9992966056,
+         "contrast_gain_error": -0.000703394413,
+         "contrast_rms_ratio": 0.9993178248,
+         "gradient_gain": 0.9991454141,
+         "contrast_fit_residual_rms_dn": 0.342488074
+        },
+        {
+         "output_index": 15,
+         "parity": "inserted",
+         "contrast_gain": 0.9992966056,
+         "contrast_gain_error": -0.000703394413,
+         "contrast_rms_ratio": 0.9993178248,
+         "gradient_gain": 0.9991454141,
+         "contrast_fit_residual_rms_dn": 0.342488074
+        },
+        {
+         "output_index": 16,
+         "parity": "source",
+         "contrast_gain": 0.9992966056,
+         "contrast_gain_error": -0.000703394413,
+         "contrast_rms_ratio": 0.9993178248,
+         "gradient_gain": 0.9991454141,
+         "contrast_fit_residual_rms_dn": 0.342488074
+        },
+        {
+         "output_index": 17,
+         "parity": "inserted",
+         "contrast_gain": 0.9992966056,
+         "contrast_gain_error": -0.000703394413,
+         "contrast_rms_ratio": 0.9993178248,
+         "gradient_gain": 0.9991454141,
+         "contrast_fit_residual_rms_dn": 0.342488074
+        },
+        {
+         "output_index": 18,
+         "parity": "source",
+         "contrast_gain": 0.9992966056,
+         "contrast_gain_error": -0.000703394413,
+         "contrast_rms_ratio": 0.9993178248,
+         "gradient_gain": 0.9991454141,
+         "contrast_fit_residual_rms_dn": 0.342488074
+        },
+        {
+         "output_index": 19,
+         "parity": "inserted",
+         "contrast_gain": 0.9992966056,
+         "contrast_gain_error": -0.000703394413,
+         "contrast_rms_ratio": 0.9993178248,
+         "gradient_gain": 0.9991454141,
+         "contrast_fit_residual_rms_dn": 0.342488074
+        }
+       ],
+       "source_to_inserted_chord": [
+        {
+         "output_index": 9,
+         "rms_dn": 0.0,
+         "gradient_rms_dn_per_px": 0.0
+        },
+        {
+         "output_index": 11,
+         "rms_dn": 0.0,
+         "gradient_rms_dn_per_px": 0.0
+        },
+        {
+         "output_index": 13,
+         "rms_dn": 0.0,
+         "gradient_rms_dn_per_px": 0.0
+        },
+        {
+         "output_index": 15,
+         "rms_dn": 0.0,
+         "gradient_rms_dn_per_px": 0.0
+        },
+        {
+         "output_index": 17,
+         "rms_dn": 0.0,
+         "gradient_rms_dn_per_px": 0.0
+        },
+        {
+         "output_index": 19,
+         "rms_dn": 0.0,
+         "gradient_rms_dn_per_px": 0.0
+        }
+       ],
+       "source_to_inserted_chord_rms_dn": 0.0,
+       "source_to_inserted_chord_gradient_rms_dn_per_px": 0.0
+      },
+      "sigma2": {
+       "per_output": [
+        {
+         "output_index": 9,
+         "parity": "inserted",
+         "contrast_gain": 0.9992966652,
+         "contrast_gain_error": -0.0007033348083,
+         "contrast_rms_ratio": 0.9992985725,
+         "gradient_gain": 0.9993096461,
+         "contrast_fit_residual_rms_dn": 0.0997211716
+        },
+        {
+         "output_index": 10,
+         "parity": "source",
+         "contrast_gain": 0.9992966652,
+         "contrast_gain_error": -0.0007033348083,
+         "contrast_rms_ratio": 0.9992985725,
+         "gradient_gain": 0.9993096461,
+         "contrast_fit_residual_rms_dn": 0.0997211716
+        },
+        {
+         "output_index": 11,
+         "parity": "inserted",
+         "contrast_gain": 0.9992966652,
+         "contrast_gain_error": -0.0007033348083,
+         "contrast_rms_ratio": 0.9992985725,
+         "gradient_gain": 0.9993096461,
+         "contrast_fit_residual_rms_dn": 0.0997211716
+        },
+        {
+         "output_index": 12,
+         "parity": "source",
+         "contrast_gain": 0.9992966652,
+         "contrast_gain_error": -0.0007033348083,
+         "contrast_rms_ratio": 0.9992985725,
+         "gradient_gain": 0.9993096461,
+         "contrast_fit_residual_rms_dn": 0.0997211716
+        },
+        {
+         "output_index": 13,
+         "parity": "inserted",
+         "contrast_gain": 0.9992966652,
+         "contrast_gain_error": -0.0007033348083,
+         "contrast_rms_ratio": 0.9992985725,
+         "gradient_gain": 0.9993096461,
+         "contrast_fit_residual_rms_dn": 0.0997211716
+        },
+        {
+         "output_index": 14,
+         "parity": "source",
+         "contrast_gain": 0.9992966652,
+         "contrast_gain_error": -0.0007033348083,
+         "contrast_rms_ratio": 0.9992985725,
+         "gradient_gain": 0.9993096461,
+         "contrast_fit_residual_rms_dn": 0.0997211716
+        },
+        {
+         "output_index": 15,
+         "parity": "inserted",
+         "contrast_gain": 0.9992966652,
+         "contrast_gain_error": -0.0007033348083,
+         "contrast_rms_ratio": 0.9992985725,
+         "gradient_gain": 0.9993096461,
+         "contrast_fit_residual_rms_dn": 0.0997211716
+        },
+        {
+         "output_index": 16,
+         "parity": "source",
+         "contrast_gain": 0.9992966652,
+         "contrast_gain_error": -0.0007033348083,
+         "contrast_rms_ratio": 0.9992985725,
+         "gradient_gain": 0.9993096461,
+         "contrast_fit_residual_rms_dn": 0.0997211716
+        },
+        {
+         "output_index": 17,
+         "parity": "inserted",
+         "contrast_gain": 0.9992966652,
+         "contrast_gain_error": -0.0007033348083,
+         "contrast_rms_ratio": 0.9992985725,
+         "gradient_gain": 0.9993096461,
+         "contrast_fit_residual_rms_dn": 0.0997211716
+        },
+        {
+         "output_index": 18,
+         "parity": "source",
+         "contrast_gain": 0.9992966652,
+         "contrast_gain_error": -0.0007033348083,
+         "contrast_rms_ratio": 0.9992985725,
+         "gradient_gain": 0.9993096461,
+         "contrast_fit_residual_rms_dn": 0.0997211716
+        },
+        {
+         "output_index": 19,
+         "parity": "inserted",
+         "contrast_gain": 0.9992966652,
+         "contrast_gain_error": -0.0007033348083,
+         "contrast_rms_ratio": 0.9992985725,
+         "gradient_gain": 0.9993096461,
+         "contrast_fit_residual_rms_dn": 0.0997211716
+        }
+       ],
+       "source_to_inserted_chord": [
+        {
+         "output_index": 9,
+         "rms_dn": 0.0,
+         "gradient_rms_dn_per_px": 0.0
+        },
+        {
+         "output_index": 11,
+         "rms_dn": 0.0,
+         "gradient_rms_dn_per_px": 0.0
+        },
+        {
+         "output_index": 13,
+         "rms_dn": 0.0,
+         "gradient_rms_dn_per_px": 0.0
+        },
+        {
+         "output_index": 15,
+         "rms_dn": 0.0,
+         "gradient_rms_dn_per_px": 0.0
+        },
+        {
+         "output_index": 17,
+         "rms_dn": 0.0,
+         "gradient_rms_dn_per_px": 0.0
+        },
+        {
+         "output_index": 19,
+         "rms_dn": 0.0,
+         "gradient_rms_dn_per_px": 0.0
+        }
+       ],
+       "source_to_inserted_chord_rms_dn": 0.0,
+       "source_to_inserted_chord_gradient_rms_dn_per_px": 0.0
+      }
+     }
+    },
+    "estimate": {
+     "against_clean": {
+      "raw": {
+       "parity": {
+        "all": {
+         "frames": 11,
+         "rms_dn": 0.4648664075,
+         "mae_dn": 0.3552269638,
+         "gradient_rms_dn_per_px": 0.4293167591,
+         "curvature_rms_dn": 1.082667615
+        },
+        "source": {
+         "frames": 5,
+         "rms_dn": 0.3543100999,
+         "mae_dn": 0.3010765016,
+         "gradient_rms_dn_per_px": 0.3260295093,
+         "curvature_rms_dn": 1.080561058
+        },
+        "inserted": {
+         "frames": 6,
+         "rms_dn": 0.5399738128,
+         "mae_dn": 0.4003523588,
+         "gradient_rms_dn_per_px": 0.4993271232,
+         "curvature_rms_dn": 1.084419953
+        }
+       },
+       "all_output_error_first_difference_rms_dn": 0.5421229674,
+       "inserted_only_error_first_difference_rms_dn": 0.08931431382,
+       "difference_step_source_frames": {
+        "all_outputs": 0.5,
+        "inserted_only": 1.0
+       }
+      },
+      "sigma2": {
+       "parity": {
+        "all": {
+         "frames": 11,
+         "rms_dn": 0.1598650781,
+         "mae_dn": 0.1265253276,
+         "gradient_rms_dn_per_px": 0.05016146228,
+         "curvature_rms_dn": 0.2344254241
+        },
+        "source": {
+         "frames": 5,
+         "rms_dn": 0.1344386523,
+         "mae_dn": 0.1078054607,
+         "gradient_rms_dn_per_px": 0.03776958212,
+         "curvature_rms_dn": 0.2342078156
+        },
+        "inserted": {
+         "frames": 6,
+         "rms_dn": 0.1783052248,
+         "mae_dn": 0.1421252191,
+         "gradient_rms_dn_per_px": 0.05851664022,
+         "curvature_rms_dn": 0.2346066104
+        }
+       },
+       "all_output_error_first_difference_rms_dn": 0.1172838431,
+       "inserted_only_error_first_difference_rms_dn": 0.01298840064,
+       "difference_step_source_frames": {
+        "all_outputs": 0.5,
+        "inserted_only": 1.0
+       }
+      }
+     },
+     "against_cpu_blend": {
+      "raw": {
+       "parity": {
+        "all": {
+         "frames": 11,
+         "rms_dn": 0.4648664075,
+         "mae_dn": 0.3552269638,
+         "gradient_rms_dn_per_px": 0.4293167591,
+         "curvature_rms_dn": 1.082667615
+        },
+        "source": {
+         "frames": 5,
+         "rms_dn": 0.3543100999,
+         "mae_dn": 0.3010765016,
+         "gradient_rms_dn_per_px": 0.3260295093,
+         "curvature_rms_dn": 1.080561058
+        },
+        "inserted": {
+         "frames": 6,
+         "rms_dn": 0.5399738128,
+         "mae_dn": 0.4003523588,
+         "gradient_rms_dn_per_px": 0.4993271232,
+         "curvature_rms_dn": 1.084419953
+        }
+       },
+       "all_output_error_first_difference_rms_dn": 0.5421229674,
+       "inserted_only_error_first_difference_rms_dn": 0.08931431382,
+       "difference_step_source_frames": {
+        "all_outputs": 0.5,
+        "inserted_only": 1.0
+       }
+      },
+      "sigma2": {
+       "parity": {
+        "all": {
+         "frames": 11,
+         "rms_dn": 0.1598650781,
+         "mae_dn": 0.1265253276,
+         "gradient_rms_dn_per_px": 0.05016146228,
+         "curvature_rms_dn": 0.2344254241
+        },
+        "source": {
+         "frames": 5,
+         "rms_dn": 0.1344386523,
+         "mae_dn": 0.1078054607,
+         "gradient_rms_dn_per_px": 0.03776958212,
+         "curvature_rms_dn": 0.2342078156
+        },
+        "inserted": {
+         "frames": 6,
+         "rms_dn": 0.1783052248,
+         "mae_dn": 0.1421252191,
+         "gradient_rms_dn_per_px": 0.05851664022,
+         "curvature_rms_dn": 0.2346066104
+        }
+       },
+       "all_output_error_first_difference_rms_dn": 0.1172838431,
+       "inserted_only_error_first_difference_rms_dn": 0.01298840064,
+       "difference_step_source_frames": {
+        "all_outputs": 0.5,
+        "inserted_only": 1.0
+       }
+      }
+     },
+     "against_gpu_oracle": {
+      "raw": {
+       "parity": {
+        "all": {
+         "frames": 11,
+         "rms_dn": 0.4004486065,
+         "mae_dn": 0.118885383,
+         "gradient_rms_dn_per_px": 0.3855053484,
+         "curvature_rms_dn": 1.082667615
+        },
+        "source": {
+         "frames": 5,
+         "rms_dn": 0.0,
+         "mae_dn": 0.0,
+         "gradient_rms_dn_per_px": 0.0,
+         "curvature_rms_dn": 1.080561058
+        },
+        "inserted": {
+         "frames": 6,
+         "rms_dn": 0.5422099764,
+         "mae_dn": 0.217956543,
+         "gradient_rms_dn_per_px": 0.521976769,
+         "curvature_rms_dn": 1.084419953
+        }
+       },
+       "all_output_error_first_difference_rms_dn": 0.5421229674,
+       "inserted_only_error_first_difference_rms_dn": 0.08931431382,
+       "difference_step_source_frames": {
+        "all_outputs": 0.5,
+        "inserted_only": 1.0
+       }
+      },
+      "sigma2": {
+       "parity": {
+        "all": {
+         "frames": 11,
+         "rms_dn": 0.0866342325,
+         "mae_dn": 0.04354504123,
+         "gradient_rms_dn_per_px": 0.04081913456,
+         "curvature_rms_dn": 0.2344254242
+        },
+        "source": {
+         "frames": 5,
+         "rms_dn": 0.0,
+         "mae_dn": 0.0,
+         "gradient_rms_dn_per_px": 0.0,
+         "curvature_rms_dn": 0.2342078155
+        },
+        "inserted": {
+         "frames": 6,
+         "rms_dn": 0.1173033053,
+         "mae_dn": 0.07983256876,
+         "gradient_rms_dn_per_px": 0.05526937172,
+         "curvature_rms_dn": 0.2346066107
+        }
+       },
+       "all_output_error_first_difference_rms_dn": 0.1172838431,
+       "inserted_only_error_first_difference_rms_dn": 0.01298840056,
+       "difference_step_source_frames": {
+        "all_outputs": 0.5,
+        "inserted_only": 1.0
+       }
+      }
+     },
+     "per_output_difference_from_gpu_oracle": {
+      "raw": [
+       {
+        "output_index": 9,
+        "parity": "inserted",
+        "rms_dn": 0.5408429689,
+        "mae_dn": 0.2165051997,
+        "gradient_rms_dn_per_px": 0.5203042626,
+        "curvature_rms_dn": 1.081685938
+       },
+       {
+        "output_index": 10,
+        "parity": "source",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 1.076089046
+       },
+       {
+        "output_index": 11,
+        "parity": "inserted",
+        "rms_dn": 0.5401628231,
+        "mae_dn": 0.216539979,
+        "gradient_rms_dn_per_px": 0.5197581649,
+        "curvature_rms_dn": 1.080325646
+       },
+       {
+        "output_index": 12,
+        "parity": "source",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 1.07751898
+       },
+       {
+        "output_index": 13,
+        "parity": "inserted",
+        "rms_dn": 0.5409931429,
+        "mae_dn": 0.2171493471,
+        "gradient_rms_dn_per_px": 0.5208685994,
+        "curvature_rms_dn": 1.081986286
+       },
+       {
+        "output_index": 14,
+        "parity": "source",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 1.079646592
+       },
+       {
+        "output_index": 15,
+        "parity": "inserted",
+        "rms_dn": 0.5425228849,
+        "mae_dn": 0.2184123546,
+        "gradient_rms_dn_per_px": 0.5224412084,
+        "curvature_rms_dn": 1.08504577
+       },
+       {
+        "output_index": 16,
+        "parity": "source",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 1.083842035
+       },
+       {
+        "output_index": 17,
+        "parity": "inserted",
+        "rms_dn": 0.5442817559,
+        "mae_dn": 0.2197328359,
+        "gradient_rms_dn_per_px": 0.5242192745,
+        "curvature_rms_dn": 1.088563512
+       },
+       {
+        "output_index": 18,
+        "parity": "source",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 1.08567762
+       },
+       {
+        "output_index": 19,
+        "parity": "inserted",
+        "rms_dn": 0.5444406922,
+        "mae_dn": 0.2193995118,
+        "gradient_rms_dn_per_px": 0.5242503285,
+        "curvature_rms_dn": 1.088881384
+       }
+      ],
+      "sigma2": [
+       {
+        "output_index": 9,
+        "parity": "inserted",
+        "rms_dn": 0.1169259353,
+        "mae_dn": 0.07930616289,
+        "gradient_rms_dn_per_px": 0.05513396114,
+        "curvature_rms_dn": 0.2338518705
+       },
+       {
+        "output_index": 10,
+        "parity": "source",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.2334975681
+       },
+       {
+        "output_index": 11,
+        "parity": "inserted",
+        "rms_dn": 0.1170443193,
+        "mae_dn": 0.07944814116,
+        "gradient_rms_dn_per_px": 0.05510792509,
+        "curvature_rms_dn": 0.2340886386
+       },
+       {
+        "output_index": 12,
+        "parity": "source",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.2336732662
+       },
+       {
+        "output_index": 13,
+        "parity": "inserted",
+        "rms_dn": 0.1169873997,
+        "mae_dn": 0.07973179221,
+        "gradient_rms_dn_per_px": 0.05511815473,
+        "curvature_rms_dn": 0.2339747993
+       },
+       {
+        "output_index": 14,
+        "parity": "source",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.2338043132
+       },
+       {
+        "output_index": 15,
+        "parity": "inserted",
+        "rms_dn": 0.117197849,
+        "mae_dn": 0.0798316896,
+        "gradient_rms_dn_per_px": 0.05523364618,
+        "curvature_rms_dn": 0.2343956979
+       },
+       {
+        "output_index": 16,
+        "parity": "source",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.2346999901
+       },
+       {
+        "output_index": 17,
+        "parity": "inserted",
+        "rms_dn": 0.1177872903,
+        "mae_dn": 0.08036768436,
+        "gradient_rms_dn_per_px": 0.05543605238,
+        "curvature_rms_dn": 0.2355745806
+       },
+       {
+        "output_index": 18,
+        "parity": "source",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.2353585613
+       },
+       {
+        "output_index": 19,
+        "parity": "inserted",
+        "rms_dn": 0.1178732895,
+        "mae_dn": 0.08030994236,
+        "gradient_rms_dn_per_px": 0.05558471754,
+        "curvature_rms_dn": 0.2357465791
+       }
+      ]
+     },
+     "shape": {
+      "raw": {
+       "per_output": [
+        {
+         "output_index": 9,
+         "parity": "inserted",
+         "contrast_gain": 0.9979259372,
+         "contrast_gain_error": -0.002074062824,
+         "contrast_rms_ratio": 0.9979740381,
+         "gradient_gain": 0.9791967598,
+         "contrast_fit_residual_rms_dn": 0.5151654172
+        },
+        {
+         "output_index": 10,
+         "parity": "source",
+         "contrast_gain": 0.9992966056,
+         "contrast_gain_error": -0.000703394413,
+         "contrast_rms_ratio": 0.9993178248,
+         "gradient_gain": 0.9991454141,
+         "contrast_fit_residual_rms_dn": 0.342488074
+        },
+        {
+         "output_index": 11,
+         "parity": "inserted",
+         "contrast_gain": 0.9979246259,
+         "contrast_gain_error": -0.002075374126,
+         "contrast_rms_ratio": 0.9979726672,
+         "gradient_gain": 0.9791566206,
+         "contrast_fit_residual_rms_dn": 0.5147703637
+        },
+        {
+         "output_index": 12,
+         "parity": "source",
+         "contrast_gain": 0.9992966056,
+         "contrast_gain_error": -0.000703394413,
+         "contrast_rms_ratio": 0.9993178248,
+         "gradient_gain": 0.9991454141,
+         "contrast_fit_residual_rms_dn": 0.342488074
+        },
+        {
+         "output_index": 13,
+         "parity": "inserted",
+         "contrast_gain": 0.9979311824,
+         "contrast_gain_error": -0.002068817616,
+         "contrast_rms_ratio": 0.9979792237,
+         "gradient_gain": 0.9791063561,
+         "contrast_fit_residual_rms_dn": 0.5154056876
+        },
+        {
+         "output_index": 14,
+         "parity": "source",
+         "contrast_gain": 0.9992966056,
+         "contrast_gain_error": -0.000703394413,
+         "contrast_rms_ratio": 0.9993178248,
+         "gradient_gain": 0.9991454141,
+         "contrast_fit_residual_rms_dn": 0.342488074
+        },
+        {
+         "output_index": 15,
+         "parity": "inserted",
+         "contrast_gain": 0.9979265332,
+         "contrast_gain_error": -0.002073466778,
+         "contrast_rms_ratio": 0.9979747534,
+         "gradient_gain": 0.9790423503,
+         "contrast_fit_residual_rms_dn": 0.5161339908
+        },
+        {
+         "output_index": 16,
+         "parity": "source",
+         "contrast_gain": 0.9992966056,
+         "contrast_gain_error": -0.000703394413,
+         "contrast_rms_ratio": 0.9993178248,
+         "gradient_gain": 0.9991454141,
+         "contrast_fit_residual_rms_dn": 0.342488074
+        },
+        {
+         "output_index": 17,
+         "parity": "inserted",
+         "contrast_gain": 0.9979090691,
+         "contrast_gain_error": -0.002090930939,
+         "contrast_rms_ratio": 0.9979575276,
+         "gradient_gain": 0.9789398326,
+         "contrast_fit_residual_rms_dn": 0.5172229592
+        },
+        {
+         "output_index": 18,
+         "parity": "source",
+         "contrast_gain": 0.9992966056,
+         "contrast_gain_error": -0.000703394413,
+         "contrast_rms_ratio": 0.9993178248,
+         "gradient_gain": 0.9991454141,
+         "contrast_fit_residual_rms_dn": 0.342488074
+        },
+        {
+         "output_index": 19,
+         "parity": "inserted",
+         "contrast_gain": 0.9979140759,
+         "contrast_gain_error": -0.002085924149,
+         "contrast_rms_ratio": 0.9979627132,
+         "gradient_gain": 0.978917322,
+         "contrast_fit_residual_rms_dn": 0.5176211402
+        }
+       ],
+       "source_to_inserted_chord": [
+        {
+         "output_index": 9,
+         "rms_dn": 0.5408429689,
+         "gradient_rms_dn_per_px": 0.5203042626
+        },
+        {
+         "output_index": 11,
+         "rms_dn": 0.5401628231,
+         "gradient_rms_dn_per_px": 0.5197581649
+        },
+        {
+         "output_index": 13,
+         "rms_dn": 0.5409931429,
+         "gradient_rms_dn_per_px": 0.5208685994
+        },
+        {
+         "output_index": 15,
+         "rms_dn": 0.5425228849,
+         "gradient_rms_dn_per_px": 0.5224412084
+        },
+        {
+         "output_index": 17,
+         "rms_dn": 0.5442817559,
+         "gradient_rms_dn_per_px": 0.5242192745
+        },
+        {
+         "output_index": 19,
+         "rms_dn": 0.5444406922,
+         "gradient_rms_dn_per_px": 0.5242503285
+        }
+       ],
+       "source_to_inserted_chord_rms_dn": 0.5422099764,
+       "source_to_inserted_chord_gradient_rms_dn_per_px": 0.521976769
+      },
+      "sigma2": {
+       "per_output": [
+        {
+         "output_index": 9,
+         "parity": "inserted",
+         "contrast_gain": 0.9987021089,
+         "contrast_gain_error": -0.00129789114,
+         "contrast_rms_ratio": 0.9987048507,
+         "gradient_gain": 0.9949552384,
+         "contrast_fit_residual_rms_dn": 0.1189601577
+        },
+        {
+         "output_index": 10,
+         "parity": "source",
+         "contrast_gain": 0.9992966652,
+         "contrast_gain_error": -0.0007033348083,
+         "contrast_rms_ratio": 0.9992985725,
+         "gradient_gain": 0.9993096461,
+         "contrast_fit_residual_rms_dn": 0.0997211716
+        },
+        {
+         "output_index": 11,
+         "parity": "inserted",
+         "contrast_gain": 0.998703897,
+         "contrast_gain_error": -0.001296103001,
+         "contrast_rms_ratio": 0.998706758,
+         "gradient_gain": 0.9949353827,
+         "contrast_fit_residual_rms_dn": 0.1188513687
+        },
+        {
+         "output_index": 12,
+         "parity": "source",
+         "contrast_gain": 0.9992966652,
+         "contrast_gain_error": -0.0007033348083,
+         "contrast_rms_ratio": 0.9992985725,
+         "gradient_gain": 0.9993096461,
+         "contrast_fit_residual_rms_dn": 0.0997211716
+        },
+        {
+         "output_index": 13,
+         "parity": "inserted",
+         "contrast_gain": 0.9987122416,
+         "contrast_gain_error": -0.00128775835,
+         "contrast_rms_ratio": 0.9987149239,
+         "gradient_gain": 0.9949353188,
+         "contrast_fit_residual_rms_dn": 0.1188547892
+        },
+        {
+         "output_index": 14,
+         "parity": "source",
+         "contrast_gain": 0.9992966652,
+         "contrast_gain_error": -0.0007033348083,
+         "contrast_rms_ratio": 0.9992985725,
+         "gradient_gain": 0.9993096461,
+         "contrast_fit_residual_rms_dn": 0.0997211716
+        },
+        {
+         "output_index": 15,
+         "parity": "inserted",
+         "contrast_gain": 0.9987106323,
+         "contrast_gain_error": -0.001289367676,
+         "contrast_rms_ratio": 0.9987134337,
+         "gradient_gain": 0.9949174423,
+         "contrast_fit_residual_rms_dn": 0.1189441694
+        },
+        {
+         "output_index": 16,
+         "parity": "source",
+         "contrast_gain": 0.9992966652,
+         "contrast_gain_error": -0.0007033348083,
+         "contrast_rms_ratio": 0.9992985725,
+         "gradient_gain": 0.9993096461,
+         "contrast_fit_residual_rms_dn": 0.0997211716
+        },
+        {
+         "output_index": 17,
+         "parity": "inserted",
+         "contrast_gain": 0.9986967444,
+         "contrast_gain_error": -0.001303255558,
+         "contrast_rms_ratio": 0.9986995459,
+         "gradient_gain": 0.9948783693,
+         "contrast_fit_residual_rms_dn": 0.1190536626
+        },
+        {
+         "output_index": 18,
+         "parity": "source",
+         "contrast_gain": 0.9992966652,
+         "contrast_gain_error": -0.0007033348083,
+         "contrast_rms_ratio": 0.9992985725,
+         "gradient_gain": 0.9993096461,
+         "contrast_fit_residual_rms_dn": 0.0997211716
+        },
+        {
+         "output_index": 19,
+         "parity": "inserted",
+         "contrast_gain": 0.9987027049,
+         "contrast_gain_error": -0.001297295094,
+         "contrast_rms_ratio": 0.9987054467,
+         "gradient_gain": 0.994887946,
+         "contrast_fit_residual_rms_dn": 0.1193102568
+        }
+       ],
+       "source_to_inserted_chord": [
+        {
+         "output_index": 9,
+         "rms_dn": 0.1169258992,
+         "gradient_rms_dn_per_px": 0.05513394997
+        },
+        {
+         "output_index": 11,
+         "rms_dn": 0.117044282,
+         "gradient_rms_dn_per_px": 0.05510791764
+        },
+        {
+         "output_index": 13,
+         "rms_dn": 0.1169873769,
+         "gradient_rms_dn_per_px": 0.05511815101
+        },
+        {
+         "output_index": 15,
+         "rms_dn": 0.1171978095,
+         "gradient_rms_dn_per_px": 0.05523363501
+        },
+        {
+         "output_index": 17,
+         "rms_dn": 0.1177872548,
+         "gradient_rms_dn_per_px": 0.05543603376
+        },
+        {
+         "output_index": 19,
+         "rms_dn": 0.1178732675,
+         "gradient_rms_dn_per_px": 0.05558471382
+        }
+       ],
+       "source_to_inserted_chord_rms_dn": 0.1173032732,
+       "source_to_inserted_chord_gradient_rms_dn_per_px": 0.05526935682
+      }
+     }
+    }
+   }
+  },
+  "grain": {
+   "execution_status": "complete",
+   "instrument_gate_pass": true,
+   "field_attribution_valid": true,
+   "violations": [],
+   "condition": "grain",
+   "scored_output_indices": [
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19
+   ],
+   "material_roi_at_t7": [
+    128,
+    48,
+    384,
+    264
+   ],
+   "source_sha256": "e520f3a78f76f164298de2383e51f2076af1216963c628316c44ca5faf0294a1",
+   "truth_sha256": "8177b58967b43ea07571ee6a1eb6611b902f86a9cf30744c61e599cb3db8c2f1",
+   "gates": {
+    "selected_source_full_frame_mae_max_dn": 0.5,
+    "each_oracle_midpoint_cpu_blend_rms_max_dn": 1.0
+   },
+   "renderer_instruments": {
+    "oracle": {
+     "shader_sha256": "b7ef3875a3c644947db4e0488d3d6871ae830370601f0963b033ec7d8008d464",
+     "output_sha256": "24e557487cfab4191ac819a034003264d1a87dfba7b684958db3834b7ce701a3",
+     "output_format": {
+      "width": 640,
+      "height": 360,
+      "pix_fmt": "yuv420p",
+      "color_range": "tv",
+      "r_frame_rate": "7001/146",
+      "nb_read_frames": "24"
+     },
+     "retained_source_checks": [
+      {
+       "output_index": 8,
+       "source_index": 4,
+       "full_frame_mae_dn": 0.3021683991,
+       "material_roi_mae_dn": 0.3037308156
+      },
+      {
+       "output_index": 10,
+       "source_index": 5,
+       "full_frame_mae_dn": 0.3018786907,
+       "material_roi_mae_dn": 0.3045742512
+      },
+      {
+       "output_index": 12,
+       "source_index": 6,
+       "full_frame_mae_dn": 0.3011979163,
+       "material_roi_mae_dn": 0.3039776683
+      },
+      {
+       "output_index": 14,
+       "source_index": 7,
+       "full_frame_mae_dn": 0.3000702858,
+       "material_roi_mae_dn": 0.3027794957
+      },
+      {
+       "output_index": 16,
+       "source_index": 8,
+       "full_frame_mae_dn": 0.3002285957,
+       "material_roi_mae_dn": 0.3025178313
+      },
+      {
+       "output_index": 18,
+       "source_index": 9,
+       "full_frame_mae_dn": 0.3004927337,
+       "material_roi_mae_dn": 0.3034251332
+      },
+      {
+       "output_index": 20,
+       "source_index": 10,
+       "full_frame_mae_dn": 0.299887687,
+       "material_roi_mae_dn": 0.3034613729
+      }
+     ]
+    },
+    "estimate": {
+     "shader_sha256": "0d8ec94d53dbbd7a607265eb3c62f62ccab3797df58ad3c580e5efe5ac9cc3c6",
+     "output_sha256": "7427ab51ff61996fdbe3a155d1d62ef5b5eec10742df00a36ee6e98ea4bd2512",
+     "output_format": {
+      "width": 640,
+      "height": 360,
+      "pix_fmt": "yuv420p",
+      "color_range": "tv",
+      "r_frame_rate": "7001/146",
+      "nb_read_frames": "24"
+     },
+     "retained_source_checks": [
+      {
+       "output_index": 8,
+       "source_index": 4,
+       "full_frame_mae_dn": 0.3021683991,
+       "material_roi_mae_dn": 0.3037308156
+      },
+      {
+       "output_index": 10,
+       "source_index": 5,
+       "full_frame_mae_dn": 0.3018786907,
+       "material_roi_mae_dn": 0.3045742512
+      },
+      {
+       "output_index": 12,
+       "source_index": 6,
+       "full_frame_mae_dn": 0.3011979163,
+       "material_roi_mae_dn": 0.3039776683
+      },
+      {
+       "output_index": 14,
+       "source_index": 7,
+       "full_frame_mae_dn": 0.3000702858,
+       "material_roi_mae_dn": 0.3027794957
+      },
+      {
+       "output_index": 16,
+       "source_index": 8,
+       "full_frame_mae_dn": 0.3002285957,
+       "material_roi_mae_dn": 0.3025178313
+      },
+      {
+       "output_index": 18,
+       "source_index": 9,
+       "full_frame_mae_dn": 0.3004927337,
+       "material_roi_mae_dn": 0.3034251332
+      },
+      {
+       "output_index": 20,
+       "source_index": 10,
+       "full_frame_mae_dn": 0.299887687,
+       "material_roi_mae_dn": 0.3034613729
+      }
+     ]
+    }
+   },
+   "oracle_midpoint_cpu_blend_checks": [
+    {
+     "output_index": 9,
+     "rms_dn": 0.3654977252,
+     "mae_dn": 0.3086555898
+    },
+    {
+     "output_index": 11,
+     "rms_dn": 0.365812553,
+     "mae_dn": 0.308742702
+    },
+    {
+     "output_index": 13,
+     "rms_dn": 0.3657698871,
+     "mae_dn": 0.3086561263
+    },
+    {
+     "output_index": 15,
+     "rms_dn": 0.3665536993,
+     "mae_dn": 0.3097379208
+    },
+    {
+     "output_index": 17,
+     "rms_dn": 0.3670287899,
+     "mae_dn": 0.3099550307
+    },
+    {
+     "output_index": 19,
+     "rms_dn": 0.3661955285,
+     "mae_dn": 0.309289366
+    }
+   ],
+   "ideal_unclipped_noise": {
+    "source_rms_dn": 2.0,
+    "midpoint_rms_dn": 1.414213562,
+    "inserted_centered_curvature_rms_dn": 0,
+    "source_centered_curvature_rms_dn": 2.449489743,
+    "sigma2_source_rms_dn": 0.2821047128,
+    "sigma2_midpoint_rms_dn": 0.1994781554
+   },
+   "interpretation": [
+    "The clean plane includes frozen original grain as material texture.",
+    "Added source grain is known; no new midpoint grain realization is treated as predictable truth.",
+    "Compare estimated output minus GPU oracle only conditional on every instrument gate.",
+    "All-output and inserted-only differences have different time steps; both are reported.",
+    "Gate limits are acceptance bounds, not measured precision or film-causality evidence."
+   ],
+   "full_score_sha256": "6a98a7acb18f74aafa8dd17c9dbd5d94f864812a4f79bdb07eb6c9cfb314f60b",
+   "realized_cpu_blend_against_clean": {
+    "raw": {
+     "all": {
+      "frames": 11,
+      "rms_dn": 1.702863365,
+      "mae_dn": 1.339026332,
+      "gradient_rms_dn_per_px": 1.699863315,
+      "curvature_rms_dn": 1.648940701
+     },
+     "source": {
+      "frames": 5,
+      "rms_dn": 1.996513905,
+      "mae_dn": 1.593485951,
+      "gradient_rms_dn_per_px": 1.993658304,
+      "curvature_rms_dn": 2.445774307
+     },
+     "inserted": {
+      "frames": 6,
+      "rms_dn": 1.412258307,
+      "mae_dn": 1.126976728,
+      "gradient_rms_dn_per_px": 1.408990383,
+      "curvature_rms_dn": 8.485414642e-06
+     }
+    },
+    "sigma2": {
+     "all": {
+      "frames": 11,
+      "rms_dn": 0.2407973166,
+      "mae_dn": 0.1895195395,
+      "gradient_rms_dn_per_px": 0.1131092012,
+      "curvature_rms_dn": 0.2323097231
+     },
+     "source": {
+      "frames": 5,
+      "rms_dn": 0.2824169906,
+      "mae_dn": 0.2255131751,
+      "gradient_rms_dn_per_px": 0.1327728182,
+      "curvature_rms_dn": 0.3445710034
+     },
+     "inserted": {
+      "frames": 6,
+      "rms_dn": 0.1995912663,
+      "mae_dn": 0.1595248431,
+      "gradient_rms_dn_per_px": 0.09361933917,
+      "curvature_rms_dn": 1.204773376e-06
+     }
+    }
+   },
+   "renders": {
+    "oracle": {
+     "against_clean": {
+      "raw": {
+       "parity": {
+        "all": {
+         "frames": 11,
+         "rms_dn": 1.737693087,
+         "mae_dn": 1.368062735,
+         "gradient_rms_dn_per_px": 1.730222583,
+         "curvature_rms_dn": 1.841675005
+        },
+        "source": {
+         "frames": 5,
+         "rms_dn": 2.023971638,
+         "mae_dn": 1.615373611,
+         "gradient_rms_dn_per_px": 2.01829505,
+         "curvature_rms_dn": 2.577103773
+        },
+        "inserted": {
+         "frames": 6,
+         "rms_dn": 1.456768339,
+         "mae_dn": 1.161970258,
+         "gradient_rms_dn_per_px": 1.44699657,
+         "curvature_rms_dn": 0.8268530494
+        }
+       },
+       "all_output_error_first_difference_rms_dn": 1.487610468,
+       "inserted_only_error_first_difference_rms_dn": 1.486766881,
+       "difference_step_source_frames": {
+        "all_outputs": 0.5,
+        "inserted_only": 1.0
+       }
+      },
+      "sigma2": {
+       "parity": {
+        "all": {
+         "frames": 11,
+         "rms_dn": 0.2756796681,
+         "mae_dn": 0.2198388427,
+         "gradient_rms_dn_per_px": 0.1151724085,
+         "curvature_rms_dn": 0.2637900707
+        },
+        "source": {
+         "frames": 5,
+         "rms_dn": 0.3064976625,
+         "mae_dn": 0.2451439351,
+         "gradient_rms_dn_per_px": 0.1343378425,
+         "curvature_rms_dn": 0.3659025493
+        },
+        "inserted": {
+         "frames": 6,
+         "rms_dn": 0.2470789306,
+         "mae_dn": 0.1987512857,
+         "gradient_rms_dn_per_px": 0.0963312462,
+         "curvature_rms_dn": 0.1265002224
+        }
+       },
+       "all_output_error_first_difference_rms_dn": 0.2111634807,
+       "inserted_only_error_first_difference_rms_dn": 0.2108918841,
+       "difference_step_source_frames": {
+        "all_outputs": 0.5,
+        "inserted_only": 1.0
+       }
+      }
+     },
+     "against_cpu_blend": {
+      "raw": {
+       "parity": {
+        "all": {
+         "frames": 11,
+         "rms_dn": 0.3620709955,
+         "mae_dn": 0.3065737486,
+         "gradient_rms_dn_per_px": 0.3392201662,
+         "curvature_rms_dn": 0.8270885837
+        },
+        "source": {
+         "frames": 5,
+         "rms_dn": 0.3571228164,
+         "mae_dn": 0.3034549057,
+         "gradient_rms_dn_per_px": 0.3389657736,
+         "curvature_rms_dn": 0.8273710548
+        },
+        "inserted": {
+         "frames": 6,
+         "rms_dn": 0.3661433994,
+         "mae_dn": 0.3091727793,
+         "gradient_rms_dn_per_px": 0.3394320011,
+         "curvature_rms_dn": 0.8268531173
+        }
+       },
+       "all_output_error_first_difference_rms_dn": 0.4776297485,
+       "inserted_only_error_first_difference_rms_dn": 0.4774702548,
+       "difference_step_source_frames": {
+        "all_outputs": 0.5,
+        "inserted_only": 1.0
+       }
+      },
+      "sigma2": {
+       "parity": {
+        "all": {
+         "frames": 11,
+         "rms_dn": 0.1344716334,
+         "mae_dn": 0.1165907085,
+         "gradient_rms_dn_per_px": 0.0236958079,
+         "curvature_rms_dn": 0.1266549519
+        },
+        "source": {
+         "frames": 5,
+         "rms_dn": 0.1214397129,
+         "mae_dn": 0.1047308743,
+         "gradient_rms_dn_per_px": 0.02352398261,
+         "curvature_rms_dn": 0.1268403711
+        },
+        "inserted": {
+         "frames": 6,
+         "rms_dn": 0.1444361466,
+         "mae_dn": 0.1264739335,
+         "gradient_rms_dn_per_px": 0.0238380488,
+         "curvature_rms_dn": 0.1265002283
+        }
+       },
+       "all_output_error_first_difference_rms_dn": 0.07175948399,
+       "inserted_only_error_first_difference_rms_dn": 0.06715068444,
+       "difference_step_source_frames": {
+        "all_outputs": 0.5,
+        "inserted_only": 1.0
+       }
+      }
+     },
+     "against_gpu_oracle": {
+      "raw": {
+       "parity": {
+        "all": {
+         "frames": 11,
+         "rms_dn": 0.0,
+         "mae_dn": 0.0,
+         "gradient_rms_dn_per_px": 0.0,
+         "curvature_rms_dn": 0.0
+        },
+        "source": {
+         "frames": 5,
+         "rms_dn": 0.0,
+         "mae_dn": 0.0,
+         "gradient_rms_dn_per_px": 0.0,
+         "curvature_rms_dn": 0.0
+        },
+        "inserted": {
+         "frames": 6,
+         "rms_dn": 0.0,
+         "mae_dn": 0.0,
+         "gradient_rms_dn_per_px": 0.0,
+         "curvature_rms_dn": 0.0
+        }
+       },
+       "all_output_error_first_difference_rms_dn": 0.0,
+       "inserted_only_error_first_difference_rms_dn": 0.0,
+       "difference_step_source_frames": {
+        "all_outputs": 0.5,
+        "inserted_only": 1.0
+       }
+      },
+      "sigma2": {
+       "parity": {
+        "all": {
+         "frames": 11,
+         "rms_dn": 0.0,
+         "mae_dn": 0.0,
+         "gradient_rms_dn_per_px": 0.0,
+         "curvature_rms_dn": 0.0
+        },
+        "source": {
+         "frames": 5,
+         "rms_dn": 0.0,
+         "mae_dn": 0.0,
+         "gradient_rms_dn_per_px": 0.0,
+         "curvature_rms_dn": 0.0
+        },
+        "inserted": {
+         "frames": 6,
+         "rms_dn": 0.0,
+         "mae_dn": 0.0,
+         "gradient_rms_dn_per_px": 0.0,
+         "curvature_rms_dn": 0.0
+        }
+       },
+       "all_output_error_first_difference_rms_dn": 0.0,
+       "inserted_only_error_first_difference_rms_dn": 0.0,
+       "difference_step_source_frames": {
+        "all_outputs": 0.5,
+        "inserted_only": 1.0
+       }
+      }
+     },
+     "per_output_difference_from_gpu_oracle": {
+      "raw": [
+       {
+        "output_index": 9,
+        "parity": "inserted",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.0
+       },
+       {
+        "output_index": 10,
+        "parity": "source",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.0
+       },
+       {
+        "output_index": 11,
+        "parity": "inserted",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.0
+       },
+       {
+        "output_index": 12,
+        "parity": "source",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.0
+       },
+       {
+        "output_index": 13,
+        "parity": "inserted",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.0
+       },
+       {
+        "output_index": 14,
+        "parity": "source",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.0
+       },
+       {
+        "output_index": 15,
+        "parity": "inserted",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.0
+       },
+       {
+        "output_index": 16,
+        "parity": "source",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.0
+       },
+       {
+        "output_index": 17,
+        "parity": "inserted",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.0
+       },
+       {
+        "output_index": 18,
+        "parity": "source",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.0
+       },
+       {
+        "output_index": 19,
+        "parity": "inserted",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.0
+       }
+      ],
+      "sigma2": [
+       {
+        "output_index": 9,
+        "parity": "inserted",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.0
+       },
+       {
+        "output_index": 10,
+        "parity": "source",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.0
+       },
+       {
+        "output_index": 11,
+        "parity": "inserted",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.0
+       },
+       {
+        "output_index": 12,
+        "parity": "source",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.0
+       },
+       {
+        "output_index": 13,
+        "parity": "inserted",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.0
+       },
+       {
+        "output_index": 14,
+        "parity": "source",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.0
+       },
+       {
+        "output_index": 15,
+        "parity": "inserted",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.0
+       },
+       {
+        "output_index": 16,
+        "parity": "source",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.0
+       },
+       {
+        "output_index": 17,
+        "parity": "inserted",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.0
+       },
+       {
+        "output_index": 18,
+        "parity": "source",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.0
+       },
+       {
+        "output_index": 19,
+        "parity": "inserted",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.0
+       }
+      ]
+     },
+     "shape": {
+      "raw": {
+       "per_output": [
+        {
+         "output_index": 9,
+         "parity": "inserted",
+         "contrast_gain": 0.9988942146,
+         "contrast_gain_error": -0.00110578537,
+         "contrast_rms_ratio": 0.9992762208,
+         "gradient_gain": 0.9988219498,
+         "contrast_fit_residual_rms_dn": 1.452068513
+        },
+        {
+         "output_index": 10,
+         "parity": "source",
+         "contrast_gain": 0.9991375208,
+         "contrast_gain_error": -0.0008624792099,
+         "contrast_rms_ratio": 0.9998814464,
+         "gradient_gain": 0.9990457893,
+         "contrast_fit_residual_rms_dn": 2.026908101
+        },
+        {
+         "output_index": 11,
+         "parity": "inserted",
+         "contrast_gain": 0.9990196228,
+         "contrast_gain_error": -0.0009803771973,
+         "contrast_rms_ratio": 0.999402225,
+         "gradient_gain": 0.999113592,
+         "contrast_fit_residual_rms_dn": 1.453370918
+        },
+        {
+         "output_index": 12,
+         "parity": "source",
+         "contrast_gain": 0.9993473887,
+         "contrast_gain_error": -0.0006526112556,
+         "contrast_rms_ratio": 1.000086069,
+         "gradient_gain": 0.9993441214,
+         "contrast_fit_residual_rms_dn": 2.019946188
+        },
+        {
+         "output_index": 13,
+         "parity": "inserted",
+         "contrast_gain": 0.9991899729,
+         "contrast_gain_error": -0.0008100271225,
+         "contrast_rms_ratio": 0.9995710254,
+         "gradient_gain": 0.9992006508,
+         "contrast_fit_residual_rms_dn": 1.450373032
+        },
+        {
+         "output_index": 14,
+         "parity": "source",
+         "contrast_gain": 0.9994165301,
+         "contrast_gain_error": -0.0005834698677,
+         "contrast_rms_ratio": 1.000154853,
+         "gradient_gain": 0.9991857342,
+         "contrast_fit_residual_rms_dn": 2.019553961
+        },
+        {
+         "output_index": 15,
+         "parity": "inserted",
+         "contrast_gain": 0.9990440011,
+         "contrast_gain_error": -0.0009559988976,
+         "contrast_rms_ratio": 0.9994244576,
+         "gradient_gain": 0.9987197936,
+         "contrast_fit_residual_rms_dn": 1.449383713
+        },
+        {
+         "output_index": 16,
+         "parity": "source",
+         "contrast_gain": 0.9990246892,
+         "contrast_gain_error": -0.0009753108025,
+         "contrast_rms_ratio": 0.9997606277,
+         "gradient_gain": 0.998669258,
+         "contrast_fit_residual_rms_dn": 2.015771925
+        },
+        {
+         "output_index": 17,
+         "parity": "inserted",
+         "contrast_gain": 0.9990554452,
+         "contrast_gain_error": -0.0009445548058,
+         "contrast_rms_ratio": 0.9994336367,
+         "gradient_gain": 0.9990256293,
+         "contrast_fit_residual_rms_dn": 1.44497841
+        },
+        {
+         "output_index": 18,
+         "parity": "source",
+         "contrast_gain": 0.9993879795,
+         "contrast_gain_error": -0.0006120204926,
+         "contrast_rms_ratio": 1.000128388,
+         "gradient_gain": 0.9996864801,
+         "contrast_fit_residual_rms_dn": 2.022449448
+        },
+        {
+         "output_index": 19,
+         "parity": "inserted",
+         "contrast_gain": 0.9990632534,
+         "contrast_gain_error": -0.0009367465973,
+         "contrast_rms_ratio": 0.9994450808,
+         "gradient_gain": 0.9991177506,
+         "contrast_fit_residual_rms_dn": 1.451818818
+        }
+       ],
+       "source_to_inserted_chord": [
+        {
+         "output_index": 9,
+         "rms_dn": 0.413090786,
+         "gradient_rms_dn_per_px": 0.4118458629
+        },
+        {
+         "output_index": 11,
+         "rms_dn": 0.4123708886,
+         "gradient_rms_dn_per_px": 0.4116255343
+        },
+        {
+         "output_index": 13,
+         "rms_dn": 0.4136622948,
+         "gradient_rms_dn_per_px": 0.4131006896
+        },
+        {
+         "output_index": 15,
+         "rms_dn": 0.4138538554,
+         "gradient_rms_dn_per_px": 0.4130669534
+        },
+        {
+         "output_index": 17,
+         "rms_dn": 0.4132191099,
+         "gradient_rms_dn_per_px": 0.4122824371
+        },
+        {
+         "output_index": 19,
+         "rms_dn": 0.414359569,
+         "gradient_rms_dn_per_px": 0.4137712121
+        }
+       ],
+       "source_to_inserted_chord_rms_dn": 0.4134265635,
+       "source_to_inserted_chord_gradient_rms_dn_per_px": 0.4126161337
+      },
+      "sigma2": {
+       "per_output": [
+        {
+         "output_index": 9,
+         "parity": "inserted",
+         "contrast_gain": 0.9988903403,
+         "contrast_gain_error": -0.001109659672,
+         "contrast_rms_ratio": 0.9988989234,
+         "gradient_gain": 0.9990284735,
+         "contrast_fit_residual_rms_dn": 0.2094715217
+        },
+        {
+         "output_index": 10,
+         "parity": "source",
+         "contrast_gain": 0.9991248846,
+         "contrast_gain_error": -0.0008751153946,
+         "contrast_rms_ratio": 0.9991415143,
+         "gradient_gain": 0.9991839356,
+         "contrast_fit_residual_rms_dn": 0.2922188588
+        },
+        {
+         "output_index": 11,
+         "parity": "inserted",
+         "contrast_gain": 0.9990240335,
+         "contrast_gain_error": -0.0009759664536,
+         "contrast_rms_ratio": 0.9990321994,
+         "gradient_gain": 0.9989235126,
+         "contrast_fit_residual_rms_dn": 0.2047259845
+        },
+        {
+         "output_index": 12,
+         "parity": "source",
+         "contrast_gain": 0.9993858337,
+         "contrast_gain_error": -0.0006141662598,
+         "contrast_rms_ratio": 0.9994010925,
+         "gradient_gain": 0.9988908879,
+         "contrast_fit_residual_rms_dn": 0.2802260724
+        },
+        {
+         "output_index": 13,
+         "parity": "inserted",
+         "contrast_gain": 0.9992172718,
+         "contrast_gain_error": -0.0007827281952,
+         "contrast_rms_ratio": 0.9992256761,
+         "gradient_gain": 0.9988634985,
+         "contrast_fit_residual_rms_dn": 0.2071593062
+        },
+        {
+         "output_index": 14,
+         "parity": "source",
+         "contrast_gain": 0.9994410276,
+         "contrast_gain_error": -0.0005589723587,
+         "contrast_rms_ratio": 0.9994568229,
+         "gradient_gain": 0.9990421363,
+         "contrast_fit_residual_rms_dn": 0.284272882
+        },
+        {
+         "output_index": 15,
+         "parity": "inserted",
+         "contrast_gain": 0.9990733266,
+         "contrast_gain_error": -0.0009266734123,
+         "contrast_rms_ratio": 0.9990817308,
+         "gradient_gain": 0.9988753098,
+         "contrast_fit_residual_rms_dn": 0.2071432036
+        },
+        {
+         "output_index": 16,
+         "parity": "source",
+         "contrast_gain": 0.9990663528,
+         "contrast_gain_error": -0.0009336471558,
+         "contrast_rms_ratio": 0.9990823269,
+         "gradient_gain": 0.9989046784,
+         "contrast_fit_residual_rms_dn": 0.2853784896
+        },
+        {
+         "output_index": 17,
+         "parity": "inserted",
+         "contrast_gain": 0.999063015,
+         "contrast_gain_error": -0.0009369850159,
+         "contrast_rms_ratio": 0.9990713,
+         "gradient_gain": 0.9992140704,
+         "contrast_fit_residual_rms_dn": 0.2059810684
+        },
+        {
+         "output_index": 18,
+         "parity": "source",
+         "contrast_gain": 0.9993621111,
+         "contrast_gain_error": -0.0006378889084,
+         "contrast_rms_ratio": 0.9993782043,
+         "gradient_gain": 0.9998775457,
+         "contrast_fit_residual_rms_dn": 0.2874634143
+        },
+        {
+         "output_index": 19,
+         "parity": "inserted",
+         "contrast_gain": 0.9990675449,
+         "contrast_gain_error": -0.0009324550629,
+         "contrast_rms_ratio": 0.9990756512,
+         "gradient_gain": 0.9990905945,
+         "contrast_fit_residual_rms_dn": 0.2028327278
+        }
+       ],
+       "source_to_inserted_chord": [
+        {
+         "output_index": 9,
+         "rms_dn": 0.06224155795,
+         "gradient_rms_dn_per_px": 0.02751116082
+        },
+        {
+         "output_index": 11,
+         "rms_dn": 0.06325711057,
+         "gradient_rms_dn_per_px": 0.02740961872
+        },
+        {
+         "output_index": 13,
+         "rms_dn": 0.06346871683,
+         "gradient_rms_dn_per_px": 0.02711342275
+        },
+        {
+         "output_index": 15,
+         "rms_dn": 0.06372137427,
+         "gradient_rms_dn_per_px": 0.02757344581
+        },
+        {
+         "output_index": 17,
+         "rms_dn": 0.06397114673,
+         "gradient_rms_dn_per_px": 0.02721150778
+        },
+        {
+         "output_index": 19,
+         "rms_dn": 0.06282494473,
+         "gradient_rms_dn_per_px": 0.02759938128
+        }
+       ],
+       "source_to_inserted_chord_rms_dn": 0.0632500941,
+       "source_to_inserted_chord_gradient_rms_dn_per_px": 0.02740369923
+      }
+     }
+    },
+    "estimate": {
+     "against_clean": {
+      "raw": {
+       "parity": {
+        "all": {
+         "frames": 11,
+         "rms_dn": 1.684145078,
+         "mae_dn": 1.309315681,
+         "gradient_rms_dn_per_px": 1.672519445,
+         "curvature_rms_dn": 2.18884459
+        },
+        "source": {
+         "frames": 5,
+         "rms_dn": 2.023971638,
+         "mae_dn": 1.615373611,
+         "gradient_rms_dn_per_px": 2.01829505,
+         "curvature_rms_dn": 2.877758212
+        },
+        "inserted": {
+         "frames": 6,
+         "rms_dn": 1.336505714,
+         "mae_dn": 1.054267406,
+         "gradient_rms_dn_per_px": 1.316748857,
+         "curvature_rms_dn": 1.371980648
+        }
+       },
+       "all_output_error_first_difference_rms_dn": 1.585550705,
+       "inserted_only_error_first_difference_rms_dn": 1.332062997,
+       "difference_step_source_frames": {
+        "all_outputs": 0.5,
+        "inserted_only": 1.0
+       }
+      },
+      "sigma2": {
+       "parity": {
+        "all": {
+         "frames": 11,
+         "rms_dn": 0.2862875305,
+         "mae_dn": 0.2270720601,
+         "gradient_rms_dn_per_px": 0.1211455539,
+         "curvature_rms_dn": 0.3286551369
+        },
+        "source": {
+         "frames": 5,
+         "rms_dn": 0.3064976625,
+         "mae_dn": 0.2451439351,
+         "gradient_rms_dn_per_px": 0.1343378425,
+         "curvature_rms_dn": 0.41542322
+        },
+        "inserted": {
+         "frames": 6,
+         "rms_dn": 0.2682852853,
+         "mae_dn": 0.2120121866,
+         "gradient_rms_dn_per_px": 0.1089383811,
+         "curvature_rms_dn": 0.2328353964
+        }
+       },
+       "all_output_error_first_difference_rms_dn": 0.2333757184,
+       "inserted_only_error_first_difference_rms_dn": 0.2127920395,
+       "difference_step_source_frames": {
+        "all_outputs": 0.5,
+        "inserted_only": 1.0
+       }
+      }
+     },
+     "against_cpu_blend": {
+      "raw": {
+       "parity": {
+        "all": {
+         "frames": 11,
+         "rms_dn": 0.5466417597,
+         "mae_dn": 0.398797214,
+         "gradient_rms_dn_per_px": 0.519546628,
+         "curvature_rms_dn": 1.339026987
+        },
+        "source": {
+         "frames": 5,
+         "rms_dn": 0.3571228164,
+         "mae_dn": 0.3034549057,
+         "gradient_rms_dn_per_px": 0.3389657736,
+         "curvature_rms_dn": 1.298379002
+        },
+        "inserted": {
+         "frames": 6,
+         "rms_dn": 0.6644930169,
+         "mae_dn": 0.4782491326,
+         "gradient_rms_dn_per_px": 0.631760478,
+         "curvature_rms_dn": 1.371980675
+        }
+       },
+       "all_output_error_first_difference_rms_dn": 0.7274207922,
+       "inserted_only_error_first_difference_rms_dn": 0.6563352819,
+       "difference_step_source_frames": {
+        "all_outputs": 0.5,
+        "inserted_only": 1.0
+       }
+      },
+      "sigma2": {
+       "parity": {
+        "all": {
+         "frames": 11,
+         "rms_dn": 0.156301979,
+         "mae_dn": 0.1263771206,
+         "gradient_rms_dn_per_px": 0.04619257152,
+         "curvature_rms_dn": 0.2320329511
+        },
+        "source": {
+         "frames": 5,
+         "rms_dn": 0.1214397129,
+         "mae_dn": 0.1047308743,
+         "gradient_rms_dn_per_px": 0.02352398261,
+         "curvature_rms_dn": 0.2310663306
+        },
+        "inserted": {
+         "frames": 6,
+         "rms_dn": 0.1802754261,
+         "mae_dn": 0.1444156915,
+         "gradient_rms_dn_per_px": 0.05874294415,
+         "curvature_rms_dn": 0.2328354029
+        }
+       },
+       "all_output_error_first_difference_rms_dn": 0.1221497573,
+       "inserted_only_error_first_difference_rms_dn": 0.07931332639,
+       "difference_step_source_frames": {
+        "all_outputs": 0.5,
+        "inserted_only": 1.0
+       }
+      }
+     },
+     "against_gpu_oracle": {
+      "raw": {
+       "parity": {
+        "all": {
+         "frames": 11,
+         "rms_dn": 0.5166250294,
+         "mae_dn": 0.1869620234,
+         "gradient_rms_dn_per_px": 0.506061852,
+         "curvature_rms_dn": 1.30159884
+        },
+        "source": {
+         "frames": 5,
+         "rms_dn": 0.0,
+         "mae_dn": 0.0,
+         "gradient_rms_dn_per_px": 0.0,
+         "curvature_rms_dn": 1.17406068
+        },
+        "inserted": {
+         "frames": 6,
+         "rms_dn": 0.6995135967,
+         "mae_dn": 0.3427637219,
+         "gradient_rms_dn_per_px": 0.6852109432,
+         "curvature_rms_dn": 1.399027193
+        }
+       },
+       "all_output_error_first_difference_rms_dn": 0.7002992886,
+       "inserted_only_error_first_difference_rms_dn": 0.763713227,
+       "difference_step_source_frames": {
+        "all_outputs": 0.5,
+        "inserted_only": 1.0
+       }
+      },
+      "sigma2": {
+       "parity": {
+        "all": {
+         "frames": 11,
+         "rms_dn": 0.08459859596,
+         "mae_dn": 0.04046326503,
+         "gradient_rms_dn_per_px": 0.04343893379,
+         "curvature_rms_dn": 0.2205169002
+        },
+        "source": {
+         "frames": 5,
+         "rms_dn": 0.0,
+         "mae_dn": 0.0,
+         "gradient_rms_dn_per_px": 0.0,
+         "curvature_rms_dn": 0.2097618406
+        },
+        "inserted": {
+         "frames": 6,
+         "rms_dn": 0.1145470404,
+         "mae_dn": 0.07418265194,
+         "gradient_rms_dn_per_px": 0.05881659687,
+         "curvature_rms_dn": 0.2290940808
+        }
+       },
+       "all_output_error_first_difference_rms_dn": 0.1156883265,
+       "inserted_only_error_first_difference_rms_dn": 0.09764796894,
+       "difference_step_source_frames": {
+        "all_outputs": 0.5,
+        "inserted_only": 1.0
+       }
+      }
+     },
+     "per_output_difference_from_gpu_oracle": {
+      "raw": [
+       {
+        "output_index": 9,
+        "parity": "inserted",
+        "rms_dn": 0.6891961136,
+        "mae_dn": 0.3443506062,
+        "gradient_rms_dn_per_px": 0.6765058041,
+        "curvature_rms_dn": 1.378392227
+       },
+       {
+        "output_index": 10,
+        "parity": "source",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 1.203055949
+       },
+       {
+        "output_index": 11,
+        "parity": "inserted",
+        "rms_dn": 0.7384281649,
+        "mae_dn": 0.3657006025,
+        "gradient_rms_dn_per_px": 0.7218002677,
+        "curvature_rms_dn": 1.47685633
+       },
+       {
+        "output_index": 12,
+        "parity": "source",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 1.197567561
+       },
+       {
+        "output_index": 13,
+        "parity": "inserted",
+        "rms_dn": 0.6765859384,
+        "mae_dn": 0.3265733421,
+        "gradient_rms_dn_per_px": 0.6612750888,
+        "curvature_rms_dn": 1.353171877
+       },
+       {
+        "output_index": 14,
+        "parity": "source",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 1.151719475
+       },
+       {
+        "output_index": 15,
+        "parity": "inserted",
+        "rms_dn": 0.7034526704,
+        "mae_dn": 0.3454560637,
+        "gradient_rms_dn_per_px": 0.6939177513,
+        "curvature_rms_dn": 1.406905341
+       },
+       {
+        "output_index": 16,
+        "parity": "source",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 1.160431052
+       },
+       {
+        "output_index": 17,
+        "parity": "inserted",
+        "rms_dn": 0.6858461619,
+        "mae_dn": 0.3215872645,
+        "gradient_rms_dn_per_px": 0.6647928357,
+        "curvature_rms_dn": 1.371692324
+       },
+       {
+        "output_index": 18,
+        "parity": "source",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 1.156513186
+       },
+       {
+        "output_index": 19,
+        "parity": "inserted",
+        "rms_dn": 0.7018896241,
+        "mae_dn": 0.3529144526,
+        "gradient_rms_dn_per_px": 0.6911386847,
+        "curvature_rms_dn": 1.403779248
+       }
+      ],
+      "sigma2": [
+       {
+        "output_index": 9,
+        "parity": "inserted",
+        "rms_dn": 0.1103433131,
+        "mae_dn": 0.07456016541,
+        "gradient_rms_dn_per_px": 0.05600041896,
+        "curvature_rms_dn": 0.2206866262
+       },
+       {
+        "output_index": 10,
+        "parity": "source",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.2134169157
+       },
+       {
+        "output_index": 11,
+        "parity": "inserted",
+        "rms_dn": 0.1238162066,
+        "mae_dn": 0.07756527513,
+        "gradient_rms_dn_per_px": 0.0641740188,
+        "curvature_rms_dn": 0.2476324131
+       },
+       {
+        "output_index": 12,
+        "parity": "source",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.2193468766
+       },
+       {
+        "output_index": 13,
+        "parity": "inserted",
+        "rms_dn": 0.114899184,
+        "mae_dn": 0.07393310964,
+        "gradient_rms_dn_per_px": 0.05944000557,
+        "curvature_rms_dn": 0.229798368
+       },
+       {
+        "output_index": 14,
+        "parity": "source",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.2004075508
+       },
+       {
+        "output_index": 15,
+        "parity": "inserted",
+        "rms_dn": 0.107309573,
+        "mae_dn": 0.07284676284,
+        "gradient_rms_dn_per_px": 0.05500224605,
+        "curvature_rms_dn": 0.2146191459
+       },
+       {
+        "output_index": 16,
+        "parity": "source",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.2078724307
+       },
+       {
+        "output_index": 17,
+        "parity": "inserted",
+        "rms_dn": 0.1227359856,
+        "mae_dn": 0.07311572134,
+        "gradient_rms_dn_per_px": 0.0627463311,
+        "curvature_rms_dn": 0.2454719713
+       },
+       {
+        "output_index": 18,
+        "parity": "source",
+        "rms_dn": 0.0,
+        "mae_dn": 0.0,
+        "gradient_rms_dn_per_px": 0.0,
+        "curvature_rms_dn": 0.2072828572
+       },
+       {
+        "output_index": 19,
+        "parity": "inserted",
+        "rms_dn": 0.1069521293,
+        "mae_dn": 0.07307486236,
+        "gradient_rms_dn_per_px": 0.05483190715,
+        "curvature_rms_dn": 0.2139042586
+       }
+      ]
+     },
+     "shape": {
+      "raw": {
+       "per_output": [
+        {
+         "output_index": 9,
+         "parity": "inserted",
+         "contrast_gain": 0.9976964593,
+         "contrast_gain_error": -0.002303540707,
+         "contrast_rms_ratio": 0.9980141521,
+         "gradient_gain": 0.9785746921,
+         "contrast_fit_residual_rms_dn": 1.323427944
+        },
+        {
+         "output_index": 10,
+         "parity": "source",
+         "contrast_gain": 0.9991375208,
+         "contrast_gain_error": -0.0008624792099,
+         "contrast_rms_ratio": 0.9998814464,
+         "gradient_gain": 0.9990457893,
+         "contrast_fit_residual_rms_dn": 2.026908101
+        },
+        {
+         "output_index": 11,
+         "parity": "inserted",
+         "contrast_gain": 0.9978163838,
+         "contrast_gain_error": -0.002183616161,
+         "contrast_rms_ratio": 0.9981380105,
+         "gradient_gain": 0.9774411205,
+         "contrast_fit_residual_rms_dn": 1.331528421
+        },
+        {
+         "output_index": 12,
+         "parity": "source",
+         "contrast_gain": 0.9993473887,
+         "contrast_gain_error": -0.0006526112556,
+         "contrast_rms_ratio": 1.000086069,
+         "gradient_gain": 0.9993441214,
+         "contrast_fit_residual_rms_dn": 2.019946188
+        },
+        {
+         "output_index": 13,
+         "parity": "inserted",
+         "contrast_gain": 0.9980376959,
+         "contrast_gain_error": -0.001962304115,
+         "contrast_rms_ratio": 0.9983580112,
+         "gradient_gain": 0.979098943,
+         "contrast_fit_residual_rms_dn": 1.329265825
+        },
+        {
+         "output_index": 14,
+         "parity": "source",
+         "contrast_gain": 0.9994165301,
+         "contrast_gain_error": -0.0005834698677,
+         "contrast_rms_ratio": 1.000154853,
+         "gradient_gain": 0.9991857342,
+         "contrast_fit_residual_rms_dn": 2.019553961
+        },
+        {
+         "output_index": 15,
+         "parity": "inserted",
+         "contrast_gain": 0.9978872538,
+         "contrast_gain_error": -0.002112746239,
+         "contrast_rms_ratio": 0.9982033372,
+         "gradient_gain": 0.9788978853,
+         "contrast_fit_residual_rms_dn": 1.320367893
+        },
+        {
+         "output_index": 16,
+         "parity": "source",
+         "contrast_gain": 0.9990246892,
+         "contrast_gain_error": -0.0009753108025,
+         "contrast_rms_ratio": 0.9997606277,
+         "gradient_gain": 0.998669258,
+         "contrast_fit_residual_rms_dn": 2.015771925
+        },
+        {
+         "output_index": 17,
+         "parity": "inserted",
+         "contrast_gain": 0.9978809953,
+         "contrast_gain_error": -0.002119004726,
+         "contrast_rms_ratio": 0.9982045889,
+         "gradient_gain": 0.9794253003,
+         "contrast_fit_residual_rms_dn": 1.335760921
+        },
+        {
+         "output_index": 18,
+         "parity": "source",
+         "contrast_gain": 0.9993879795,
+         "contrast_gain_error": -0.0006120204926,
+         "contrast_rms_ratio": 1.000128388,
+         "gradient_gain": 0.9996864801,
+         "contrast_fit_residual_rms_dn": 2.022449448
+        },
+        {
+         "output_index": 19,
+         "parity": "inserted",
+         "contrast_gain": 0.9979551435,
+         "contrast_gain_error": -0.002044856548,
+         "contrast_rms_ratio": 0.9982676506,
+         "gradient_gain": 0.97888776,
+         "contrast_fit_residual_rms_dn": 1.312868372
+        }
+       ],
+       "source_to_inserted_chord": [
+        {
+         "output_index": 9,
+         "rms_dn": 0.6743338884,
+         "gradient_rms_dn_per_px": 0.6606007218
+        },
+        {
+         "output_index": 11,
+         "rms_dn": 0.7204939616,
+         "gradient_rms_dn_per_px": 0.7027377486
+        },
+        {
+         "output_index": 13,
+         "rms_dn": 0.6639711307,
+         "gradient_rms_dn_per_px": 0.6463216543
+        },
+        {
+         "output_index": 15,
+         "rms_dn": 0.6923442996,
+         "gradient_rms_dn_per_px": 0.6822030544
+        },
+        {
+         "output_index": 17,
+         "rms_dn": 0.6747215075,
+         "gradient_rms_dn_per_px": 0.6522852182
+        },
+        {
+         "output_index": 19,
+         "rms_dn": 0.6886300129,
+         "gradient_rms_dn_per_px": 0.6773163676
+        }
+       ],
+       "source_to_inserted_chord_rms_dn": 0.6859903353,
+       "source_to_inserted_chord_gradient_rms_dn_per_px": 0.6705220938
+      },
+      "sigma2": {
+       "per_output": [
+        {
+         "output_index": 9,
+         "parity": "inserted",
+         "contrast_gain": 0.9984871745,
+         "contrast_gain_error": -0.001512825489,
+         "contrast_rms_ratio": 0.9984971285,
+         "gradient_gain": 0.9947292278,
+         "contrast_fit_residual_rms_dn": 0.2259457849
+        },
+        {
+         "output_index": 10,
+         "parity": "source",
+         "contrast_gain": 0.9991248846,
+         "contrast_gain_error": -0.0008751153946,
+         "contrast_rms_ratio": 0.9991415143,
+         "gradient_gain": 0.9991839356,
+         "contrast_fit_residual_rms_dn": 0.2922188588
+        },
+        {
+         "output_index": 11,
+         "parity": "inserted",
+         "contrast_gain": 0.9986745119,
+         "contrast_gain_error": -0.001325488091,
+         "contrast_rms_ratio": 0.9986847639,
+         "gradient_gain": 0.9943940425,
+         "contrast_fit_residual_rms_dn": 0.2286265253
+        },
+        {
+         "output_index": 12,
+         "parity": "source",
+         "contrast_gain": 0.9993858337,
+         "contrast_gain_error": -0.0006141662598,
+         "contrast_rms_ratio": 0.9994010925,
+         "gradient_gain": 0.9988908879,
+         "contrast_fit_residual_rms_dn": 0.2802260724
+        },
+        {
+         "output_index": 13,
+         "parity": "inserted",
+         "contrast_gain": 0.9988562465,
+         "contrast_gain_error": -0.001143753529,
+         "contrast_rms_ratio": 0.9988663197,
+         "gradient_gain": 0.9945957283,
+         "contrast_fit_residual_rms_dn": 0.2270200389
+        },
+        {
+         "output_index": 14,
+         "parity": "source",
+         "contrast_gain": 0.9994410276,
+         "contrast_gain_error": -0.0005589723587,
+         "contrast_rms_ratio": 0.9994568229,
+         "gradient_gain": 0.9990421363,
+         "contrast_fit_residual_rms_dn": 0.284272882
+        },
+        {
+         "output_index": 15,
+         "parity": "inserted",
+         "contrast_gain": 0.9986965656,
+         "contrast_gain_error": -0.001303434372,
+         "contrast_rms_ratio": 0.9987062216,
+         "gradient_gain": 0.9947152458,
+         "contrast_fit_residual_rms_dn": 0.2217760628
+        },
+        {
+         "output_index": 16,
+         "parity": "source",
+         "contrast_gain": 0.9990663528,
+         "contrast_gain_error": -0.0009336471558,
+         "contrast_rms_ratio": 0.9990823269,
+         "gradient_gain": 0.9989046784,
+         "contrast_fit_residual_rms_dn": 0.2853784896
+        },
+        {
+         "output_index": 17,
+         "parity": "inserted",
+         "contrast_gain": 0.9986733794,
+         "contrast_gain_error": -0.001326620579,
+         "contrast_rms_ratio": 0.998683691,
+         "gradient_gain": 0.9949309774,
+         "contrast_fit_residual_rms_dn": 0.2292399067
+        },
+        {
+         "output_index": 18,
+         "parity": "source",
+         "contrast_gain": 0.9993621111,
+         "contrast_gain_error": -0.0006378889084,
+         "contrast_rms_ratio": 0.9993782043,
+         "gradient_gain": 0.9998775457,
+         "contrast_fit_residual_rms_dn": 0.2874634143
+        },
+        {
+         "output_index": 19,
+         "parity": "inserted",
+         "contrast_gain": 0.9987507463,
+         "contrast_gain_error": -0.00124925375,
+         "contrast_rms_ratio": 0.998760283,
+         "gradient_gain": 0.9949484709,
+         "contrast_fit_residual_rms_dn": 0.2202361688
+        }
+       ],
+       "source_to_inserted_chord": [
+        {
+         "output_index": 9,
+         "rms_dn": 0.1121544469,
+         "gradient_rms_dn_per_px": 0.05587892979
+        },
+        {
+         "output_index": 11,
+         "rms_dn": 0.1242968029,
+         "gradient_rms_dn_per_px": 0.06314449757
+        },
+        {
+         "output_index": 13,
+         "rms_dn": 0.1166585396,
+         "gradient_rms_dn_per_px": 0.05858942121
+        },
+        {
+         "output_index": 15,
+         "rms_dn": 0.1100414004,
+         "gradient_rms_dn_per_px": 0.05456557125
+        },
+        {
+         "output_index": 17,
+         "rms_dn": 0.1244784651,
+         "gradient_rms_dn_per_px": 0.06230725348
+        },
+        {
+         "output_index": 19,
+         "rms_dn": 0.1098951176,
+         "gradient_rms_dn_per_px": 0.0548716858
+        }
+       ],
+       "source_to_inserted_chord_rms_dn": 0.1164176855,
+       "source_to_inserted_chord_gradient_rms_dn_per_px": 0.05832794681
+      }
+     }
+    }
+   }
+  }
+ }
+}

@@ -1374,3 +1374,35 @@ Candidate hashes, exact-baseline comparisons and per-frame/tail/tile values are 
 Next narrow synthetic proposal: fixed rigid garment texture, oracle/estimated flow crossed with clean/known grain,
 both output parities and exact material truth. That can separate estimator deformation from rendering/grain
 contrast cycling without fitting away the observed error. GPU reservation released; CPU provenance checks only.
+
+## G033 — GPT to Local: one fixed rigid-texture/grain control after the owner's negative overlap verdict (2026-11-15 12:12 GMT)
+
+G032 is merged/pushed as `38c7e88`. The independent MCI reproduction matches every decoded grayscale sample of
+the displayed originals; four declared midpoint crops per clip are not simple endpoint holds. The owner reports
+MCI noticeably calmer, but **no clear benefit** from same-field 8px overlap despite better PSNR. Follow-up is the
+single fixed synthetic proposed in G032: one frozen photographed plane, exact (-16,0) px/source-frame translation,
+clean versus independent known 2 DN grain, estimated versus oracle final flow. Same final sampling arithmetic,
+coherence fallback off on both; the oracle mismatch must fail rather than be attributed to estimation. Both output
+parities are measured with exact material registration. No tuning or new NAS reads. Registration in
+[RIGID.md](tests/probes/ripple/RIGID.md); short serial GPU reservation for this matrix only. Not a film-causality claim.
+
+## G034 — GPT to Local: fixed rigid-plane control passes; grain does not amplify its low-pass field error (2026-11-15 12:24 GMT)
+
+Four registered renders complete. [RIGID-RESULTS.md](tests/probes/ripple/RIGID-RESULTS.md) has commands and portable
+numeric evidence. Same photographed plane, known (-16,0) integer translation, frozen texture versus 2 DN independent
+grain; same final warp with estimated or oracle field. Source/inserted phases and exact material coordinates both
+measured. Source retained MAE <=0.305 DN, oracle midpoint CPU-blend RMS <=0.368 DN; all registered gates pass.
+Shader hashes are required for the attribution claim; an oracle mislabeled as estimator is explicitly refused.
+
+Estimated-minus-GPU-oracle midpoint RMS: frozen 0.542 raw / 0.117 Gaussian-2 DN; grain 0.700 / 0.115. Retained
+pictures identical. Thus this grain level does not amplify the pooled low-pass field-choice error on the rigid
+plane. This does not reproduce the severe live-film ripple or exclude subpixel/deformation/occlusion mechanisms.
+It has no human comfort verdict and does not bound every local error; fixed lead-in does not prove convergence.
+
+A useful scorer counterexample: with grain, exact-motion midpoint error against the underlying clean plane is
+1.457 DN, estimated motion 1.337 DN (numerically better), while inserted-centered temporal curvature rises
+0.827→1.372 DN. After Gaussian-2, even the clean-image ordering reverses. A clean-image score can reward departure
+from the known-motion picture, consistent with extra noise attenuation; it cannot certify correspondence or comfort.
+The realized CPU grain source/midpoint RMS is 1.9965/1.4123 DN; the oracle's own varying output quantization is also
+measured rather than labeled flow error. Preserve this control before a separately registered known deformation
+extension; the old coarse-strain failure is prior evidence, not yet a diagnosis of this film. GPU reservation released.
