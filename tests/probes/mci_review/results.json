@@ -1,0 +1,246 @@
+{
+  "schema": 1,
+  "execution_status": "complete",
+  "scope": "Actual generated YUVA fallback correctness; no benchmark",
+  "build_source_revision": "3a5eb948e76dc6390e4b3cff7becf84bc492b7af",
+  "fixed_c_sha256": "4b0ecfcd6f91cb8c63e53d36a7e17d951b86ad88ade0ec58de736b86f1d566b2",
+  "binary_sha256": {
+    "before": "a624905393105945ad1d966f59fab9db3c794c9d944ecc25c31d4a6a88f687ca",
+    "after": "63456cdabb91de7e3ef27beed90ce6527b877572c07065c80028c86c2b42155d",
+    "stock": "7138e695a8804ab2be4128d00c4f758023c7cc08f924925650f4d34c936bfc74"
+  },
+  "regression_script_sha256": "c62656675436cba3c3391036187c88355e931fe5fbdc069c709e91b1087f3555",
+  "external_regression_sha256": "b3e3b4ecac3d76e0d9c9cd445baa55eb553ca87e82d5fedfe43cd6d908106c3d",
+  "external_build_sha256": "0083fc2af870f424775bc4964145e07b66f4dae7e936b3e8af5f7bd52cea66f6",
+  "comparisons": 18,
+  "cases": [
+    {
+      "format": "yuva420p",
+      "width": 80,
+      "height": 48,
+      "source_frames": 12,
+      "output_frames": 24,
+      "source_mkv_sha256": "b5d19764d29fe359386ec6f76719c004a8a49a3d28f8568bc361f83693f19bf0",
+      "source_raw_sha256": "f724236cc88393c50b6e3faef188804bf6f2813d6e04ba9405ebbe9f38072b18",
+      "stock_output_raw_sha256": "b1323590e0f1f5d5b5bbc5ff0f23b50b8aa4897b91fd104d812df5a80b716e13",
+      "before_output_raw_sha256": "42bc68d29346df8912defb21e09627db25a9bd422c5ad2c3f4084dfe5bbba0ee",
+      "broken_inserted_alpha_indices": [
+        1,
+        3,
+        5,
+        7,
+        9,
+        11,
+        13,
+        15,
+        17,
+        19,
+        21,
+        23
+      ],
+      "stock_midpoint_alpha_differs_from_both_endpoints": [
+        1,
+        3,
+        5,
+        7,
+        9,
+        11,
+        13,
+        15,
+        17,
+        19,
+        21
+      ],
+      "fixed_configurations": [
+        {
+          "mask": 16,
+          "threads": 1,
+          "raw_sha256": "b1323590e0f1f5d5b5bbc5ff0f23b50b8aa4897b91fd104d812df5a80b716e13",
+          "exact_all_planes_pts_count": true
+        },
+        {
+          "mask": 16,
+          "threads": 4,
+          "raw_sha256": "b1323590e0f1f5d5b5bbc5ff0f23b50b8aa4897b91fd104d812df5a80b716e13",
+          "exact_all_planes_pts_count": true
+        },
+        {
+          "mask": 51,
+          "threads": 1,
+          "raw_sha256": "b1323590e0f1f5d5b5bbc5ff0f23b50b8aa4897b91fd104d812df5a80b716e13",
+          "exact_all_planes_pts_count": true
+        },
+        {
+          "mask": 51,
+          "threads": 4,
+          "raw_sha256": "b1323590e0f1f5d5b5bbc5ff0f23b50b8aa4897b91fd104d812df5a80b716e13",
+          "exact_all_planes_pts_count": true
+        },
+        {
+          "mask": 63,
+          "threads": 1,
+          "raw_sha256": "b1323590e0f1f5d5b5bbc5ff0f23b50b8aa4897b91fd104d812df5a80b716e13",
+          "exact_all_planes_pts_count": true
+        },
+        {
+          "mask": 63,
+          "threads": 4,
+          "raw_sha256": "b1323590e0f1f5d5b5bbc5ff0f23b50b8aa4897b91fd104d812df5a80b716e13",
+          "exact_all_planes_pts_count": true
+        }
+      ]
+    },
+    {
+      "format": "yuva422p",
+      "width": 80,
+      "height": 48,
+      "source_frames": 12,
+      "output_frames": 24,
+      "source_mkv_sha256": "972e56423aa6f02d0b1be8693a96e6e613896926354c5cd4e8d952cfa6d16008",
+      "source_raw_sha256": "10f7dc6249f64895b3cf6939971117e3ff1e38733ee652efdb728b1ad154b75d",
+      "stock_output_raw_sha256": "a2b99e66c82f1173185359962c540a1fdc0b28458c191f20d7bba36a92483227",
+      "before_output_raw_sha256": "faace07a424c2196b395d6bf1a298384be3adc1e1dce1e25f54abab7d70ce367",
+      "broken_inserted_alpha_indices": [
+        1,
+        3,
+        5,
+        7,
+        9,
+        11,
+        13,
+        15,
+        17,
+        19,
+        21,
+        23
+      ],
+      "stock_midpoint_alpha_differs_from_both_endpoints": [
+        1,
+        3,
+        5,
+        7,
+        9,
+        11,
+        13,
+        15,
+        17,
+        19,
+        21
+      ],
+      "fixed_configurations": [
+        {
+          "mask": 16,
+          "threads": 1,
+          "raw_sha256": "a2b99e66c82f1173185359962c540a1fdc0b28458c191f20d7bba36a92483227",
+          "exact_all_planes_pts_count": true
+        },
+        {
+          "mask": 16,
+          "threads": 4,
+          "raw_sha256": "a2b99e66c82f1173185359962c540a1fdc0b28458c191f20d7bba36a92483227",
+          "exact_all_planes_pts_count": true
+        },
+        {
+          "mask": 51,
+          "threads": 1,
+          "raw_sha256": "a2b99e66c82f1173185359962c540a1fdc0b28458c191f20d7bba36a92483227",
+          "exact_all_planes_pts_count": true
+        },
+        {
+          "mask": 51,
+          "threads": 4,
+          "raw_sha256": "a2b99e66c82f1173185359962c540a1fdc0b28458c191f20d7bba36a92483227",
+          "exact_all_planes_pts_count": true
+        },
+        {
+          "mask": 63,
+          "threads": 1,
+          "raw_sha256": "a2b99e66c82f1173185359962c540a1fdc0b28458c191f20d7bba36a92483227",
+          "exact_all_planes_pts_count": true
+        },
+        {
+          "mask": 63,
+          "threads": 4,
+          "raw_sha256": "a2b99e66c82f1173185359962c540a1fdc0b28458c191f20d7bba36a92483227",
+          "exact_all_planes_pts_count": true
+        }
+      ]
+    },
+    {
+      "format": "yuva444p",
+      "width": 80,
+      "height": 48,
+      "source_frames": 12,
+      "output_frames": 24,
+      "source_mkv_sha256": "2cb8403aa56812e3747cdb616ebdb997e4ac5b358787f915db022139bea60169",
+      "source_raw_sha256": "b2a17ebdead54bb4695b3b421bd4df0b320fbef038ebbe620ae250c40dab9214",
+      "stock_output_raw_sha256": "c692176dc86330922694e597ca55fb959c4399f623b1c94f6d3a913297b52a5e",
+      "before_output_raw_sha256": "4ef80cc82f7fcd9e9be739ba629eba16f7c40fc1a22174d311cc9ebce0094ec3",
+      "broken_inserted_alpha_indices": [
+        1,
+        3,
+        5,
+        7,
+        9,
+        11,
+        13,
+        15,
+        17,
+        19,
+        21,
+        23
+      ],
+      "stock_midpoint_alpha_differs_from_both_endpoints": [
+        1,
+        3,
+        5,
+        7,
+        9,
+        11,
+        13,
+        15,
+        17,
+        19,
+        21
+      ],
+      "fixed_configurations": [
+        {
+          "mask": 16,
+          "threads": 1,
+          "raw_sha256": "c692176dc86330922694e597ca55fb959c4399f623b1c94f6d3a913297b52a5e",
+          "exact_all_planes_pts_count": true
+        },
+        {
+          "mask": 16,
+          "threads": 4,
+          "raw_sha256": "c692176dc86330922694e597ca55fb959c4399f623b1c94f6d3a913297b52a5e",
+          "exact_all_planes_pts_count": true
+        },
+        {
+          "mask": 51,
+          "threads": 1,
+          "raw_sha256": "c692176dc86330922694e597ca55fb959c4399f623b1c94f6d3a913297b52a5e",
+          "exact_all_planes_pts_count": true
+        },
+        {
+          "mask": 51,
+          "threads": 4,
+          "raw_sha256": "c692176dc86330922694e597ca55fb959c4399f623b1c94f6d3a913297b52a5e",
+          "exact_all_planes_pts_count": true
+        },
+        {
+          "mask": 63,
+          "threads": 1,
+          "raw_sha256": "c692176dc86330922694e597ca55fb959c4399f623b1c94f6d3a913297b52a5e",
+          "exact_all_planes_pts_count": true
+        },
+        {
+          "mask": 63,
+          "threads": 4,
+          "raw_sha256": "c692176dc86330922694e597ca55fb959c4399f623b1c94f6d3a913297b52a5e",
+          "exact_all_planes_pts_count": true
+        }
+      ]
+    }
+  ]
+}

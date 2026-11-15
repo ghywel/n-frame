@@ -1,0 +1,22 @@
+{
+  "status": "current_cached_inputs_revalidated",
+  "scope": "decoded plane sizes and hashes; not historical process provenance",
+  "rows": [
+    {
+      "case": "shirt",
+      "frames": 119,
+      "all_plane_bytes_equal": true,
+      "decoded_record_sha256": "865acc7906ed6796e9cb08f576e8871a75fa88e015be10091b88eeb50f202f38",
+      "original_file_sha256": "d11ba45398884cf63a64dcf8d2d5d37670704a27614ab6b18b7afd1df05d4dcb",
+      "raw_file_sha256": "27adcdc90431c2c40a9e4170aad2b5cc505535a54bf264fd2ecd85de374f586c"
+    },
+    {
+      "case": "suit",
+      "frames": 143,
+      "all_plane_bytes_equal": true,
+      "decoded_record_sha256": "aff658b09bd140497e4aa18c8bc730f045a49cf7feeeb93dd06a55577498d38e",
+      "original_file_sha256": "be9142a74427d9e8841343588954356cb097a48444aef5252a54a73eba685145",
+      "raw_file_sha256": "8a4a7855bac0b7a90420bb0eafcf24ef0c677d6330b55f1b35cd7dd9e9a55e14"
+    }
+  ]
+}

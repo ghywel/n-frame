@@ -1,0 +1,42 @@
+{
+  "execution_status": "complete",
+  "control": "fused_finish arithmetic only",
+  "source_sha256": "4dc44306cff353e44915ea5cec54e6b7fafb99e1bef1f4e147aa228b965732c5",
+  "wrapper_sha256": "6227970e71374595274168e242f15babb0e7834e04eaf5c9d17c061892ed609b",
+  "reviewed_patch_sha256": "f5ca6de397deba3598cccc71b52c494ccc40d73805b9cc13591dfc3f664104ce",
+  "compiler": "/usr/bin/cc",
+  "compiler_version": "Apple clang version 21.0.0 (clang-2100.4.1.1)",
+  "compiler_flags": [
+    "-std=c11",
+    "-O3",
+    "-fno-fast-math",
+    "-fno-reciprocal-math",
+    "-ffp-contract=off",
+    "-Wall",
+    "-Wextra",
+    "-Werror"
+  ],
+  "platform": "macOS-27.2.1-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "compiler_diagnostics": "",
+  "binary_sha256": "aa162d393c1a425232b1434dd23ad8133307404ffc1c52500027bea6ff0f437e",
+  "observed": {
+    "execution_status": "complete",
+    "boundary_cases": 3121200,
+    "factorization_cases": 100000,
+    "direct_division_pass": true,
+    "counterfactual": {
+      "weight": 164,
+      "alpha": 512,
+      "sample_a": 0,
+      "sample_b": 1,
+      "sum": 83968,
+      "num": 164,
+      "stock": 1,
+      "direct_float": 1,
+      "reciprocal_product": 0.9999999403953552,
+      "reciprocal_integer": 0
+    },
+    "upper_bound_quotient": 255.5
+  }
+}
