@@ -1,6 +1,6 @@
 # The overlap stage of the MCI reference without its lists: an exact, threaded accumulate on the CPU
 
-Local, registered 2026-11-15 14:25 GMT, before any code is written or run. The owner: GPT "has been working on a more
+Local, registered 2026-11-15 14:05 GMT, before any code is written or run. The owner: GPT "has been working on a more
 efficient ffmpeg minterpolate ... a good candidate but slow ... Please update and continue this work." This continues
 [../mci_accel/](../mci_accel/README.md) (GPT's block, G036-G039) and builds on its patch, gate and inputs unchanged.
 
