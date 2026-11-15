@@ -44,3 +44,8 @@ An independent FFmpeg `minterpolate` render (bidir estimation, adaptive overlapp
 is a picture counterfactual, not a proposed NAS/Cadence deployment. Use the same native input and exact doubling;
 append two cloned source frames only to flush its delayed tail, then require the original doubled output count.
 The interior windows precede those clones. Compare retained source alignment before viewing/scoring this baseline.
+
+Post-result source audit (2026-11-15): the command above requested adaptive overlap and variable blocks, but the
+selected `me_mode=bidir` branch bypasses both options in FFmpeg `3a5eb94`. The actual control is bidirectional
+estimation with ordinary fixed-block overlap. The initial feature description above was mistaken; preserve the
+command and results, and use the corrected interpretation in RESULTS.md.

@@ -153,8 +153,8 @@ of torso ripple or averaged away. Other variants can move the maximum to a diffe
 
 ## Positive playback control and next discriminating experiment
 
-The independent FFmpeg MCI control uses bidirectional motion estimation, adaptive overlapped blocks and
-variable-size blocks. Output counts match native doubling and four retained instants in each clip are grayscale
+The independent FFmpeg MCI control uses bidirectional motion estimation and ordinary overlapped blocks: default
+16-pixel motion-vector spacing with 32×32 matching/overlap footprints. Output counts match native doubling and four retained instants in each clip are grayscale
 exact. The owner reports the displayed **shirt is noticeably calmer than current High**. That is stronger evidence
 about this complaint than a favorable average PSNR; it also establishes that the source itself does not force
 every interpolator to show the same apparent ripple. There is no equivalent human suit verdict recorded here.
@@ -166,8 +166,20 @@ it does not claim that all individual pixels or untested frames use accurate mot
 The same-field overlap comparison supplied the next separation: its lack of a clear visual benefit shows this
 particular rendering intervention was insufficient. It does not prove that changing the estimator is necessary,
 or that other rendering methods cannot help. The independent comparison still does not separate estimator from
-renderer. Do not equate our fixed 8-pixel renderer with FFmpeg's complete adaptive-block method. The failure is
+renderer. Do not equate our fixed 8-pixel renderer with FFmpeg's complete bidirectional block estimator and overlap method. The failure is
 retained precisely because an across-the-board raw PSNR gain did not deliver the improvement the owner requested.
+
+**Source-audit correction, 2026-11-15:** the original report described adaptive overlap and variable-size blocks
+because the command supplied `mc_mode=aobmc:vsbmc=1`. In the pinned FFmpeg `3a5eb94`, `me_mode=bidir` bypasses
+both features. In `libavfilter/vf_minterpolate.c`, estimation branches at lines 755/770; AOBMC preparation (784)
+and variable-size processing (796) are inside the bilateral branch. Output at 1135–1137 instead calls
+`bidirectional_obmc`, whose overlap weights at 902 are fixed `obmc_tab_linear` values. Adaptive weight adjustment
+(1028/1057) and variable-size drawing (1151) belong to the bilateral output path. Default macroblock/grid size is
+16; the matching cost and overlap each span 32 pixels (option at 226; `get_sad_ob` at 303–329; support bounds at
+884–890). Independent review confirmed this
+branch audit. The same structure is visible in the [upstream source](https://ffmpeg.org/doxygen/trunk/vf__minterpolate_8c_source.html).
+The displayed videos, exact commands, hashes and owner's verdict do not change. No advantage may be attributed
+to features that did not execute. This was an error in our description, not a new rendering result.
 
 The narrowest further synthetic test is a frozen garment texture with **known rigid translation**, tested as oracle
 versus estimated flow crossed with no added grain versus known independent grain. Keep one fixed motion, the same

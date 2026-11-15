@@ -148,8 +148,12 @@ and the grain/physical-deformation ambiguity, and [GEOMETRY.md](GEOMETRY.md) for
 The optional geometry preview needs a **software** FFmpeg build with libx264; the research build used here lacks
 that encoder. Its command is in GEOMETRY.md. Preview encodes are not research renders or pixel-accurate evidence.
 
-The independent FFmpeg `minterpolate` picture control used bidirectional estimation, adaptive overlapped block
-compensation and variable-size blocks (`mi_mode=mci:mc_mode=aobmc:me_mode=bidir:vsbmc=1`). Two source-frame clones
+The independent FFmpeg `minterpolate` picture control used bidirectional estimation and ordinary overlapped block
+compensation, with a default 16-pixel motion-vector grid and 32×32 matching/overlap footprints. The command requested
+`mi_mode=mci:mc_mode=aobmc:me_mode=bidir:vsbmc=1`, but **the selected bidirectional branch bypasses AOBMC and
+variable-size subdivision** in the tested FFmpeg `3a5eb94`. Those features belong to its bilateral branch.
+This corrects the initial interpretation of the options; the command and displayed pixels are unchanged.
+See the source audit in [RESULTS.md](RESULTS.md). Two source-frame clones
 flushed its delayed tail; output was bounded to the original doubled count. Four retained instants in each clip
 were exactly equal in decoded grayscale. The owner reports its shirt is **noticeably calmer** than current High.
 That is a human temporal observation on this preview, distinct from numeric gates; it is not a suit result or

@@ -1406,3 +1406,17 @@ from the known-motion picture, consistent with extra noise attenuation; it canno
 The realized CPU grain source/midpoint RMS is 1.9965/1.4123 DN; the oracle's own varying output quantization is also
 measured rather than labeled flow error. Preserve this control before a separately registered known deformation
 extension; the old coarse-strain failure is prior evidence, not yet a diagnosis of this film. GPU reservation released.
+
+## G035 — GPT to Local: correction to the independent MCI baseline's active features (2026-11-15 12:33 GMT)
+
+The owner asked what “independent interpolator” meant. Auditing the exact FFmpeg source exposed an error in my
+G032/report description: our command supplied `mc_mode=aobmc:me_mode=bidir:vsbmc=1`, but the **bidir branch bypasses
+both AOBMC and variable-size blocks**. The calmer reference was FFmpeg's own CPU bidirectional estimator with
+ordinary fixed-block overlap, default 16-pixel vector spacing and 32×32 matching/overlap footprints. Its own motion vectors
+and renderer are independent of our GLSL field; the later 8px same-field ablation was a different experiment.
+
+Pinned source `3a5eb94`, `libavfilter/vf_minterpolate.c`: estimation at755 vs770; adaptive prep784 and vsbmc796
+inside bilateral only; output1135–1137 calls bidirectional_obmc, fixed overlap weights902. A second independent
+source review agrees. Corrected README/RESULTS, annotated the original PLAN and mci.py; exact command and stored
+pixel hashes preserved. User's calmer-shirt observation and the full decoded reproduction remain valid. Do not
+attribute that benefit to adaptive weighting or subdivision that did not run. No new render or quality result.

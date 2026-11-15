@@ -7,6 +7,8 @@ Reads {shirt,suit}-source.mkv and {shirt,suit}/mci.mkv. Writes only new
 {shirt,suit}/mci-recheck.mkv, diagnostic logs, and path-free mci-recheck.json.
 The shown mci.mkv files are never overwritten. Matching decoded grayscale bytes
 verify this reproduction's pixels, not a historical command or a quality verdict.
+Source audit: me_mode=bidir bypasses mc_mode=aobmc and vsbmc=1 in FFmpeg 3a5eb94.
+Keep those original requested flags for pixel provenance; they are not active features.
 """
 import argparse
 from fractions import Fraction
