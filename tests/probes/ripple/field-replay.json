@@ -1,0 +1,218 @@
+{
+  "execution_status": "complete",
+  "scope": "Exploratory fixed probe rectangle; not ground-truth flow or clothing segmentation.",
+  "diagnostic_provenance": "legacy_unmarked",
+  "probe_crop": [
+    440,
+    450,
+    140,
+    140
+  ],
+  "static_abs_max_px": 0.001953125,
+  "known_translation_median_px": [
+    31.248519897460938,
+    0.126953125
+  ],
+  "rows": [
+    {
+      "output_frame": 97,
+      "source_pair": [
+        48,
+        49
+      ],
+      "replay_rms_dn": 0.4593369960784912,
+      "flow_x_quantiles": [
+        -2.6230850219726562,
+        -1.810577392578125,
+        -0.9980621337890625,
+        -0.37305450439453125,
+        0.126953125
+      ],
+      "flow_y_quantiles": [
+        -2.123077392578125,
+        -0.6230545043945312,
+        -0.060546875,
+        0.6230621337890625,
+        1.623077392578125
+      ],
+      "gradient_quantiles": [
+        0.06250381469726562,
+        0.1397542506456375,
+        0.20963649451732635
+      ],
+      "orientation_reversal_fraction_a": 0.0,
+      "orientation_reversal_fraction_b": 0.0,
+      "fallback_mean": 6.057222708477639e-05,
+      "fallback_max": 0.08070764690637589,
+      "differences_from_previous_high": {
+        "high": {
+          "rms_difference_dn": 0.0,
+          "max_difference_dn": 0.0
+        },
+        "vote-nearest": {
+          "rms_difference_dn": 0.0,
+          "max_difference_dn": 0.0
+        },
+        "prev-no-fallback": {
+          "rms_difference_dn": 0.014551029540598392,
+          "max_difference_dn": 1.4085692167282104
+        },
+        "linear": {
+          "rms_difference_dn": 1.0530998706817627,
+          "max_difference_dn": 15.645918846130371
+        }
+      },
+      "quarter_to_half_rms_px": 0.22877076268196106
+    },
+    {
+      "output_frame": 121,
+      "source_pair": [
+        60,
+        61
+      ],
+      "replay_rms_dn": 0.46671971678733826,
+      "flow_x_quantiles": [
+        -17.123306274414062,
+        -14.373268127441406,
+        -11.435722351074219,
+        -6.560646057128906,
+        -0.6855545043945312
+      ],
+      "flow_y_quantiles": [
+        -6.9981536865234375,
+        -1.2480621337890625,
+        2.373077392578125,
+        4.49810791015625,
+        7.7481689453125
+      ],
+      "gradient_quantiles": [
+        0.2187521755695343,
+        0.42620053291320803,
+        0.9540387660264961
+      ],
+      "orientation_reversal_fraction_a": 0.0,
+      "orientation_reversal_fraction_b": 0.0,
+      "fallback_mean": 0.04118981957435608,
+      "fallback_max": 1.0,
+      "differences_from_previous_high": {
+        "high": {
+          "rms_difference_dn": 0.13864287734031677,
+          "max_difference_dn": 5.249030590057373
+        },
+        "vote-nearest": {
+          "rms_difference_dn": 0.1526753455400467,
+          "max_difference_dn": 6.365760326385498
+        },
+        "prev-no-fallback": {
+          "rms_difference_dn": 0.37125107645988464,
+          "max_difference_dn": 7.027251720428467
+        },
+        "linear": {
+          "rms_difference_dn": 8.030047416687012,
+          "max_difference_dn": 37.61088943481445
+        }
+      },
+      "quarter_to_half_rms_px": 0.6549954414367676
+    },
+    {
+      "output_frame": 145,
+      "source_pair": [
+        72,
+        73
+      ],
+      "replay_rms_dn": 0.4909741282463074,
+      "flow_x_quantiles": [
+        -30.998519897460938,
+        -19.49834442138672,
+        -10.623207092285156,
+        -0.43555450439453125,
+        4.7481231689453125
+      ],
+      "flow_y_quantiles": [
+        -4.310615539550781,
+        -1.7480697631835938,
+        1.748077392578125,
+        6.7481536865234375,
+        17.373306274414062
+      ],
+      "gradient_quantiles": [
+        0.33946681022644043,
+        0.9468458294868469,
+        1.588876749277113
+      ],
+      "orientation_reversal_fraction_a": 0.0014795918367346938,
+      "orientation_reversal_fraction_b": 0.0,
+      "fallback_mean": 0.13017171621322632,
+      "fallback_max": 1.0,
+      "differences_from_previous_high": {
+        "high": {
+          "rms_difference_dn": 0.9696031808853149,
+          "max_difference_dn": 29.155637741088867
+        },
+        "vote-nearest": {
+          "rms_difference_dn": 1.1413239240646362,
+          "max_difference_dn": 48.81711196899414
+        },
+        "prev-no-fallback": {
+          "rms_difference_dn": 2.1877779960632324,
+          "max_difference_dn": 49.94163513183594
+        },
+        "linear": {
+          "rms_difference_dn": 18.118549346923828,
+          "max_difference_dn": 103.33074188232422
+        }
+      },
+      "quarter_to_half_rms_px": 1.0095378160476685
+    },
+    {
+      "output_frame": 169,
+      "source_pair": [
+        84,
+        85
+      ],
+      "replay_rms_dn": 0.45384058356285095,
+      "flow_x_quantiles": [
+        -4.310615539550781,
+        -1.1855621337890625,
+        -0.060546875,
+        0.376953125,
+        1.3730621337890625
+      ],
+      "flow_y_quantiles": [
+        -7.623161315917969,
+        -5.498130798339844,
+        0.251953125,
+        0.7480621337890625,
+        2.123077392578125
+      ],
+      "gradient_quantiles": [
+        0.0765465572476387,
+        0.2538828611373901,
+        0.8725490093231125
+      ],
+      "orientation_reversal_fraction_a": 0.0,
+      "orientation_reversal_fraction_b": 0.0,
+      "fallback_mean": 0.058105163276195526,
+      "fallback_max": 1.0,
+      "differences_from_previous_high": {
+        "high": {
+          "rms_difference_dn": 0.025227747857570648,
+          "max_difference_dn": 1.5914306640625
+        },
+        "vote-nearest": {
+          "rms_difference_dn": 0.024510620161890984,
+          "max_difference_dn": 1.5914306640625
+        },
+        "prev-no-fallback": {
+          "rms_difference_dn": 0.7551775574684143,
+          "max_difference_dn": 19.062253952026367
+        },
+        "linear": {
+          "rms_difference_dn": 4.031986713409424,
+          "max_difference_dn": 49.645912170410156
+        }
+      },
+      "quarter_to_half_rms_px": 0.3503273129463196
+    }
+  ]
+}

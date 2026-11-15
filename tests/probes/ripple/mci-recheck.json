@@ -1,0 +1,511 @@
+{
+  "schema": 1,
+  "execution_status": "complete",
+  "condition": "CPU_MCI_pipeline_provenance_recheck",
+  "cases": {
+    "shirt": {
+      "source": {
+        "width": 1920,
+        "height": 1080,
+        "frames": 119,
+        "rate": "24000/1001"
+      },
+      "shown": {
+        "width": 1920,
+        "height": 1080,
+        "frames": 238,
+        "rate": "7001/146"
+      },
+      "recheck": {
+        "width": 1920,
+        "height": 1080,
+        "frames": 238,
+        "rate": "7001/146"
+      },
+      "command_template": [
+        "FFMPEG",
+        "-nostdin",
+        "-y",
+        "-v",
+        "warning",
+        "-i",
+        "SOURCE",
+        "-vf",
+        "settb=expr=1/48000,setpts=N*2002,tpad=stop_mode=clone:stop=2,minterpolate=fps=48000/1001:mi_mode=mci:mc_mode=aobmc:me_mode=bidir:vsbmc=1",
+        "-an",
+        "-frames:v",
+        "238",
+        "-c:v",
+        "ffv1",
+        "-level",
+        "3",
+        "-pix_fmt",
+        "yuv420p",
+        "OUTPUT"
+      ],
+      "source_sha256": "d11ba45398884cf63a64dcf8d2d5d37670704a27614ab6b18b7afd1df05d4dcb",
+      "shown_container_sha256": "1e628605253cc9af4233181775106a126a6cc8ee9082ddda178027728da2751f",
+      "recheck_container_sha256": "799f1b6e70a9fdbe63faa255277f3d9c1443e0c083c6c7496aa10ea43160d154",
+      "shown_decoded_gray": {
+        "pixel_format": "gray16le",
+        "sha256": "ebe3909eece3c89d84f0fb84861d195159f0422ccae471ba54eef3ecbd2c4172",
+        "frames": 238,
+        "bytes": 987033600,
+        "width": 1920,
+        "height": 1080
+      },
+      "recheck_decoded_gray": {
+        "pixel_format": "gray16le",
+        "sha256": "ebe3909eece3c89d84f0fb84861d195159f0422ccae471ba54eef3ecbd2c4172",
+        "frames": 238,
+        "bytes": 987033600,
+        "width": 1920,
+        "height": 1080
+      },
+      "decoded_gray_equal": true,
+      "retained_shown": [
+        {
+          "source_frame": 48,
+          "output_frame": 96,
+          "rms_dn": 0.0,
+          "max_abs_dn": 0.0,
+          "exact_pixels": true
+        },
+        {
+          "source_frame": 60,
+          "output_frame": 120,
+          "rms_dn": 0.0,
+          "max_abs_dn": 0.0,
+          "exact_pixels": true
+        },
+        {
+          "source_frame": 72,
+          "output_frame": 144,
+          "rms_dn": 0.0,
+          "max_abs_dn": 0.0,
+          "exact_pixels": true
+        },
+        {
+          "source_frame": 84,
+          "output_frame": 168,
+          "rms_dn": 0.0,
+          "max_abs_dn": 0.0,
+          "exact_pixels": true
+        }
+      ],
+      "retained_recheck": [
+        {
+          "source_frame": 48,
+          "output_frame": 96,
+          "rms_dn": 0.0,
+          "max_abs_dn": 0.0,
+          "exact_pixels": true
+        },
+        {
+          "source_frame": 60,
+          "output_frame": 120,
+          "rms_dn": 0.0,
+          "max_abs_dn": 0.0,
+          "exact_pixels": true
+        },
+        {
+          "source_frame": 72,
+          "output_frame": 144,
+          "rms_dn": 0.0,
+          "max_abs_dn": 0.0,
+          "exact_pixels": true
+        },
+        {
+          "source_frame": 84,
+          "output_frame": 168,
+          "rms_dn": 0.0,
+          "max_abs_dn": 0.0,
+          "exact_pixels": true
+        }
+      ],
+      "wall_seconds": 24.020385499985423,
+      "scope": "Pixel provenance comparison only; no quality verdict",
+      "midpoint_endpoint_comparison": {
+        "crop": [
+          240,
+          230,
+          700,
+          620
+        ],
+        "shown": [
+          {
+            "source_a": 48,
+            "source_b": 49,
+            "output_midpoint": 97,
+            "rms_to_a_dn": 5.623785890462141,
+            "rms_to_b_dn": 5.56857323157119,
+            "exact_pixel_fraction_a": 0.2560852534562212,
+            "exact_pixel_fraction_b": 0.33708294930875576,
+            "exact_pixel_fraction_either": 0.4157557603686636,
+            "whole_crop_equals_a": false,
+            "whole_crop_equals_b": false
+          },
+          {
+            "source_a": 60,
+            "source_b": 61,
+            "output_midpoint": 121,
+            "rms_to_a_dn": 10.620353257503785,
+            "rms_to_b_dn": 10.616522392268582,
+            "exact_pixel_fraction_a": 0.22497926267281107,
+            "exact_pixel_fraction_b": 0.33515668202764975,
+            "exact_pixel_fraction_either": 0.38898387096774195,
+            "whole_crop_equals_a": false,
+            "whole_crop_equals_b": false
+          },
+          {
+            "source_a": 72,
+            "source_b": 73,
+            "output_midpoint": 145,
+            "rms_to_a_dn": 13.6312849221749,
+            "rms_to_b_dn": 13.927101704729354,
+            "exact_pixel_fraction_a": 0.1683479262672811,
+            "exact_pixel_fraction_b": 0.21155069124423964,
+            "exact_pixel_fraction_either": 0.27470046082949306,
+            "whole_crop_equals_a": false,
+            "whole_crop_equals_b": false
+          },
+          {
+            "source_a": 84,
+            "source_b": 85,
+            "output_midpoint": 169,
+            "rms_to_a_dn": 5.444266862102888,
+            "rms_to_b_dn": 5.418655335580792,
+            "exact_pixel_fraction_a": 0.30165437788018434,
+            "exact_pixel_fraction_b": 0.2759723502304147,
+            "exact_pixel_fraction_either": 0.4000299539170507,
+            "whole_crop_equals_a": false,
+            "whole_crop_equals_b": false
+          }
+        ],
+        "recheck": [
+          {
+            "source_a": 48,
+            "source_b": 49,
+            "output_midpoint": 97,
+            "rms_to_a_dn": 5.623785890462141,
+            "rms_to_b_dn": 5.56857323157119,
+            "exact_pixel_fraction_a": 0.2560852534562212,
+            "exact_pixel_fraction_b": 0.33708294930875576,
+            "exact_pixel_fraction_either": 0.4157557603686636,
+            "whole_crop_equals_a": false,
+            "whole_crop_equals_b": false
+          },
+          {
+            "source_a": 60,
+            "source_b": 61,
+            "output_midpoint": 121,
+            "rms_to_a_dn": 10.620353257503785,
+            "rms_to_b_dn": 10.616522392268582,
+            "exact_pixel_fraction_a": 0.22497926267281107,
+            "exact_pixel_fraction_b": 0.33515668202764975,
+            "exact_pixel_fraction_either": 0.38898387096774195,
+            "whole_crop_equals_a": false,
+            "whole_crop_equals_b": false
+          },
+          {
+            "source_a": 72,
+            "source_b": 73,
+            "output_midpoint": 145,
+            "rms_to_a_dn": 13.6312849221749,
+            "rms_to_b_dn": 13.927101704729354,
+            "exact_pixel_fraction_a": 0.1683479262672811,
+            "exact_pixel_fraction_b": 0.21155069124423964,
+            "exact_pixel_fraction_either": 0.27470046082949306,
+            "whole_crop_equals_a": false,
+            "whole_crop_equals_b": false
+          },
+          {
+            "source_a": 84,
+            "source_b": 85,
+            "output_midpoint": 169,
+            "rms_to_a_dn": 5.444266862102888,
+            "rms_to_b_dn": 5.418655335580792,
+            "exact_pixel_fraction_a": 0.30165437788018434,
+            "exact_pixel_fraction_b": 0.2759723502304147,
+            "exact_pixel_fraction_either": 0.4000299539170507,
+            "whole_crop_equals_a": false,
+            "whole_crop_equals_b": false
+          }
+        ],
+        "any_whole_crop_held": false,
+        "scope": "Exact endpoint-holding check on four declared crops only; neither correspondence accuracy nor a quality score"
+      }
+    },
+    "suit": {
+      "source": {
+        "width": 1920,
+        "height": 1080,
+        "frames": 143,
+        "rate": "24000/1001"
+      },
+      "shown": {
+        "width": 1920,
+        "height": 1080,
+        "frames": 286,
+        "rate": "7001/146"
+      },
+      "recheck": {
+        "width": 1920,
+        "height": 1080,
+        "frames": 286,
+        "rate": "7001/146"
+      },
+      "command_template": [
+        "FFMPEG",
+        "-nostdin",
+        "-y",
+        "-v",
+        "warning",
+        "-i",
+        "SOURCE",
+        "-vf",
+        "settb=expr=1/48000,setpts=N*2002,tpad=stop_mode=clone:stop=2,minterpolate=fps=48000/1001:mi_mode=mci:mc_mode=aobmc:me_mode=bidir:vsbmc=1",
+        "-an",
+        "-frames:v",
+        "286",
+        "-c:v",
+        "ffv1",
+        "-level",
+        "3",
+        "-pix_fmt",
+        "yuv420p",
+        "OUTPUT"
+      ],
+      "source_sha256": "be9142a74427d9e8841343588954356cb097a48444aef5252a54a73eba685145",
+      "shown_container_sha256": "de30346e9599dcedfd280a44f19af311b8c3add0e4e3359990d06dfc5da373da",
+      "recheck_container_sha256": "93f7b6c04131d1836228075ef880699f150ecd6fb28a8561e24ce05a472b3ee2",
+      "shown_decoded_gray": {
+        "pixel_format": "gray16le",
+        "sha256": "0ec8610c6a32577929b1c934a83861b6da13bff4baaa04af42a5525efe44e015",
+        "frames": 286,
+        "bytes": 1186099200,
+        "width": 1920,
+        "height": 1080
+      },
+      "recheck_decoded_gray": {
+        "pixel_format": "gray16le",
+        "sha256": "0ec8610c6a32577929b1c934a83861b6da13bff4baaa04af42a5525efe44e015",
+        "frames": 286,
+        "bytes": 1186099200,
+        "width": 1920,
+        "height": 1080
+      },
+      "decoded_gray_equal": true,
+      "retained_shown": [
+        {
+          "source_frame": 48,
+          "output_frame": 96,
+          "rms_dn": 0.0,
+          "max_abs_dn": 0.0,
+          "exact_pixels": true
+        },
+        {
+          "source_frame": 60,
+          "output_frame": 120,
+          "rms_dn": 0.0,
+          "max_abs_dn": 0.0,
+          "exact_pixels": true
+        },
+        {
+          "source_frame": 72,
+          "output_frame": 144,
+          "rms_dn": 0.0,
+          "max_abs_dn": 0.0,
+          "exact_pixels": true
+        },
+        {
+          "source_frame": 84,
+          "output_frame": 168,
+          "rms_dn": 0.0,
+          "max_abs_dn": 0.0,
+          "exact_pixels": true
+        }
+      ],
+      "retained_recheck": [
+        {
+          "source_frame": 48,
+          "output_frame": 96,
+          "rms_dn": 0.0,
+          "max_abs_dn": 0.0,
+          "exact_pixels": true
+        },
+        {
+          "source_frame": 60,
+          "output_frame": 120,
+          "rms_dn": 0.0,
+          "max_abs_dn": 0.0,
+          "exact_pixels": true
+        },
+        {
+          "source_frame": 72,
+          "output_frame": 144,
+          "rms_dn": 0.0,
+          "max_abs_dn": 0.0,
+          "exact_pixels": true
+        },
+        {
+          "source_frame": 84,
+          "output_frame": 168,
+          "rms_dn": 0.0,
+          "max_abs_dn": 0.0,
+          "exact_pixels": true
+        }
+      ],
+      "wall_seconds": 28.797899875004077,
+      "scope": "Pixel provenance comparison only; no quality verdict",
+      "midpoint_endpoint_comparison": {
+        "crop": [
+          160,
+          80,
+          960,
+          800
+        ],
+        "shown": [
+          {
+            "source_a": 48,
+            "source_b": 49,
+            "output_midpoint": 97,
+            "rms_to_a_dn": 3.653681625716353,
+            "rms_to_b_dn": 3.469596000130518,
+            "exact_pixel_fraction_a": 0.33272005208333333,
+            "exact_pixel_fraction_b": 0.4821888020833333,
+            "exact_pixel_fraction_either": 0.5707395833333333,
+            "whole_crop_equals_a": false,
+            "whole_crop_equals_b": false
+          },
+          {
+            "source_a": 60,
+            "source_b": 61,
+            "output_midpoint": 121,
+            "rms_to_a_dn": 10.371095678300824,
+            "rms_to_b_dn": 10.434712356058794,
+            "exact_pixel_fraction_a": 0.5410234375,
+            "exact_pixel_fraction_b": 0.5021640625,
+            "exact_pixel_fraction_either": 0.63446484375,
+            "whole_crop_equals_a": false,
+            "whole_crop_equals_b": false
+          },
+          {
+            "source_a": 72,
+            "source_b": 73,
+            "output_midpoint": 145,
+            "rms_to_a_dn": 14.159518859014323,
+            "rms_to_b_dn": 13.911961904198408,
+            "exact_pixel_fraction_a": 0.46927994791666666,
+            "exact_pixel_fraction_b": 0.3450065104166667,
+            "exact_pixel_fraction_either": 0.5400807291666667,
+            "whole_crop_equals_a": false,
+            "whole_crop_equals_b": false
+          },
+          {
+            "source_a": 84,
+            "source_b": 85,
+            "output_midpoint": 169,
+            "rms_to_a_dn": 16.57138538784623,
+            "rms_to_b_dn": 15.710752116415266,
+            "exact_pixel_fraction_a": 0.40122135416666665,
+            "exact_pixel_fraction_b": 0.44377213541666666,
+            "exact_pixel_fraction_either": 0.5165091145833334,
+            "whole_crop_equals_a": false,
+            "whole_crop_equals_b": false
+          }
+        ],
+        "recheck": [
+          {
+            "source_a": 48,
+            "source_b": 49,
+            "output_midpoint": 97,
+            "rms_to_a_dn": 3.653681625716353,
+            "rms_to_b_dn": 3.469596000130518,
+            "exact_pixel_fraction_a": 0.33272005208333333,
+            "exact_pixel_fraction_b": 0.4821888020833333,
+            "exact_pixel_fraction_either": 0.5707395833333333,
+            "whole_crop_equals_a": false,
+            "whole_crop_equals_b": false
+          },
+          {
+            "source_a": 60,
+            "source_b": 61,
+            "output_midpoint": 121,
+            "rms_to_a_dn": 10.371095678300824,
+            "rms_to_b_dn": 10.434712356058794,
+            "exact_pixel_fraction_a": 0.5410234375,
+            "exact_pixel_fraction_b": 0.5021640625,
+            "exact_pixel_fraction_either": 0.63446484375,
+            "whole_crop_equals_a": false,
+            "whole_crop_equals_b": false
+          },
+          {
+            "source_a": 72,
+            "source_b": 73,
+            "output_midpoint": 145,
+            "rms_to_a_dn": 14.159518859014323,
+            "rms_to_b_dn": 13.911961904198408,
+            "exact_pixel_fraction_a": 0.46927994791666666,
+            "exact_pixel_fraction_b": 0.3450065104166667,
+            "exact_pixel_fraction_either": 0.5400807291666667,
+            "whole_crop_equals_a": false,
+            "whole_crop_equals_b": false
+          },
+          {
+            "source_a": 84,
+            "source_b": 85,
+            "output_midpoint": 169,
+            "rms_to_a_dn": 16.57138538784623,
+            "rms_to_b_dn": 15.710752116415266,
+            "exact_pixel_fraction_a": 0.40122135416666665,
+            "exact_pixel_fraction_b": 0.44377213541666666,
+            "exact_pixel_fraction_either": 0.5165091145833334,
+            "whole_crop_equals_a": false,
+            "whole_crop_equals_b": false
+          }
+        ],
+        "any_whole_crop_held": false,
+        "scope": "Exact endpoint-holding check on four declared crops only; neither correspondence accuracy nor a quality score"
+      }
+    }
+  },
+  "scope": "Compare new decoded pixels with the shown originals; neither historical-command proof nor quality conclusion",
+  "retained_source_indices": [
+    48,
+    60,
+    72,
+    84
+  ],
+  "retained_output_indices": [
+    96,
+    120,
+    144,
+    168
+  ],
+  "decode_command_template": [
+    "FFMPEG",
+    "-nostdin",
+    "-v",
+    "error",
+    "-i",
+    "VIDEO",
+    "-map",
+    "0:v:0",
+    "-an",
+    "-fps_mode",
+    "passthrough",
+    "-pix_fmt",
+    "gray16le",
+    "-f",
+    "rawvideo",
+    "-"
+  ],
+  "ffmpeg_version": "ffmpeg version git-2026-10-21-3a5eb94 Copyright (c) 2000-2026 the FFmpeg developers",
+  "ffmpeg_binary_sha256": "e91d80d0eec61da46dfe41becbd0fd27ec54d24dc08ae3db8cf4e06205cef188",
+  "ffprobe_version": "ffprobe version git-2026-10-21-3a5eb94 Copyright (c) 2007-2026 the FFmpeg developers",
+  "ffprobe_binary_sha256": "c5561790f38989fa7f968689164a3dc044d20954d51e7c1ea75690918da13c2c",
+  "all_decoded_gray_equal": true,
+  "all_explicit_retained_pixels_equal": true,
+  "holding_check_status": "complete"
+}

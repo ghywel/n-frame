@@ -8,7 +8,9 @@ For each case: the source frames and exact truth from the motionstress suite, th
 set of candidate warps evaluated at every interior synthesized output. 'high' replays the shipped final pass and is
 checked against High's real render first (the instrument check: the replay must reproduce the picture). Scores are the
 suite's: PSNR of the mean squared error over the ROI and over the feature mask, plus the suite's worst-1% ROI RMS and a
-temporal measure, the mean absolute frame-to-frame change of the ERROR inside the ROI (a snap or flicker shows there).
+legacy temporal measure, the mean absolute change of scalar per-frame ROI MAE. The saved key is `flicker` for
+compatibility, but this is not pixelwise error flicker: a moving ripple can keep the scalar MAE unchanged.
+See tests/probes/ripple/TEMPORAL.md for the counterexample and the separate pixelwise diagnostic.
 """
 import json
 import os
@@ -237,7 +239,7 @@ def main():
         print(f"{case}: replay of High against its real render {row['_replay_rms_dn']:.3f} DN RMS (worst frame)")
         for v in variants:
             r = row[v]
-            print(f"   {v:10s} ROI {r['roi']:6.2f}  feature {r['feat']:6.2f}  worst-1% {r['tail_dn']:6.2f} DN  flicker {r['flicker']:.3f}", flush=True)
+            print(f"   {v:10s} ROI {r['roi']:6.2f}  feature {r['feat']:6.2f}  worst-1% {r['tail_dn']:6.2f} DN  scalar-MAE-change {r['flicker']:.3f}", flush=True)
     (dump / 'warpsim.json').write_text(json.dumps(out, indent=1))
 
 
