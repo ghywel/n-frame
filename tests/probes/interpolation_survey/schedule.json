@@ -1,0 +1,150 @@
+{
+  "schema": 1,
+  "arithmetic": "exact rational; no floating point",
+  "assumptions": [
+    "constant rates",
+    "source and output timestamp origins both zero",
+    "half-open phase cycle",
+    "endpoint reuse requires exact timestamp coincidence"
+  ],
+  "exclusions": [
+    "inference caching and flow reuse",
+    "model calls and execution cost",
+    "startup and finite-clip tails",
+    "scene-cut and quality fallbacks",
+    "decoder, transfer and display cost"
+  ],
+  "synthesized_definition": "non-endpoint temporal samples required by the schedule; not proof of motion synthesis",
+  "generator_sha256": "bcc3571032f668d7f51e73b289661450aab46c7fc442bbb0b08a32f1415f8689",
+  "cases": [
+    {
+      "source_rate": "24",
+      "target_rate": "48",
+      "source_coordinate_step": "1/2",
+      "phase_period_outputs": 2,
+      "source_intervals_per_cycle": 1,
+      "cycle_duration_seconds": "1/24",
+      "shared_endpoint_rate": "24",
+      "synthesized_output_rate": "24",
+      "shared_endpoint_fraction": "1/2",
+      "synthesized_output_fraction": "1/2",
+      "phase_cycle": [
+        "0",
+        "1/2"
+      ],
+      "phase_cycle_omitted": false,
+      "verification": {
+        "method": "independent common-integer-clock enumeration",
+        "enumerated_outputs": 2,
+        "exact_endpoints": 1,
+        "nonendpoint_outputs": 1,
+        "passed": true
+      }
+    },
+    {
+      "source_rate": "24",
+      "target_rate": "60",
+      "source_coordinate_step": "2/5",
+      "phase_period_outputs": 5,
+      "source_intervals_per_cycle": 2,
+      "cycle_duration_seconds": "1/12",
+      "shared_endpoint_rate": "12",
+      "synthesized_output_rate": "48",
+      "shared_endpoint_fraction": "1/5",
+      "synthesized_output_fraction": "4/5",
+      "phase_cycle": [
+        "0",
+        "2/5",
+        "4/5",
+        "1/5",
+        "3/5"
+      ],
+      "phase_cycle_omitted": false,
+      "verification": {
+        "method": "independent common-integer-clock enumeration",
+        "enumerated_outputs": 5,
+        "exact_endpoints": 1,
+        "nonendpoint_outputs": 4,
+        "passed": true
+      }
+    },
+    {
+      "source_rate": "24000/1001",
+      "target_rate": "48000/1001",
+      "source_coordinate_step": "1/2",
+      "phase_period_outputs": 2,
+      "source_intervals_per_cycle": 1,
+      "cycle_duration_seconds": "1001/24000",
+      "shared_endpoint_rate": "24000/1001",
+      "synthesized_output_rate": "24000/1001",
+      "shared_endpoint_fraction": "1/2",
+      "synthesized_output_fraction": "1/2",
+      "phase_cycle": [
+        "0",
+        "1/2"
+      ],
+      "phase_cycle_omitted": false,
+      "verification": {
+        "method": "independent common-integer-clock enumeration",
+        "enumerated_outputs": 2,
+        "exact_endpoints": 1,
+        "nonendpoint_outputs": 1,
+        "passed": true
+      }
+    },
+    {
+      "source_rate": "24000/1001",
+      "target_rate": "60000/1001",
+      "source_coordinate_step": "2/5",
+      "phase_period_outputs": 5,
+      "source_intervals_per_cycle": 2,
+      "cycle_duration_seconds": "1001/12000",
+      "shared_endpoint_rate": "12000/1001",
+      "synthesized_output_rate": "48000/1001",
+      "shared_endpoint_fraction": "1/5",
+      "synthesized_output_fraction": "4/5",
+      "phase_cycle": [
+        "0",
+        "2/5",
+        "4/5",
+        "1/5",
+        "3/5"
+      ],
+      "phase_cycle_omitted": false,
+      "verification": {
+        "method": "independent common-integer-clock enumeration",
+        "enumerated_outputs": 5,
+        "exact_endpoints": 1,
+        "nonendpoint_outputs": 4,
+        "passed": true
+      }
+    },
+    {
+      "source_rate": "24000/1001",
+      "target_rate": "60",
+      "source_coordinate_step": "400/1001",
+      "phase_period_outputs": 1001,
+      "source_intervals_per_cycle": 400,
+      "cycle_duration_seconds": "1001/60",
+      "shared_endpoint_rate": "60/1001",
+      "synthesized_output_rate": "60000/1001",
+      "shared_endpoint_fraction": "1/1001",
+      "synthesized_output_fraction": "1000/1001",
+      "phase_cycle": null,
+      "phase_cycle_omitted": true,
+      "verification": {
+        "method": "independent common-integer-clock enumeration",
+        "enumerated_outputs": 1001,
+        "exact_endpoints": 1,
+        "nonendpoint_outputs": 1000,
+        "passed": true
+      }
+    }
+  ],
+  "self_checks": {
+    "registered_expected_cases": 5,
+    "additional_cycle_cases": 3,
+    "nonpositive_rate_refusals": 2,
+    "passed": true
+  }
+}

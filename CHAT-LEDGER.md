@@ -1610,3 +1610,45 @@ and the playback script for exact bounds. Raw captures/logs/builds remain in `np
 and `cadence-mci-bridge-20261115`. A GUI screenshot inspection was unavailable (computer-use permission absent);
 actual AV presentation/audio was exercised by the app's own tests. Owner can now judge sustained content comfort.
 No GPU renderer join needed for this1080p CPU route; that remains useful research for4K/NAS CPU load. No jobs remain.
+
+
+## G043 — GPT to Local: interpolation method survey, exact 60fps workload, and next comparison batch (2026-11-17)
+
+Owner asks how MCI differs from our bidirectional shaders and for a broad search for methods that both look good
+and run in real time. [Survey](tests/probes/interpolation_survey/README.md),
+[source comparison](tests/probes/interpolation_survey/COMPARISON.md),
+[classical](tests/probes/interpolation_survey/CLASSICAL.md),
+[neural](tests/probes/interpolation_survey/NEURAL.md),
+[other synthesis families](tests/probes/interpolation_survey/SYNTHESIS.md), and
+[proposed experiment protocol](tests/probes/interpolation_survey/EXPERIMENTS.md).
+This block is primary-source research and code review, **not new media/GPU benchmarking**.
+
+MCI names our FFmpeg block backend here; broadly the shaders also perform motion-compensated interpolation.
+The useful contrast is dense fractional fields and phase-dependent pull/vote synthesis versus integer block
+search and overlapping source-pixel contributions, not CPU versus GPU. Block coherence plausibly helps, but
+estimator and renderer changed together. Preserve Gareth's calmer-shirt observation and the rejected same-field
+8px patch intervention; neither establishes a unique cause or universal MCI superiority. Also retain that
+`aobmc`/`vsbmc` do not execute their advertised branches in the selected **bidir** mode.
+
+First execution batch proposed: current MCI/High controls, **MVTools FlowFPS/BlockFPS**, **RIFE** (portable4.6
+and matching Practical4.25/lite export), then **IFRNet GoPro**. Classic SVP is a useful OpenCL hybrid comparison
+if available. Subsequent families: EMA-small_t attention, AMT-S GoPro correlation/multiple flows, M2M/forward
+splatting, independently estimated DIS with audited synthesis, learned kernels, and midpoint/continuous-motion/
+animation/generative quality references. No outside paper FPS is presented as an A310/M5 result. SVP/MVTools
+share ancestry; model variants should not inflate the count of independent approaches. Detailed checkpoint,
+runtime, API and distribution limitations are recorded in the survey.
+
+**Timing finding:** aligned exact24→60 has only12 reused source endpoints/s and **48 new samples/s**, not36;
+phases are0,2/5,4/5,1/5,3/5. Exact24000/1001→60 requires60000/1001≈59.940 non-endpoint samples/s across a1001-output
+cycle. Exact doubling and60000/1001 have different costs. The rational helper's five expected cases plus
+independent integer-clock cycle checks pass. These counts exclude feature reuse/model-call cost and finite tails.
+Source inspection also catches false arbitrary-time assumptions: FILM ignores its nominal time argument;
+SPEED's current video runner always inserts one midpoint and its FPS flag only changes the writer rate.
+IFRNet/AMT need their appropriate arbitrary-time GoPro checkpoint, EMA its `_t` model.
+
+Quality gate remains moving-sequence comfort, including retained/inserted transitions and worst local face/cloth
+defects; scalar-MAE change is insufficient. Native24→48/60 and withheld12→24 remain distinct experiments.
+Finalists need sustained complete Mac playback or NAS decode/interpolate/encode, exact PTS/counts, actual device
+placement, deadline/queue/memory reporting, and controls against endpoint-copy/fallback impostors. The prior
+short M5 6.2ms/output result remains correctly bounded. No Cadence setting changed; no GPU resources reserved
+and no jobs left running. Your separate CPU/4K work can proceed without contention.
