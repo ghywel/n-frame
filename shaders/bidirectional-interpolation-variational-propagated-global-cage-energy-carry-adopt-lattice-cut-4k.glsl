@@ -2,7 +2,7 @@
 // GENERATED FILE -- DO NOT EDIT BY HAND.
 //
 // Produced by scripts/tests/scale_shader.py from bidirectional-interpolation-variational-propagated-global-cage-energy-carry-adopt-lattice-cut.glsl
-// with factors 2 (S x2, E x2, Q x2, H x2), 2026-11-13. It is that shader with each
+// with factors 2 (S x2, E x2, Q x2, H x2), 2026-11-18. It is that shader with each
 // pyramid level's divisor multiplied by its factor, so that level of a
 // frame 2 times larger has the texel count the shader was tuned on;
 // everything expressed in a level's own texels (the search reach, the
@@ -28,7 +28,7 @@
 // generator and regenerate. Hand edits will be lost, and the ~100
 // near-identical iteration passes are not maintainable by hand anyway.
 //
-//   GLOBAL_SEED=1 QZERO_MOIRE=1 COHERENCE_GATE=1 COARSE_ENERGY=1 COARSE_ENERGY_WS=8 COARSE_ENERGY_WE=1 ALIAS_PRIOR=1 ALIAS_CARRY=1 OUTLINE_ADOPT=1 PRINT_LATTICE=1 CUT_MOTION=1 GLOBAL_GAIN=2 WARP_VOTE=2 PRUNE=2 ./gen_variational.py "0,0,8,4" 0.3 0.08 <output.glsl> 0 "0,0,2,0"
+//   GLOBAL_SEED=1 QZERO_MOIRE=1 COHERENCE_GATE=1 COARSE_ENERGY=1 COARSE_ENERGY_WS=8 COARSE_ENERGY_WE=1 ALIAS_PRIOR=1 ALIAS_CARRY=1 OUTLINE_ADOPT=1 PRINT_LATTICE=1 CUT_MOTION=1 GLOBAL_GAIN=2 WARP_VOTE=2 BRANCH_MEMORY=1 PRUNE=2 ./gen_variational.py "0,0,8,4" 0.3 0.08 <output.glsl> 0 "0,0,2,0"
 //
 // Variational iterations per pyramid level: S=0 E=0 Q=8 H=4
 // (S = 1/16 resolution, E = 1/8, Q = 1/4, H = 1/2). Roughly 3.0
@@ -1199,6 +1199,11 @@ vec4 hook() {
     return result;
 }
 
+//!TEXTURE BM_AB_ST
+//!SIZE 480 270
+//!FORMAT rgba32f
+//!STORAGE
+
 //!TEXTURE FLOW_E_AB_CACHE
 //!SIZE 480 270
 //!FORMAT rgba32f
@@ -1216,6 +1221,7 @@ vec4 hook() {
 //!BIND GLOBAL_SHIFT
 //!BIND ALIAS_E_AB_ST
 //!BIND ALIAS_E_M_ST
+//!BIND BM_AB_ST
 //!SAVE FLOW_E_AB_RAW
 //!WIDTH HOOKED.w 16 /
 //!HEIGHT HOOKED.h 16 /
@@ -1511,6 +1517,37 @@ vec4 hook() {
             best_off = ref_d;
         }
     }
+    // BRANCH_MEMORY (tests/branch_memory.py): the previous pair's final vector at the point this cell came from, refined
+    // here, takes the cell only on a tie with the pick, on a different branch, on texture.
+    {
+        vec4 bm0 = imageLoad(BM_AB_ST, coord);
+        if (bm0.z > 0.5) {
+            ivec2 bmc = clamp(coord - 1 * ivec2(floor(bm0.xy + 0.5)), ivec2(0), ivec2(LUMA_A_E_size) - 1);
+            vec4 bm1 = imageLoad(BM_AB_ST, bmc);
+            vec2 bm = (bm1.z > 0.5 ? bm1.xy : bm0.xy) * LUMA_A_E_pt;
+            {   // BM_FORM=2: the local majority of the memory (3 x 3 samples, two cells apart)
+                vec2 mv[9]; float mz[9];
+                for (int j = 0; j < 9; j++) {
+                    vec4 q = imageLoad(BM_AB_ST, clamp(bmc + 2 * ivec2(j % 3 - 1, j / 3 - 1), ivec2(0), ivec2(LUMA_A_E_size) - 1));
+                    mv[j] = q.xy; mz[j] = q.z;
+                }
+                int jb = -1, nb = 0;
+                for (int j = 0; j < 9; j++) {
+                    if (mz[j] < 0.5) continue;
+                    int n = 0;
+                    for (int i = 0; i < 9; i++) if (mz[i] > 0.5 && length(mv[i] - mv[j]) <= 1.5) n++;
+                    if (n > nb) { nb = n; jb = j; }
+                }
+                if (nb >= 5) bm = mv[jb] * LUMA_A_E_pt;
+            }
+            float sad_m;
+            vec2 ref_m = refine_e(uv_a, bm, sad_m);
+            float sad_p = sad5x5_e(uv_a, uv_a + best_off);
+            if (length((ref_m - best_off) / LUMA_A_E_pt) > 1.5 && sad_m <= sad_p * (1.0 + 0.25) + 0.01
+                && local_contrast_5x5_e(uv_a) > 0.02)
+                best_off = ref_m;
+        }
+    }
     vec4 result = vec4(best_off / LUMA_A_E_pt, 0.0, 0.0);
     imageStore(FLOW_E_AB_CACHE, coord, result);
     return result;
@@ -1533,6 +1570,7 @@ vec4 hook() {
 //!BIND GLOBAL_SHIFT
 //!BIND ALIAS_E_BA_ST
 //!BIND ALIAS_E_M_ST
+//!BIND BM_AB_ST
 //!SAVE FLOW_E_BA_RAW
 //!WIDTH HOOKED.w 16 /
 //!HEIGHT HOOKED.h 16 /
@@ -1767,6 +1805,37 @@ vec4 hook() {
             if (score_d < best_score * (1.0 - TIE_MARGIN)) best_off = ref_d;
         } else if (sad_d < best_sad * (1.0 - ZERO_SEED_MARGIN)) {
             best_off = ref_d;
+        }
+    }
+    // BRANCH_MEMORY (tests/branch_memory.py): the previous pair's final vector at the point this cell came from, refined
+    // here, takes the cell only on a tie with the pick, on a different branch, on texture.
+    {
+        vec4 bm0 = imageLoad(BM_AB_ST, coord);
+        if (bm0.z > 0.5) {
+            ivec2 bmc = clamp(coord - 2 * ivec2(floor(bm0.xy + 0.5)), ivec2(0), ivec2(LUMA_A_E_size) - 1);
+            vec4 bm1 = imageLoad(BM_AB_ST, bmc);
+            vec2 bm = -(bm1.z > 0.5 ? bm1.xy : bm0.xy) * LUMA_A_E_pt;
+            {   // BM_FORM=2: the local majority of the memory (3 x 3 samples, two cells apart)
+                vec2 mv[9]; float mz[9];
+                for (int j = 0; j < 9; j++) {
+                    vec4 q = imageLoad(BM_AB_ST, clamp(bmc + 2 * ivec2(j % 3 - 1, j / 3 - 1), ivec2(0), ivec2(LUMA_A_E_size) - 1));
+                    mv[j] = q.xy; mz[j] = q.z;
+                }
+                int jb = -1, nb = 0;
+                for (int j = 0; j < 9; j++) {
+                    if (mz[j] < 0.5) continue;
+                    int n = 0;
+                    for (int i = 0; i < 9; i++) if (mz[i] > 0.5 && length(mv[i] - mv[j]) <= 1.5) n++;
+                    if (n > nb) { nb = n; jb = j; }
+                }
+                if (nb >= 5) bm = -mv[jb] * LUMA_A_E_pt;
+            }
+            float sad_m;
+            vec2 ref_m = refine_e(uv_b, bm, sad_m);
+            float sad_p = sad5x5_e2(uv_b, uv_b + best_off);
+            if (length((ref_m - best_off) / LUMA_A_E_pt) > 1.5 && sad_m <= sad_p * (1.0 + 0.25) + 0.01
+                && local_contrast_5x5_e2(uv_b) > 0.02)
+                best_off = ref_m;
         }
     }
     vec4 result = vec4(best_off / LUMA_A_E_pt, 0.0, 0.0);
@@ -5603,6 +5672,27 @@ vec4 hook() {
         wv_w *= 1.0 - smoothstep(0.5, 1.0, length((wv_fa - wv_v) / HOOKED_pt) / wv_tol);
     }
     return vec4(wv_v / HOOKED_pt, wv_w, 0.0);
+}
+
+//!HOOK FRAME_MIX
+//!BIND FLOW_H_AB
+//!BIND LUMA_A_E
+//!BIND SCENE_DIFF
+//!BIND SCENE_RES
+//!BIND BM_AB_ST
+//!SAVE BM_W
+//!WIDTH HOOKED.w 16 /
+//!HEIGHT HOOKED.h 16 /
+//!COMPONENTS 1
+//!DESC [memory] the final A->B field at 1/8 res, kept for the next pair's 1/8 refines (BRANCH_MEMORY); cleared at a cut
+vec4 hook() {
+    if (!pair_changed) return vec4(0.0);
+    ivec2 coord = ivec2(LUMA_A_E_pos * LUMA_A_E_size);
+    vec2 cut_res = SCENE_RES_tex(vec2(0.5)).rg;
+    bool cut = SCENE_DIFF_tex(vec2(0.5)).r > 0.125 && cut_res.r > 0.300 * cut_res.g;
+    vec2 f = FLOW_H_AB_tex(LUMA_A_E_pos).xy * 0.25;      // half-res texels -> 1/8 texels
+    imageStore(BM_AB_ST, coord, vec4(f, cut ? 0.0 : 1.0, 0.0));
+    return vec4(0.0);
 }
 
 //!HOOK FRAME_MIX

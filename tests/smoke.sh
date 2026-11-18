@@ -194,11 +194,13 @@ fi
 # compensation (GLOBAL_GAIN=2, adopted 2026-10-23) with their 4K twins: the player bundles all six. High carries the
 # final warp's vote in its light form since 2026-11-13 (WARP_VOTE=2; tests/probes/occwarp/PLAN.md). The fourth file is
 # the full form of the vote (WARP_VOTE=1), a variant of High that is not bundled (it costs 13% more on Metal)
+# High carries the branch memory since 2026-11-18 (BRANCH_MEMORY=1; tests/probes/barn/PLAN.md), on the owner's verdict
+# "Better" on the barn and the next shot and his word to put it into Cadence; the vote's full-form variant does not.
 CUTOK=1
 PLC="GLOBAL_SEED=1 QZERO_MOIRE=1 COHERENCE_GATE=1 COARSE_ENERGY=1 COARSE_ENERGY_WS=8 COARSE_ENERGY_WE=1 ALIAS_PRIOR=1 ALIAS_CARRY=1 OUTLINE_ADOPT=1"
 for spec in "ZERO_SEED=1|bidirectional-interpolation-variational-propagated-cut" \
             "$PLC|bidirectional-interpolation-variational-propagated-global-cage-energy-carry-adopt-cut" \
-            "$PLC PRINT_LATTICE=1 WARP_VOTE=2|bidirectional-interpolation-variational-propagated-global-cage-energy-carry-adopt-lattice-cut" \
+            "$PLC PRINT_LATTICE=1 WARP_VOTE=2 BRANCH_MEMORY=1|bidirectional-interpolation-variational-propagated-global-cage-energy-carry-adopt-lattice-cut" \
             "$PLC PRINT_LATTICE=1 WARP_VOTE=1|bidirectional-interpolation-variational-propagated-global-cage-energy-carry-adopt-lattice-cut-vote"; do
   vars="${spec%%|*}"; stem="${spec#*|}"
   # shellcheck disable=SC2086
@@ -209,7 +211,7 @@ for spec in "ZERO_SEED=1|bidirectional-interpolation-variational-propagated-cut"
      && diff -q <(strip "$W/regen-$stem-4k.glsl") <(strip "$HERE/../shaders/$stem-4k.glsl") >/dev/null 2>&1; then :
   else CUTOK=0; echo "    differs or failed: $stem"; fi
 done
-[ "$CUTOK" = 1 ] && ok "the three cut tiers and their 4K twins regenerate byte-identical" \
+[ "$CUTOK" = 1 ] && ok "the three cut tiers and the vote variant, and their 4K twins, regenerate byte-identical" \
                  || bad "a cut tier or its 4K twin differs from the committed one"
 
 # ---------------------------------------------------------------------------

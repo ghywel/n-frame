@@ -39,6 +39,11 @@ TAU = 0.05
 # the CARRY's own tie threshold (stage 0c, 2026-09-30): an override that moves the carry alone; the prior's gate keeps TAU
 TAU_CARRY = float(os.environ.get("ALIAS_TAU_CARRY", TAU))
 LAMBDA = 0.001
+# ALIAS_REACH (2026-11-18, tests/probes/barn/PLAN.md): the 1/8-level basin search's radius in that level's texels. 3 (the
+# default, 7 x 7, +-24 px) is every shipped file. A camera pan of 24-36 px a frame over a 27-33 px corrugation (the
+# barn) puts the true motion outside +-24 px, so the carry's two hypotheses were the alias and nothing; 5 is +-40 px.
+REACH = int(os.environ.get("ALIAS_REACH", "3"))
+assert 1 <= REACH <= 8, REACH
 M_MAX = 1.0
 P1, P2 = 0.1, 1.0
 BIG = 1.0e6
@@ -103,31 +108,31 @@ float alias_range(vec2 uv, bool ba) {{
 vec4 alias_basins(vec2 uv, bool ba, out float margin) {{
     margin = {BIG};
     if (alias_range(uv, ba) < 0.02) return vec4(0.0);
-    float c[49];
+    float c[{NN}];
     float cmin = 1.0e30, csum = 0.0;
-    int i1 = 24;
-    for (int j = 0; j < 49; j++) {{
-        float s = alias_sad(uv, vec2(float(j % 7 - 3), float(j / 7 - 3)), ba);
+    int i1 = {MID};
+    for (int j = 0; j < {NN}; j++) {{
+        float s = alias_sad(uv, vec2(float(j % {N} - {R}), float(j / {N} - {R})), ba);
         c[j] = s; csum += s;
         if (s < cmin) {{ cmin = s; i1 = j; }}
     }}
-    float S = max(csum / 49.0 - cmin, 1.0e-4);
-    ivec2 a = ivec2(i1 % 7 - 3, i1 / 7 - 3);
+    float S = max(csum / {NN}.0 - cmin, 1.0e-4);
+    ivec2 a = ivec2(i1 % {N} - {R}, i1 / {N} - {R});
     int i2 = i1;
-    for (int j = 0; j < 49; j++) {{
-        ivec2 b = ivec2(j % 7 - 3, j / 7 - 3);
+    for (int j = 0; j < {NN}; j++) {{
+        ivec2 b = ivec2(j % {N} - {R}, j / {N} - {R});
         int n = max(abs(b.x - a.x), abs(b.y - a.y));
         if (n < 2) continue;
         float ridge = 0.0;
         for (int k = 1; k < n; k++) {{
             ivec2 p = ivec2(floor(vec2(a) + vec2(b - a) * float(k) / float(n) + 0.5));
-            ridge = max(ridge, c[(p.y + 3) * 7 + p.x + 3]);
+            ridge = max(ridge, c[(p.y + {R}) * {N} + p.x + {R}]);
         }}
         if (ridge - max(cmin, c[j]) < 0.25 * S) continue;
         float m = (c[j] - cmin) / S;
         if (m < margin) {{ margin = m; i2 = j; }}
     }}
-    return vec4(vec2(a), vec2(float(i2 % 7 - 3), float(i2 / 7 - 3)));
+    return vec4(vec2(a), vec2(float(i2 % {N} - {R}), float(i2 / {N} - {R})));
 }}
 vec4 hook() {{
     ivec2 coord = ivec2(LUMA_A_E_pos * LUMA_A_E_size);
@@ -141,7 +146,8 @@ vec4 hook() {{
     imageStore(ALIAS_E_M_ST, coord, vec4(m_ab, m_ba, 0.0, 0.0));
     return ab;
 }}
-""".format(LAMBDA=LAMBDA, BIG=f"{BIG:.1f}")
+""".format(LAMBDA=LAMBDA, BIG=f"{BIG:.1f}", R=REACH, N=2 * REACH + 1, NN=(2 * REACH + 1) ** 2,
+           MID=((2 * REACH + 1) ** 2) // 2)
 
 
 def add_alias_e(t):

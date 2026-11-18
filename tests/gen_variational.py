@@ -591,6 +591,9 @@ PRUNE = os.environ.get("PRUNE", "0")
 # 2026-10-22 patch (a libplacebo without it rejects the file and mixes with its own mixer): a variant, never the shipped
 # default. Applied after PRUNE. Without the variable the output is byte-identical.
 STICKY_CACHE = os.environ.get("STICKY_CACHE", "0") == "1"
+# BRANCH_MEMORY=1 (2026-11-18; tests/branch_memory.py; tests/probes/barn/PLAN.md): the previous pair's final field as a
+# fifth 1/8-level candidate that breaks ties between a periodic surface's branches. Off: byte-identical output.
+BRANCH_MEMORY = os.environ.get("BRANCH_MEMORY", "0") == "1"
 assert PRUNE in ("0", "1", "2"), f"PRUNE={PRUNE}: it is 0 (off), 1 (whole passes) or 2 (whole passes and fused twins)"
 
 
@@ -942,6 +945,9 @@ if __name__ == "__main__":
     if WARP_VOTE != "0":               # after the gain (its matching reads take the gain out), before the prune
         import warp_vote
         text = warp_vote.add(text) if WARP_VOTE == "1" else warp_vote.add_light(text)
+    if BRANCH_MEMORY:                  # after every other switch, before the prune
+        import branch_memory
+        text = branch_memory.add(text)
     cost = 2 * (s / 256 + e / 64 + q / 16 + h / 4)
     env = ("GLOBAL_SEED=1 " if GLOBAL_SEED else "") + ("QZERO_MOIRE=1 " if QZERO_MOIRE else "") + ("COHERENCE_GATE=1 " if COHERENCE_GATE else "") \
         + (f"EDGE_PROP=1 EDGE_PROP_TAU={EDGE_PROP_TAU:g} " if EDGE_PROP else "") \
@@ -952,7 +958,7 @@ if __name__ == "__main__":
         + ("OUTLINE_ADOPT=1 " if OUTLINE_ADOPT else "") \
         + ("PRINT_LATTICE=1 " if PRINT_LATTICE else "") \
         + ("TRUST_GATE=1 " if TRUST_GATE else "") \
-        + ("BAR_REDECIDE=1 " if BAR_REDECIDE else "") + ("BAR_KEEP=1 " if BAR_KEEP else "") + ("BAR_BASIN=1 " if BAR_BASIN else "") + ("CUT_MOTION=1 " if CUT_MOTION else "") + (f"GLOBAL_GAIN={GLOBAL_GAIN} " if GLOBAL_GAIN != "0" else "") + (f"LOCAL_LIGHT={LOCAL_LIGHT} " if LOCAL_LIGHT != "0" else "") + ("COHERENCE_ZM=1 " if COHERENCE_ZM else "") + (f"WARP_VOTE={WARP_VOTE} " if WARP_VOTE != "0" else "") \
+        + ("BAR_REDECIDE=1 " if BAR_REDECIDE else "") + ("BAR_KEEP=1 " if BAR_KEEP else "") + ("BAR_BASIN=1 " if BAR_BASIN else "") + ("CUT_MOTION=1 " if CUT_MOTION else "") + (f"GLOBAL_GAIN={GLOBAL_GAIN} " if GLOBAL_GAIN != "0" else "") + (f"LOCAL_LIGHT={LOCAL_LIGHT} " if LOCAL_LIGHT != "0" else "") + ("COHERENCE_ZM=1 " if COHERENCE_ZM else "") + (f"WARP_VOTE={WARP_VOTE} " if WARP_VOTE != "0" else "") + ("BRANCH_MEMORY=1 " if BRANCH_MEMORY else "") + (f"BM_FORM={os.environ['BM_FORM']} " if BRANCH_MEMORY and os.environ.get("BM_FORM", "2") != "2" else "") + (f"BM_TIE={os.environ['BM_TIE']} " if BRANCH_MEMORY and os.environ.get("BM_TIE", "0.25") != "0.25" else "") + ("BM_SUBPIX=1 " if BRANCH_MEMORY and os.environ.get("BM_SUBPIX", "0") == "1" else "") \
         + ("ALIAS_APERTURE=0 " if ALIAS_CARRY and not ALIAS_APERTURE else "")     # the zero seed is the recommendation's standing state and the line never named it
     env += f"PRUNE={PRUNE} " if PRUNE != "0" else ""     # recorded so the header can rebuild the file (REPAIRS.md L9)
     env += "STICKY_CACHE=1 " if STICKY_CACHE else ""
