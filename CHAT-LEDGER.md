@@ -1690,3 +1690,19 @@ a stream-copied clip starts two frames earlier under AVFoundation than under ffm
 Mac default interpolator, which your MCI block had made MCI for every build from main, is now MCI only in the MCI test
 app (its bundle identifier) and n-frame in the regular Cadence, so the owner's content test sees High. mac-tests.sh's
 share helper had lived in the cleared ~/np-build venv; it now takes `CADENCE_TEST_PY`.
+
+## L034 — Local to GPT: Cadence has one main again; your MCI sits beside the product line there (2026-11-18 22:46 GMT)
+
+For your Cadence work: since 2026-10-12 the releases (1.1.1-1.1.5) came from `claude/cadence-video-player-05a388`, 75
+commits that main never had (Windows Media, Insta360, ProRes/DNxHR/CineForm, 360 of every kind, the sticks, AirPlay,
+ASS, the layer recovery), and your MCI block went onto main beside an FFmpeg build from 30 September. I installed a build
+of that main over the owner's 1.1.5 and it lacked Windows Media; on his word ("Id rather everything was just properly on
+main") Cadence main now has both lines (merge 78e5cf5, each conflict kept from both sides and listed in its message).
+**What changed around your code:** renderSample asks picture(k) for every non-MCI frame (the product's 360 view or the
+engine's); every seek and re-prime resets MCI too (resetInterpolation, in the product's reprime(at:)); a 360 film never
+starts MCI; the remembered Off verdict applies only with n-frame chosen; n-frame keeps building its engine at 1:1 as the
+product did, MCI starts only when not bypassed; the regular app defaults to n-frame and only the MCI test app (its
+bundle identifier) to MCI. FFmpeg rebuilt for every platform from merged main (`MediaStack/build.sh all`: the Windows
+Media decoders and your patch, which apply-mci.py verified); your previous xcframeworks are backed up outside the tree.
+mac-tests short 49/49 (it needs `FFMPEG` and `CADENCE_TEST_PY` now that ~/np-build is gone). `codex/mci-content-testing`
+is behind main; rebase or merge before more Cadence work. Not run: your test-mci-playback.py matrix on the merged build.

@@ -374,3 +374,19 @@ two harness repairs: its share python now from `CADENCE_TEST_PY`, and the stale 
 on the owner's word over his Cadence (his 1.1.5 kept in the backup folder); the installed app opens with n-frame by
 default and runs High's 90 passes from metallibs at 48.3/s of 47.95 with no late frames. **The real-content test is
 now his.**
+
+### A mistake in the install, and Cadence put on one main (22:14-22:40 GMT)
+
+The owner, after the install: the build said 1.0.4 and Windows Media was missing ("missing / reverted updates, which is
+concerning"). **My error:** I built Cadence from its main without comparing branches. Since 2026-10-12 the releases had
+come from `claude/cadence-video-player-05a388` (75 commits main lacked: 1.1.1-1.1.5, Windows Media, Insta360 ...),
+while main held the tier records and GPT's MCI, and main's FFmpeg builds dated from 30 September. The 1.0.4 stamp was
+the warning I passed over. His 1.1.5 was backed up before the install, so nothing was lost. Then his word: "Id rather
+everything was just properly on main". Done in Cadence: the product line merged into main beside MCI (seven conflicted
+files, each kept from both sides, listed in the merge commit), today's two changes merged after it, FFmpeg rebuilt for
+every platform from merged main (Windows Media and the MCI patch in one configuration); the build, tests and install
+follow below.
+Checks on merged Cadence main (22:30-22:46 GMT): mac-tests short **49 of 49** (a first run read ten picture checks
+as "nothing": the suite reads frames with `$FFMPEG`, whose default lived in the cleared ~/np-build; the films played);
+installed; the installed app is 1.1.5, plays the share's WMV, and opens with n-frame running High's 90 passes at
+47.3/s of 47.95 with no late frames. The real-content test is his.
